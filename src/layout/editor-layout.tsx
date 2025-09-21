@@ -1,26 +1,36 @@
 
+import React, { useState, useCallback } from 'react';
+import Sidebar, { sampleData } from "../components/sidebar/sidebar";
 import Titlebar from "../components/titlebar/titlebar";
-import Sidebar from "../components/sidebar/sidebar";
 
 function EditorLayout({children}: {children?: React.ReactNode}) {
+    const [selectedItem, setSelectedItem] = useState<string>('');
+    const [isOpen, setIsOpen] = useState<boolean>(true);
+    const handleSelectItem = useCallback((item: string) => {
+        setSelectedItem(item);
+    }, []);
+
     return (
-        <div className="h-screen w-screen flex flex-col bg-[var(--background)]">
-            {/* Titlebar */}
-            <Titlebar />
-            
-            {/* Main content area */}
+        <div className="h-screen w-screen flex flex-col relative bg-background ">
             <div className="flex-1 flex">
-                {/* Sidebar - 3/12 width */}
-                <div className="w-3/12">
-                    <Sidebar />
-                </div>
+                    <div className="w-80 m-1.5 flex transition-all duration-500 ease-out">
+                        <Sidebar 
+                            selectedItem={selectedItem}
+                            setSelectedItem={handleSelectItem}
+                            isOpen={isOpen}
+                            setIsOpen={setIsOpen}
+                            nodes={sampleData}
+                        />
+                        <Titlebar />
+                    </div>
                 
-                {/* Spacer - 1/12 width */}
-                <div className="w-1/12 bg-[var(--background)]">
-                </div>
                 
-                {/* Main editor area - 8/12 width */}
-                <div className="w-8/12">
+                {/* Main Content Area */}
+                <div className={`
+                    flex-1 m-1.5 border-4xl overflow-hidden
+                    transition-all duration-500 ease-out
+                    ${selectedItem ? 'ml-1.5' : ''}
+                `}>
                     {children}
                 </div>
             </div>
