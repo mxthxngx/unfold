@@ -34,7 +34,7 @@ function Editor() {
     })
     return (
         <div className="h-screen">
-          <EditorContent editor={editor} className='w-full h-full overflow-y-auto outline-none forced-color-adjust-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full' />
+          <EditorContent editor={editor} className='w-full h-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full' />
         </div>
     );
 }

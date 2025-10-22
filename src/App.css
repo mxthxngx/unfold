@@ -45,7 +45,7 @@ html, body { background: transparent !important;
   --icon-hover: rgba(25, 25, 25, 0.585);
   --sidebar-container-border: rgba(255, 255, 255, 0.08);
   --unselected-icon: #8e8d8d;
-  --code-mark: #2a2a2a;
+  --code-mark: #343434;
   --link: #f7f2f2;
   --tooltip: #0f0e11;
   --font-sans: "DM Sans", sans-serif;

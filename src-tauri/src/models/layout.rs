@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Layout {
-    sidebar_position: Option<String>,
-    margin_left: Option<u32>,
+    pub sidebar_position: Option<String>,
+    pub margin_left: Option<u32>,
 }

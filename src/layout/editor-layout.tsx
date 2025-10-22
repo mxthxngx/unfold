@@ -29,7 +29,6 @@ function EditorLayout({children}: {children?: React.ReactNode}) {
                 <div className={`
                     flex-1 border-4xl overflow-hidden
                     transition-all duration-500 ease-out my-0
-                    ${selectedItem ? 'ml-1.5' : ''}
                 `}>
                     {children}
                 </div>
