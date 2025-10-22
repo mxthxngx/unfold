@@ -11,10 +11,10 @@ function EditorLayout({children}: {children?: React.ReactNode}) {
     }, []);
 
     return (
-        <div className="h-screen w-screen flex flex-col relative bg-background ">
+        <div className="flex flex-col relative bg-background h-screen w-screen">
             <div className="flex-1 flex">
                     <div className="w-80 m-1.5 flex transition-all duration-500 ease-out">
-                        <Sidebar 
+                        <Sidebar
                             selectedItem={selectedItem}
                             setSelectedItem={handleSelectItem}
                             isOpen={isOpen}
@@ -23,12 +23,12 @@ function EditorLayout({children}: {children?: React.ReactNode}) {
                         />
                         <Titlebar />
                     </div>
-                
-                
+
+
                 {/* Main Content Area */}
                 <div className={`
-                    flex-1 m-1.5 border-4xl overflow-hidden
-                    transition-all duration-500 ease-out
+                    flex-1 border-4xl overflow-hidden
+                    transition-all duration-500 ease-out my-0
                     ${selectedItem ? 'ml-1.5' : ''}
                 `}>
                     {children}

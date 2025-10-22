@@ -4,10 +4,10 @@ html, body { background: transparent !important;
 }
 :root {
   --background: rgba(0, 0, 0, 0.5);
-  --background-solid: #0f0f0f; 
+  --background-solid: #0f0f0f;
   --bright-highlight: rgba(229, 227, 227, 0.9);
-  --foreground: #f7f2f2; 
-  --foreground-muted: #8e8d8d; 
+  --foreground: #f7f2f2;
+  --foreground-muted: #8e8d8d;
   --card: #0f0e11;
   --card-foreground: #f7f2f2;
   --popover: #0f0e11;
@@ -37,9 +37,9 @@ html, body { background: transparent !important;
   --sidebar-primary-foreground: #93939A;
   --sidebar-accent: #18181b;
   --sidebar-accent-foreground: #f7f2f2;
-  --sidebar-border: #232323; 
+  --sidebar-border: #232323;
   --sidebar-ring: #343434;
-  --sidebar-foreground-active: #d9d9d9; 
+  --sidebar-foreground-active: #d9d9d9;
   --sidebar-tab-accent: rgb(19, 19, 19);
   --sidebar-container-bg: rgba(0, 0, 0, 0.2);
   --icon-hover: rgba(25, 25, 25, 0.585);
@@ -151,4 +151,8 @@ html, body { background: transparent !important;
 /* Global utility classes */
 .icon-interactive {
   @apply text-sidebar-accent-foreground/80 group-hover:text-sidebar-primary-foreground/10 transition-colors duration-300;
+}
+
+.ProseMirror:focus {
+  outline: none;
 }

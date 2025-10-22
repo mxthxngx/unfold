@@ -69,7 +69,7 @@ const Sidebar = memo(({ nodes, selectedItem, setSelectedItem, isOpen, setIsOpen 
   );
 
   return (
-    <div className="w-full h-full relative flex">
+    <div className="w-full h-full relative flex mt-0.25 ">
       <motion.div
         className="w-full overflow-hidden"
         animate={{

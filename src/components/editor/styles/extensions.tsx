@@ -1,0 +1,23 @@
+export const editorClasses = {
+  blockquote: "border-l-2 border-gray-300 pl-4",
+  bold: "font-bold",
+  details: "border border-border rounded-md mb-4",
+  detailsSummary:
+    "cursor-pointer bg-accent/50 px-4 py-2 rounded-t-md font-medium hover:bg-accent/70",
+  detailsContent: "px-4 py-2",
+  highlight: "bg-yellow-200",
+  italic: "italic",
+  heading1: "text-4xl leading-13 font-bold mt-4 mb-4 tracking-tight pe-2",
+  heading2: "text-3xl font-semibold mt-6 mb-2 tracking-tight",
+  heading3: "text-xl font-semibold mt-6 mb-2 tracking-tight",
+  horizontalRule: "border-t border-border my-2",
+  codeMark: "bg-code-mark rounded-md py-1 px-1.5 font-mono text-xs mx-1",
+  codeBlock: "bg-code-mark rounded-md p-4 mb-4 text-sm font-mono overflow-x-scroll",
+  link: "text-link underline decoration-[0.025rem] decoration-solid",
+  paragraph: "text-base mb-2 leading-relaxed",
+  listItem: "mb-1 leading-relaxed",
+  bulletList: "list-disc   pl-4",
+  orderedList: "list-decimal pl-4",
+  taskList: "flex not-prose pl-2",
+  taskItem: "flex items-start gap-1",
+};
