@@ -12,7 +12,7 @@ export const editorClasses = {
   heading3: "text-xl font-semibold mt-6 mb-2 tracking-tight",
   horizontalRule: "border-t border-border my-2",
   codeMark: "bg-code-mark rounded-md py-1 px-1.5 font-mono text-xs mx-1",
-  codeBlock: "bg-code-mark rounded-md p-4 mb-4 text-sm font-mono",
+  codeBlock: "bg-neutral-900 text-sm rounded-2xl p-4 border border-neutral-800 shadow-xs overflow-x-auto",
   link: "text-link underline decoration-[0.025rem] decoration-solid",
   paragraph: "text-base mb-2 leading-relaxed",
   listItem: "mb-1 leading-relaxed",

@@ -164,7 +164,7 @@ const Sidebar = memo(({ nodes, selectedItem, setSelectedItem, isOpen, setIsOpen 
             {isOpen && (
               <div className="flex-shrink-0 border-t border-white/10 px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-sidebar-accent-foreground text-sm font-medium">Footer Content</span>
+                  <span className="text-sidebar-accent-foreground text-sm font-medium">System Design</span>
                 </div>
               </div>
             )}

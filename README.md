@@ -5,3 +5,15 @@ This template should help get you started developing with Tauri, React and Types
 ## Recommended IDE Setup
 
 - [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+
+
+Run using: 
+```
+pnpm tauri dev
+```
+
+
+
+Opening the Web Inspector
+You can open the Web Inspector to debug your application by performing a right-click on the webview and clicking “Inspect” or using the Ctrl + Shift + I shortcut on Windows and Linux or Cmd + Option + I shortcut on macOS.
+

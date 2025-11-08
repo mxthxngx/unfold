@@ -1,7 +1,3 @@
-#![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
-)]
 use tauri::Manager;
 use window_vibrancy::*;
 
@@ -9,14 +5,14 @@ mod commands;
 mod services; 
 mod models;    
 
-use commands::layout_commands::{get_final_layout, save_custom_layout};
+use commands::layout_commands::{get_layout_settings, save_layout_settings};
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
-            get_final_layout,
-            save_custom_layout
+            get_layout_settings,
+            save_layout_settings
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

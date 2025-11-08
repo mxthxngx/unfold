@@ -1,21 +1,16 @@
 use crate::models::layout::Layout;
-use crate::services::layout_service::{load_layout, merge_layout, ensure_custom_layout_exists};
-use std::fs;
+use crate::services::layout_service::{load_user_layout, save_user_layout};
 
+/// Gets the user layout settings from AppData, or returns default if not saved yet
 #[tauri::command]
-pub fn get_final_layout() -> Layout {
-    ensure_custom_layout_exists();
-
-    let default_layout = load_layout("src-tauri/resources/default-layout.json");
-    let custom_layout = load_layout("src-tauri/resources/custom-layout.json");
-
-    merge_layout(default_layout, custom_layout)
+pub fn get_layout_settings(app: tauri::AppHandle) -> Result<Layout, String> {
+    load_user_layout(&app)
 }
 
+/// Saves user layout configuration to AppData.
 #[tauri::command]
-pub fn save_custom_layout(layout: Layout) -> Result<(), String> {
-    let json = serde_json::to_string_pretty(&layout).map_err(|e| e.to_string())?;
-    fs::write("src-tauri/resources/custom-layout.json", json)
-        .map_err(|e| e.to_string())?;
+pub fn save_layout_settings(app: tauri::AppHandle, layout: Layout) -> Result<(), String> {
+    save_user_layout(&app, &layout)?;
+    println!("Saved layout settings: {:?}", layout);
     Ok(())
 }

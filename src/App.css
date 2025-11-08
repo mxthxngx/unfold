@@ -156,3 +156,10 @@ html, body { background: transparent !important;
 .ProseMirror:focus {
   outline: none;
 }
+
+
+::selection{
+      background-color: #00468b77; 
+      color: #86c3ff;
+
+}
