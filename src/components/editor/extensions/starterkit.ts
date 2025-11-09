@@ -4,6 +4,7 @@ import { cx } from "class-variance-authority";
 
 export const starterKit = StarterKit.configure({
     heading: false,
+    document: false,
     trailingNode: false,
     bold: {
         HTMLAttributes: {

@@ -5,12 +5,14 @@ import { TrailingNode } from "@tiptap/extensions";
 import "./styles/drag-handle.css";
 import { starterKit } from './extensions/starterkit';
 import CustomKeymap from "./extensions/custom-keymap";
+import { DocumentExtension } from "./extensions/document";
 
 function Editor() {
     const editor = useEditor({
         extensions:[
-          HeadingExtension,
           starterKit,
+          HeadingExtension,
+          DocumentExtension,
           CustomKeymap,
           TrailingNode.configure({
                  node: "paragraph",

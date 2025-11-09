@@ -15,7 +15,15 @@
       "enable": false,
       "scope": []
     },
-    "capabilities": ["default"],
+    "capabilities": [{
+      "identifier": "draggable-window",
+      "windows": [
+        "*"
+      ],
+      "permissions": [
+        "core:window:allow-start-dragging"
+      ]
+    }],
     "dangerousDisableAssetCspModification": false,
     "freezePrototype": false,
     "pattern": {
