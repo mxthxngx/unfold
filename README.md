@@ -17,3 +17,6 @@ pnpm tauri dev
 Opening the Web Inspector
 You can open the Web Inspector to debug your application by performing a right-click on the webview and clicking “Inspect” or using the Ctrl + Shift + I shortcut on Windows and Linux or Cmd + Option + I shortcut on macOS.
 
+In the layout settings page, I also want to add options to:
+	1.	Show the page title in the sidebar when it’s collapsed.
+	2.	Fully collapse the sidebar.

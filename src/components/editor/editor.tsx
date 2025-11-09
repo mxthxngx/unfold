@@ -1,25 +1,17 @@
-import Text from '@tiptap/extension-text';
-import Code from '@tiptap/extension-code';
 import { EditorContent, useEditor } from "@tiptap/react";
 import { HeadingExtension } from './extensions/heading';
-import { BoldExtension } from './extensions/bold';
-import { BlockquoteNodeExtension } from './extensions/blockquote';
-import { CodeBlockExtension } from './extensions/code-block';
+import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { TrailingNode } from "@tiptap/extensions";
-import { DocumentExtension } from './extensions/document';
-import { ParagraphExtension } from './extensions/paragraph';
+import "./styles/drag-handle.css";
+import { starterKit } from './extensions/starterkit';
+import CustomKeymap from "./extensions/custom-keymap";
 
 function Editor() {
     const editor = useEditor({
         extensions:[
-          BoldExtension,
-          BlockquoteNodeExtension,
-          Code,
-          CodeBlockExtension,
-          DocumentExtension,
           HeadingExtension,
-          ParagraphExtension,
-          Text,
+          starterKit,
+          CustomKeymap,
           TrailingNode.configure({
                  node: "paragraph",
                  notAfter: ["paragraph"],
@@ -31,10 +23,23 @@ function Editor() {
             blockSeparator: "\n",
           },
         },
+        editorProps: {
+          attributes: {
+            class: 'w-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
+          },
+        },
     })
+    
+    if (!editor) {
+        return null;
+    }
+    
     return (
-        <div className="h-screen">
-          <EditorContent editor={editor} className='w-full h-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full' />
+        <div className="h-screen relative">
+          <DragHandle editor={editor} className="drag-handle">
+            <span className="sr-only" aria-hidden="true" />
+          </DragHandle>
+          <EditorContent editor={editor} />
         </div>
     );
 }

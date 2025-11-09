@@ -7,7 +7,6 @@
   ],
   "permissions": [
     "fs:default",
-    "fs:allow-write-text-file",
-    "core:window:allow-start-dragging"
+    "fs:allow-write-text-file"
   ]
 }

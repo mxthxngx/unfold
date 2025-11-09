@@ -1,5 +1,5 @@
 import Heading from "@tiptap/extension-heading";
-import { editorClasses } from "../styles/extensions";
+import { editorClasses } from "../styles/extension-styles";
 import { mergeAttributes } from "@tiptap/react";
 
 export const HeadingExtension = Heading.extend({

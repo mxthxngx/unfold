@@ -32,6 +32,7 @@
       "label": "main",
       "maximized": true,
       "transparent": true,
+      "dragDropEnabled": false,
       "titleBarStyle": "Overlay",
       "hiddenTitle": true,
       "title": "Unfold",
