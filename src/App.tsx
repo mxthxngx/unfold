@@ -37,7 +37,7 @@ function LayoutInitializer() {
     );
   }
 
-  const initialLayout = layout || { sidebar_position: 'left' };
+  const initialLayout = layout || { sidebar_position: 'right' };
 
   return (
     <LayoutProvider

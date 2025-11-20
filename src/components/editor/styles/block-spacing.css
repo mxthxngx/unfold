@@ -1,0 +1,9 @@
+.editor-block-spacing {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Use this to remove per-block margins so the visual gap is created by the container gap */
+.editor-block-spacing [data-id] {
+  margin: 0 !important;
+}
