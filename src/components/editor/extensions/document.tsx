@@ -1,5 +1,5 @@
 import Document from "@tiptap/extension-document";
 
 export const DocumentExtension = Document.extend({
-  content: "heading block*",
+  content: "title block*",
 });

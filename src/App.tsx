@@ -1,16 +1,22 @@
 import "./App.css";
 import { useLayoutConfig } from "./hooks/use-layout-config";
 import { LayoutProvider } from "./contexts/LayoutContext";
-import Editor from "./components/editor/editor";
-import EditorLayout from "./layout/editor-layout";
+import { RouterProvider } from "@tanstack/react-router";
+import { router } from "./router";
+import { FileSystemProvider } from "./contexts/FileSystemContext";
 
 function AppContent() {
+  return <AppRouter />;
+}
+
+function AppRouter() {
   return (
-    <EditorLayout>
-      <Editor />
-    </EditorLayout>
+    <FileSystemProvider>
+      <RouterProvider router={router} />
+    </FileSystemProvider>
   );
 }
+
 
 function LayoutInitializer() {
   const { layout, isLoading, error, saveLayout } = useLayoutConfig();

@@ -4,6 +4,7 @@ import type { SelectionRange } from '@tiptap/pm/state'
 import { findElementNextToCoords } from './find-next-element-from-cursor'
 import { cloneElement } from './clone-element'
 import { removeNode } from './remove-node'
+import {getInnerCoords} from "./get-inner-coords";
 
 function getDragHandleRanges(event: DragEvent, editor: Editor): SelectionRange[] {
   const { doc } = editor.view.state
@@ -91,10 +92,28 @@ export function dragHandler(event: DragEvent, editor: Editor) {
   // tell ProseMirror the dragged content
   view.dragging = { slice, move: true }
 
+  // Add dragging class to editor to show highlight
+  view.dom.classList.add('dragging')
+
   tr.setSelection(selection)
 
   view.dispatch(tr)
 
-  // clean up
-  document.addEventListener('drop', () => removeNode(wrapper), { once: true })
+  // Helper to remove drop cursor
+  const removeDropCursor = () => {
+    const dropCursor = view.dom.querySelector('.ProseMirror-dropcursor')
+    if (dropCursor) {
+      dropCursor.remove()
+    }
+  }
+
+  // Clean up dragging class and wrapper on drop
+  const cleanup = () => {
+    view.dom.classList.remove('dragging')
+    removeDropCursor()
+    removeNode(wrapper)
+  }
+  
+  document.addEventListener('drop', cleanup, { once: true })
+  document.addEventListener('dragend', cleanup, { once: true })
 }

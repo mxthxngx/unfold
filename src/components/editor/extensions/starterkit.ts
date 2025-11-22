@@ -52,9 +52,15 @@ export const starterKit = StarterKit.configure({
                 class: cx(editorClasses.paragraph),
             },
         },
+        // TODO: fix this, its staying longer than it should
     dropcursor: {
-      width: 4,
-      color: "#70CFF8",
-      class: "bg-red-500",
+      width: 2,
+      color: "#c17bff",
+      class: "ProseMirror-dropcursor",
     },
+    link:{
+        HTMLAttributes: {
+            class: cx(editorClasses.link),
+        },
+    }
 });

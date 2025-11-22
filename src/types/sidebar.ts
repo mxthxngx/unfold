@@ -1,20 +1,20 @@
 export interface SidebarProps {
-  selectedItem?: string;
-  onSelectItem?: (item: string) => void;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
 export interface TreeItemProps {
-  name: string;
-  isExpanded?: boolean;
-  isSelected?: boolean;
-  hasChildren?: boolean;
-  onClick?: (rect?: DOMRect) => void;
-  onExpandClick?: () => void;
-  children?: React.ReactNode;
-  level?: number;
+  node: Node;
+  level: number;
+  isOpen: boolean;
+  selectedItem: string | null;
 }
 
 export interface Node {
+  id: string;
   name: string;
+  content?: string;
+  parentId?: string;
   nodes?: Node[];
+  isOpen?: boolean;
 }

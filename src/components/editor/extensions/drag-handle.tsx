@@ -17,6 +17,7 @@ export type DragHandleProps = Omit<Optional<DragHandlePluginProps, 'pluginKey'>,
   className?: string
   onNodeChange?: (data: { node: Node | null; editor: Editor; pos: number }) => void
   children: ReactNode
+  shouldShow?: (node: Node, pos: number) => boolean
 }
 
 export const DragHandle = (props: DragHandleProps) => {
@@ -29,6 +30,7 @@ export const DragHandle = (props: DragHandleProps) => {
     onElementDragStart,
     onElementDragEnd,
     computePositionConfig = defaultComputePositionConfig,
+    shouldShow,
   } = props
   const [element, setElement] = useState<HTMLDivElement | null>(null)
   const plugin = useRef<Plugin | null>(null)
@@ -63,6 +65,7 @@ export const DragHandle = (props: DragHandleProps) => {
         onElementDragStart,
         onElementDragEnd,
         onNodeChange,
+        shouldShow,
       })
       plugin.current = initPlugin.plugin
 
@@ -77,7 +80,7 @@ export const DragHandle = (props: DragHandleProps) => {
         initPlugin = null
       }
     }
-  }, [element, editor, onNodeChange, pluginKey, computePositionConfig, onElementDragStart, onElementDragEnd])
+  }, [element, editor, onNodeChange, pluginKey, computePositionConfig, onElementDragStart, onElementDragEnd, shouldShow])
 
   return (
     <div className={className} style={{ visibility: 'hidden', position: 'absolute' }} ref={setElement}>

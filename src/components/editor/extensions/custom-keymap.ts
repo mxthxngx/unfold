@@ -14,8 +14,18 @@ declare module "@tiptap/core" {
   }
 }
 
-const CustomKeymap = Extension.create({
+interface CustomKeymapOptions {
+  selectAllKey: string;
+}
+
+const CustomKeymap = Extension.create<CustomKeymapOptions>({
   name: "CustomKeymap",
+
+  addOptions() {
+    return {
+      selectAllKey: "Mod-a",
+    };
+  },
 
   addCommands() {
     return {
@@ -36,7 +46,7 @@ const CustomKeymap = Extension.create({
 
   addKeyboardShortcuts() {
     return {
-      "Mod-a": ({ editor }) => {
+      [this.options.selectAllKey]: ({ editor }) => {
         const { state } = editor;
         const { tr } = state;
         const startSelectionPos = tr.selection.from;

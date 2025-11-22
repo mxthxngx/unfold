@@ -1,11 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&family=Lexend:wght@100..900&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap");
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 @plugin "@tailwindcss/typography";
 
 html, body { background: transparent !important;
 }
 :root {
-  --background: rgba(0, 0, 0, 0.5);
+  --background: rgba(14, 14, 17, 0.95);
   --background-solid: #0f0f0f;
   --bright-highlight: rgba(229, 227, 227, 0.9);
   --foreground: #f7f2f2;
@@ -43,9 +46,16 @@ html, body { background: transparent !important;
   --sidebar-ring: #343434;
   --sidebar-foreground-active: #d9d9d9;
   --sidebar-tab-accent: rgb(19, 19, 19);
-  --sidebar-container-bg: rgba(0, 0, 0, 0.2);
+  --sidebar-container-bg: #0E0E11;
+  --sidebar-container-border: #1A1A1A;
+  --sidebar-foreground: #C6C6C6;
+  --sidebar-foreground-active: #f7f2f2;
+  --sidebar-accent-foreground: #f7f2f2;
+  --sidebar-selected-bg: #18191a;
+  --sidebar-item-hover-bg: #18191a;
+  --sidebar-icon-hover-bg: #0f0f11;
+  --sidebar-selection-indicator: #8b8a8d;
   --icon-hover: rgba(25, 25, 25, 0.585);
-  --sidebar-container-border: rgba(255, 255, 255, 0.08);
   --unselected-icon: #8e8d8d;
   --code-mark: rgba(16, 15, 18, 1);
   --link: #f7f2f2;
@@ -53,7 +63,6 @@ html, body { background: transparent !important;
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "Google Sans Code", monospace;
 }
-
 
 .light {
   /* Light mode (when explicitly toggled) */
@@ -147,6 +156,10 @@ html, body { background: transparent !important;
   --color-code-mark: var(--code-mark);
   --color-sidebar-container-bg: var(--sidebar-container-bg);
   --color-sidebar-container-border: var(--sidebar-container-border);
+  --color-sidebar-selected-bg: var(--sidebar-selected-bg);
+  --color-sidebar-item-hover-bg: var(--sidebar-item-hover-bg);
+  --color-sidebar-icon-hover-bg: var(--sidebar-icon-hover-bg);
+  --color-sidebar-selection-indicator: var(--sidebar-selection-indicator);
   --color-icon-hover: var(--icon-hover);
 }
 
@@ -159,7 +172,52 @@ html, body { background: transparent !important;
   outline: none;
 }
 
-::selection {
-  color: #aa83ff;
-  background-color: rgba(26, 22, 37, 0.808);
+.ProseMirror {
+  caret-color: #f7f2f2 !important;
+}
+
+.ProseMirror * {
+  caret-color: #f7f2f2 !important;
+}
+
+.ProseMirror {
+  line-height: 1.2 !important;
+}
+
+::selection { 
+  color: #c17bff;
+  background: rgba(124, 58, 237, 0.061);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.dark { --sidebar: hsl(240 5.9% 10%); --sidebar-foreground: hsl(240 4.8% 95.9%); --sidebar-primary: hsl(224.3 76.3% 48%); --sidebar-primary-foreground: hsl(0 0% 100%); --sidebar-accent: hsl(240 3.7% 15.9%); --sidebar-accent-foreground: hsl(240 4.8% 95.9%); --sidebar-border: hsl(240 3.7% 15.9%); --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+ }
+  body {
+    @apply bg-background text-foreground;
+ }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46; /* zinc-700 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b; /* zinc-600 */
 }

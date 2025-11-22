@@ -7,20 +7,41 @@ import { starterKit } from './extensions/starterkit';
 import CustomKeymap from "./extensions/custom-keymap";
 import { DocumentExtension } from "./extensions/document";
 import { DragHandle } from "./extensions/drag-handle";
+import { DragHandleButton } from "./components/drag-handle-button";
+import { useParams } from "@tanstack/react-router";
+import { useFileSystem } from "@/contexts/FileSystemContext";
+import { useSettings } from "@/hooks/use-settings";
+import { DocumentTitle } from "./extensions/document-title";
+import { PasteHandler } from "./extensions/paste-handler";
 
 function Editor() {
+    const { fileId } = useParams({ from: '/files/$fileId' });
+    const { getNode, updateNodeContent } = useFileSystem();
+    const file = fileId ? getNode(fileId) : null;
+    const { settings } = useSettings();
+
     const editor = useEditor({
         extensions:[
           starterKit,
+          DocumentTitle,
           HeadingExtension,
           DocumentExtension,
-          CustomKeymap,
+          PasteHandler,
+          CustomKeymap.configure({
+            selectAllKey: settings.keybindings.selectAll,
+          }),
           TrailingNode.configure({
                  node: "paragraph",
                  notAfter: ["paragraph"],
           }),
         ],
         autofocus:true,
+        content: file?.content,
+        onUpdate: ({ editor }) => {
+          if (fileId) {
+            updateNodeContent(fileId, editor.getHTML());
+          }
+        },
         coreExtensionOptions: {
           clipboardTextSerializer: {
             blockSeparator: "\n",
@@ -28,22 +49,39 @@ function Editor() {
         },
         editorProps: {
           attributes: {
-            class: 'w-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
+            class: 'w-full outline-none border-none p-6 pt-12 pb-24 text-foreground min-h-full',
           },
         },
-    })
+    });
     
     if (!editor) {
         return null;
     }
 
     return (
-        <div className="relative max-h-screen h-full flex flex-col">
-          <DragHandle editor={editor}>
-            <span className="sr-only" aria-hidden="true" />
+        <div className="">
+          <DragHandle 
+            editor={editor} 
+            shouldShow={(_node, pos) => {
+              // Don't show for first position
+              if (pos <= 0) return false;
+              
+              const { doc } = editor.state;
+              const docText = doc.textContent.trim();
+              
+              // Don't show if document is empty or only whitespace
+              if (!docText || docText.length === 0) return false;
+              
+              // Don't show if document has only one empty paragraph (default state)
+              if (doc.childCount === 1 && doc.firstChild?.textContent === '') return false;
+              
+              return true;
+            }}
+          >
+            <DragHandleButton />
           </DragHandle>
 
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+          <div className="">
             <EditorContent editor={editor} />
           </div>
         </div>

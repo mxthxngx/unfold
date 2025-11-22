@@ -61,6 +61,7 @@ export interface DragHandlePluginProps {
   onElementDragStart?: (e: DragEvent) => void
   onElementDragEnd?: (e: DragEvent) => void
   computePositionConfig?: ComputePositionConfig
+  shouldShow?: (node: Node, pos: number) => boolean
 }
 
 export const dragHandlePluginDefaultKey = new PluginKey('dragHandle')
@@ -73,6 +74,7 @@ export const DragHandlePlugin = ({
   onNodeChange,
   onElementDragStart,
   onElementDragEnd,
+  shouldShow,
 }: DragHandlePluginProps) => {
   const wrapper = document.createElement('div')
   let locked = false
@@ -317,19 +319,16 @@ export const DragHandlePlugin = ({
               currentNodePos = -1
               onNodeChange?.({ editor, node: null, pos: -1 })
 
-              // We want to still continue with other keydown events.
               return false
             }
 
             return false
           },
           mouseleave(_view, e) {
-            // Do not hide open popup on mouseleave.
             if (locked) {
               return false
             }
 
-            // If e.target is not inside the wrapper, hide.
             if (e.target && !wrapper.contains(e.relatedTarget as HTMLElement)) {
               hideHandle()
 
@@ -343,13 +342,10 @@ export const DragHandlePlugin = ({
           },
 
           mousemove(view, e) {
-            // console.log('DragHandlePlugin: mousemove')
-            // Do not continue if popup is not initialized or open.
             if (!element || locked) {
               return false
             }
 
-            // Store latest mouse coords and schedule a single RAF per frame
             pendingMouseCoords = { x: e.clientX, y: e.clientY }
 
             if (rafId) {
@@ -408,6 +404,11 @@ export const DragHandlePlugin = ({
 
                 // Set nodes clientRect.
                 repositionDragHandle(domNode as Element)
+
+                if (currentNode && shouldShow && !shouldShow(currentNode, currentNodePos)) {
+                  hideHandle()
+                  return
+                }
 
                 showHandle()
               }

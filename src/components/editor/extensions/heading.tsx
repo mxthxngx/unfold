@@ -5,7 +5,7 @@ import { mergeAttributes } from "@tiptap/react";
 export const HeadingExtension = Heading.extend({
   addOptions() {
     return {
-      levels: [1, 2, 3],
+      levels: [2, 3],
       HTMLAttributes: {},
     };
   },

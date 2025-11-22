@@ -1,58 +1,89 @@
-
-import React, { useState, useCallback } from 'react';
-import Sidebar, { sampleData } from "../components/sidebar/sidebar";
-import Titlebar from "../components/titlebar/titlebar";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
+import Sidebar from "../components/sidebar/sidebar";
+import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
+import { useSettings } from '@/hooks/use-settings';
 
 function EditorLayout({children}: {children?: React.ReactNode}) {
-    const [selectedItem, setSelectedItem] = useState<string>('');
     const [isOpen, setIsOpen] = useState<boolean>(true);
     const { layout } = useLayout();
+    const { settings } = useSettings();
     
-    const handleSelectItem = useCallback((item: string) => {
-        setSelectedItem(item);
-    }, []);
-
     const sidebarPosition = layout.sidebar_position || 'left';
     const isSidebarLeft = sidebarPosition === 'left';
 
+    // Keyboard shortcut handler for sidebar toggle
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const binding = settings.keybindings.toggleSidebar.toLowerCase();
+            const parts = binding.split('-');
+            const requiresMod = parts.includes('mod');
+            const key = parts[parts.length - 1];
+
+            if (requiresMod && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === key) {
+                e.preventDefault();
+                setIsOpen(!isOpen);
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [isOpen, setIsOpen, settings.keybindings.toggleSidebar]);
+
     return (
-        <div className="flex flex-col relative bg-background h-screen w-screen">
-            <div className="flex-1 flex">
+        <div className="flex flex-col relative bg-background h-screen w-screen backdrop-blur-xl"  data-tauri-drag-region>
+            {/* Top Toolbar */}
+            <Toolbar 
+                isSidebarOpen={isOpen}
+                onToggleSidebar={() => setIsOpen(!isOpen)}
+            />
+            
+            <div className="flex-1 flex overflow-hidden">
                 {/* Sidebar - Left Position */}
                 {isSidebarLeft && (
-                    <div className="w-80 m-1.5 flex transition-all duration-500 ease-out">
+                    <motion.div 
+                        className="flex"
+                        animate={{
+                            width: isOpen ? 240 : 0
+                        }}
+                        transition={{
+                            duration: 0.25,
+                            ease: [0.4, 0, 0.2, 1]
+                        }}
+                        style={{ overflow: 'hidden' }}
+                    >
                         <Sidebar
-                            selectedItem={selectedItem}
-                            setSelectedItem={handleSelectItem}
                             isOpen={isOpen}
                             setIsOpen={setIsOpen}
-                            nodes={sampleData}
                         />
-                        <Titlebar />
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Main Content Area */}
-                <div className={`
-                    flex-1 border-4xl overflow-hidden
-                    transition-all duration-500 ease-out my-0
-                `}>
-                    {children}
+                <div className="flex-1 overflow-y-auto flex justify-center">
+                    <div className="w-full max-w-4xl min-h-full">
+                        {children}
+                    </div>
                 </div>
 
                 {/* Sidebar - Right Position */}
                 {!isSidebarLeft && (
-                    <div className="w-80 m-1.5 flex transition-all duration-500 ease-out">
-                        <Titlebar />
+                    <motion.div 
+                        className="flex"
+                        animate={{
+                            width: isOpen ? 240 : 0
+                        }}
+                        transition={{
+                            duration: 0.25,
+                            ease: [0.4, 0, 0.2, 1]
+                        }}
+                        style={{ overflow: 'hidden' }}
+                    >
                         <Sidebar
-                            selectedItem={selectedItem}
-                            setSelectedItem={handleSelectItem}
                             isOpen={isOpen}
                             setIsOpen={setIsOpen}
-                            nodes={sampleData}
                         />
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>
