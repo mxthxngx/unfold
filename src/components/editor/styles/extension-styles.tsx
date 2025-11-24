@@ -1,6 +1,6 @@
 export const editorClasses = {
   documentTitle:
-    "bg-background text-[2.5em] font-bold mt-[.5em] mb-[0.5em] tracking-tight pe-2",
+    "bg-[rgba(14,14,17,0.01)] text-[2.5em] font-bold mt-[.5em] mb-[0.5em] tracking-tight pe-2",
 
   blockquote:
     "border-l-[3px] border-zinc-700 pl-6 pr-4 py-2 my-4 italic text-zinc-300 bg-zinc-900/50 rounded-r-md",

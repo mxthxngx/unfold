@@ -101,9 +101,15 @@ export function dragHandler(event: DragEvent, editor: Editor) {
 
   // Helper to remove drop cursor
   const removeDropCursor = () => {
-    const dropCursor = view.dom.querySelector('.ProseMirror-dropcursor')
-    if (dropCursor) {
-      dropCursor.remove()
+    const el = document.querySelector(".ProseMirror-dropcursor") as HTMLElement;
+    if (el) {
+      el.style.transition = "opacity 0.5s ease";
+      requestAnimationFrame(() => {
+        el.style.opacity = "0";
+      });
+      setTimeout(() => {
+        el.remove();
+      }, 500);
     }
   }
 
