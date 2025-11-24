@@ -1,6 +1,21 @@
 import { Node } from '../types/sidebar';
 
-export const INITIAL_DATA: Node[] = [
+const sortNodes = (nodes: Node[]): Node[] => {
+  if (!nodes || nodes.length === 0) {
+    return [];
+  }
+
+  // Sort the current level of nodes
+  const sortedCurrentLevel = [...nodes].sort((a, b) => a.name.localeCompare(b.name));
+
+  // Recursively sort children nodes
+  return sortedCurrentLevel.map(node => ({
+    ...node,
+    nodes: node.nodes ? sortNodes(node.nodes) : undefined,
+  }));
+};
+
+export const INITIAL_DATA: Node[] = sortNodes([
   {
     id: 'root-1',
     name: "System Design",
@@ -27,4 +42,4 @@ export const INITIAL_DATA: Node[] = [
       },
     ]
   }
-];
+]);

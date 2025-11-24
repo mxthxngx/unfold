@@ -13,6 +13,7 @@ import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
 import { DocumentTitle } from "./extensions/document-title";
 import { PasteHandler } from "./extensions/paste-handler";
+import { useEffect } from "react";
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
@@ -35,8 +36,8 @@ function Editor() {
                  notAfter: ["paragraph"],
           }),
         ],
-        autofocus:true,
-        content: file?.content,
+        autofocus: false,
+        content: file?.content || '',
         onUpdate: ({ editor }) => {
           if (fileId) {
             updateNodeContent(fileId, editor.getHTML());
@@ -53,6 +54,25 @@ function Editor() {
           },
         },
     });
+
+    // Update editor content when file changes
+    useEffect(() => {
+      if (editor && file) {
+        const currentContent = editor.getHTML();
+        const newContent = file.content || '';
+        if (currentContent !== newContent) {
+          editor.commands.setContent(newContent);
+        }
+
+        const isEmpty = !file.content || file.content === '<p></p>' || file.content.trim() === '';
+        
+        if (isEmpty) {
+          editor.commands.focus('start');
+        } else {
+          editor.commands.blur();
+        }
+      }
+    }, [editor, file?.id]); 
     
     if (!editor) {
         return null;

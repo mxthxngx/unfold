@@ -8,7 +8,7 @@ export const DragHandleButton = () => {
       "bg-zinc-900 hover:bg-zinc-800",
       "transition-colors duration-200",
       "cursor-grab active:cursor-grabbing",
-      "border:border-zinc-800/60"
+      "border border-zinc-800/60"
     )}>
       <MdDragIndicator className="h-4 w-4 text-zinc-500" />
     </div>

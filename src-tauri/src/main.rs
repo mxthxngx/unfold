@@ -18,20 +18,6 @@ fn main() {
             save_settings
         ])
         .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-
-            #[cfg(target_os = "macos")]
-            window_vibrancy::apply_vibrancy(
-                &window,
-                NSVisualEffectMaterial::UnderWindowBackground,
-                None,
-                Some(16.0)
-            ).expect("Unsupported platform!");
-
-            #[cfg(target_os = "windows")]
-            window_vibrancy::apply_acrylic(&window, Some((18, 18, 18, 125)))
-                .expect("Unsupported platform!");
-
             Ok(())
         })
         .run(tauri::generate_context!())

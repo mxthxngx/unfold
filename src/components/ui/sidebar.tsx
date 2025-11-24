@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { Ripple } from "@/components/ui/ripple"
 import {
   Sheet,
   SheetContent,
@@ -374,7 +375,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden pb-4",
         className
       )}
       {...props}
@@ -519,7 +520,10 @@ function SidebarMenuButton({
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
       {...props}
-    />
+    >
+      {props.children}
+      <Ripple />
+    </Comp>
   )
 
   if (!tooltip) {
@@ -643,7 +647,8 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        "border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5",
+        "border-sidebar-border flex ml-2.5 min-w-0 translate-x-px flex-col gap-1 pl-2.5 py-0.5 relative",
+        "before:absolute before:left-1 before:top-0 before:bottom-0 before:w-[2px] before:bg-sidebar-border before:rounded-full",
         "group-data-[collapsible=icon]:hidden",
         className
       )}
@@ -694,7 +699,10 @@ function SidebarMenuSubButton({
         className
       )}
       {...props}
-    />
+    >
+      {props.children}
+      <Ripple />
+    </Comp>
   )
 }
 

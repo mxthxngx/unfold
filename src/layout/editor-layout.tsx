@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import React, { useEffect } from 'react';
 import Sidebar from "../components/sidebar/sidebar";
 import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
 import { useSettings } from '@/hooks/use-settings';
+import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 
-function EditorLayout({children}: {children?: React.ReactNode}) {
-    const [isOpen, setIsOpen] = useState<boolean>(true);
+function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
     const { settings } = useSettings();
+    const { setOpen, open } = useSidebar();
     
     const sidebarPosition = layout.sidebar_position || 'left';
-    const isSidebarLeft = sidebarPosition === 'left';
 
     // Keyboard shortcut handler for sidebar toggle
     useEffect(() => {
@@ -23,71 +22,45 @@ function EditorLayout({children}: {children?: React.ReactNode}) {
 
             if (requiresMod && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === key) {
                 e.preventDefault();
-                setIsOpen(!isOpen);
+                setOpen(!open);
             }
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, setIsOpen, settings.keybindings.toggleSidebar]);
+    }, [open, setOpen, settings.keybindings.toggleSidebar]);
 
     return (
-        <div className="flex flex-col relative bg-background h-screen w-screen backdrop-blur-xl"  data-tauri-drag-region>
+        <div className="flex flex-col relative bg-background h-screen w-screen backdrop-blur-xl" data-tauri-drag-region>
             {/* Top Toolbar */}
-            <Toolbar 
-                isSidebarOpen={isOpen}
-                onToggleSidebar={() => setIsOpen(!isOpen)}
-            />
+            <Toolbar />
             
             <div className="flex-1 flex overflow-hidden">
                 {/* Sidebar - Left Position */}
-                {isSidebarLeft && (
-                    <motion.div 
-                        className="flex"
-                        animate={{
-                            width: isOpen ? 240 : 0
-                        }}
-                        transition={{
-                            duration: 0.25,
-                            ease: [0.4, 0, 0.2, 1]
-                        }}
-                        style={{ overflow: 'hidden' }}
-                    >
-                        <Sidebar
-                            isOpen={isOpen}
-                            setIsOpen={setIsOpen}
-                        />
-                    </motion.div>
-                )}
+                {sidebarPosition === 'left' && <Sidebar />}
 
                 {/* Main Content Area */}
-                <div className="flex-1 overflow-y-auto flex justify-center">
+                <SidebarInset className="flex-1 overflow-y-auto flex justify-center">
                     <div className="w-full max-w-4xl min-h-full">
                         {children}
                     </div>
-                </div>
+                </SidebarInset>
 
                 {/* Sidebar - Right Position */}
-                {!isSidebarLeft && (
-                    <motion.div 
-                        className="flex"
-                        animate={{
-                            width: isOpen ? 240 : 0
-                        }}
-                        transition={{
-                            duration: 0.25,
-                            ease: [0.4, 0, 0.2, 1]
-                        }}
-                        style={{ overflow: 'hidden' }}
-                    >
-                        <Sidebar
-                            isOpen={isOpen}
-                            setIsOpen={setIsOpen}
-                        />
-                    </motion.div>
-                )}
+                {sidebarPosition === 'right' && <Sidebar />}
             </div>
         </div>
     );
 }
 
+function EditorLayout({children}: {children?: React.ReactNode}) {
+    return (
+        <SidebarProvider defaultOpen={true}>
+            <EditorLayoutContent>
+                {children}
+            </EditorLayoutContent>
+        </SidebarProvider>
+    );
+}
+
 export default EditorLayout;
+

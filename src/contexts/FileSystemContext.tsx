@@ -45,7 +45,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       parentId: parentId || undefined,
       nodes: [],
       content: '',
-      isOpen: true
+      isOpen: false
     };
 
     setFileTree(prev => {

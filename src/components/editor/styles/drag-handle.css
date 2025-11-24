@@ -52,15 +52,6 @@
   > * + * {
     margin-top: 0.75em;
   }
-
-  [data-id] {
-    border: 3px solid #0d0d0d;
-    border-radius: 0.5rem;
-    margin: 1rem 0;
-    position: relative;
-    margin-top: 1.5rem;
-    padding: 2rem 1rem 1rem;
-  }
 }
 
 .drag-handle {

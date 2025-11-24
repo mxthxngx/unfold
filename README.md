@@ -20,3 +20,13 @@ You can open the Web Inspector to debug your application by performing a right-c
 In the layout settings page, I also want to add options to:
 	1.	Show the page title in the sidebar when it’s collapsed.
 	2.	Fully collapse the sidebar.
+
+Feature Ideas:
+
+lets also have an option to scroll between requirements on reaching the end of a given requirement in a page like google doc does between the different titles. 
+https://motion.dev/docs/react-scroll-animations 
+read the track element within viewport.
+
+
+TODOS: 
+* menu bar that comes in breadcrumbs on clicking the three dots dont look like its part of the theme
