@@ -60,7 +60,7 @@ const Sidebar = memo(function Sidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4 overflow-y-auto">
-        <SidebarMenu className="gap-2">
+        <SidebarMenu>
           {fileTree.map((node) => (
             <SidebarNodes key={node.id} node={node} selectedItem={fileId || null} level={0} />
           ))}
