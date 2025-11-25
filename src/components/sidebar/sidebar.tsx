@@ -88,11 +88,13 @@ const Sidebar = memo(function Sidebar() {
 export const SidebarNodes = memo(({ 
   node, 
   selectedItem, 
-  level = 0 
+  level = 0,
+  isFirstChild = false
 }: { 
   node: Node;
   selectedItem: null | string;
   level?: number;
+  isFirstChild?: boolean;
 }) => {
   const { toggleFolder, addNode } = useFileSystem();
   const navigate = useNavigate();
@@ -156,19 +158,20 @@ export const SidebarNodes = memo(({
         {node.isOpen && (
           <SidebarMenuSub 
             key={`sub-${node.id}`}
-            className="border-sidebar-border ml-2.5 pl-2.5 pt-1 pb-0 gap-1"
+            className="ml-2.5 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
           >
             {hasChildren ? (
-              node.nodes!.map((childNode) => (
+              node.nodes!.map((childNode, index) => (
                 <SidebarNodes
                   key={childNode.id}
                   node={childNode}
                   selectedItem={selectedItem}
                   level={level + 1}
+                  isFirstChild={index === 0}
                 />
               ))
             ) : (
-              <div className="text-sidebar-foreground/50 text-xs py-1 px-2">No sub notes</div>
+              <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
             )}
           </SidebarMenuSub>
         )}
@@ -178,7 +181,7 @@ export const SidebarNodes = memo(({
 
   // Nested items
   return (
-    <SidebarMenuSubItem>
+    <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1')}>
       <>
         <div className="group/sub-item-row flex items-center w-full gap-1">
           <div
@@ -220,19 +223,20 @@ export const SidebarNodes = memo(({
         {node.isOpen && (
           <SidebarMenuSub 
             key={`sub-${node.id}`}
-            className="border-sidebar-border ml-0 pl-2.5 pt-1 pb-0 gap-1"
+            className="ml-0 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
           >
             {hasChildren ? (
-              node.nodes!.map((childNode) => (
+              node.nodes!.map((childNode, index) => (
                 <SidebarNodes
                   key={childNode.id}
                   node={childNode}
                   selectedItem={selectedItem}
                   level={level + 1}
+                  isFirstChild={index === 0}
                 />
               ))
             ) : (
-              <div className="text-sidebar-foreground/50 text-xs py-1 px-2">No sub notes</div>
+              <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
             )}
           </SidebarMenuSub>
         )}
