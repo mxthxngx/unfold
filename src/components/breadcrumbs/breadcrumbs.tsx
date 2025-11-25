@@ -81,17 +81,17 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1 text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer outline-none">
+                <DropdownMenuTrigger className="flex items-center gap-1 text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer outline-none rounded-md px-1 py-0.5">
                   <BreadcrumbEllipsis className="size-4" />
                   <span className="sr-only">Toggle menu</span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuContent align="start" className="w-40">
                   {collapsedItems.map((node) => (
                     <DropdownMenuItem key={node.id} asChild>
                       <Link
                         to="/files/$fileId"
                         params={{ fileId: node.id }}
-                        className="w-full cursor-pointer text-xs"
+                        className="w-full cursor-pointer text-xs text-sidebar-foreground/80 hover:text-sidebar-foreground-active"
                       >
                         {node.name}
                       </Link>

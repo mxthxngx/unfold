@@ -1,6 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
-import { PiPlus } from 'react-icons/pi';
-import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
 import { Node } from '../../types/sidebar';
@@ -18,6 +17,7 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 
 
 const Sidebar = memo(function Sidebar() {
@@ -60,7 +60,7 @@ const Sidebar = memo(function Sidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4 overflow-y-auto">
-        <SidebarMenu className="gap-1">
+        <SidebarMenu className="gap-2">
           {fileTree.map((node) => (
             <SidebarNodes key={node.id} node={node} selectedItem={fileId || null} level={0} />
           ))}
@@ -76,7 +76,7 @@ const Sidebar = memo(function Sidebar() {
             onClick={handleGlobalAdd}
             className="flex items-center justify-center p-1.5 hover:opacity-70 shrink-0 relative overflow-hidden rounded-md"
           >
-            <PiPlus size={14} className="text-sidebar-foreground" />
+            <Plus size={14} className="text-sidebar-foreground" />
             <Ripple />
           </button>
         </div>
@@ -122,8 +122,9 @@ export const SidebarNodes = memo(({
           >
             <SidebarMenuButton
               isActive={isSelected}
+              size="sm"
               className={cn(
-                'py-1 px-2 text-sm w-full rounded-md',
+                'w-full rounded-md',
                 isSelected
                   ? 'bg-sidebar-selected-bg text-white font-medium'
                   : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg hover:text-white'
@@ -138,7 +139,7 @@ export const SidebarNodes = memo(({
               onClick={handleAddChild}
               className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
             >
-              <PiPlus size={14} />
+              <Plus size={14} className="text-sidebar-foreground" />
               <Ripple />
             </button>
 
@@ -146,7 +147,7 @@ export const SidebarNodes = memo(({
               onClick={handleToggle}
               className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
             >
-              {node.isOpen ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
+              {node.isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               <Ripple />
             </button>
           </div>
@@ -155,7 +156,7 @@ export const SidebarNodes = memo(({
         {node.isOpen && (
           <SidebarMenuSub 
             key={`sub-${node.id}`}
-            className="border-sidebar-border ml-2.5 pl-2.5 py-0.5 gap-1 mt-1"
+            className="border-sidebar-border ml-2.5 pl-2.5 pt-1 pb-0 gap-1"
           >
             {hasChildren ? (
               node.nodes!.map((childNode) => (
@@ -179,22 +180,23 @@ export const SidebarNodes = memo(({
   return (
     <SidebarMenuSubItem>
       <>
-        <div className="group/sub-item-row flex items-center w-full gap-1 mx-1">
+        <div className="group/sub-item-row flex items-center w-full gap-1">
           <div
   onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
   className="flex-1 min-w-0 cursor-pointer"
 >
-  <SidebarMenuSubButton
-    isActive={isSelected}
-    className={cn(
-      'py-1 px-2 text-sm w-full rounded-md ',
-      isSelected
-        ? 'bg-sidebar-selected-bg text-white font-medium'
-        : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg hover:text-white'
-    )}
-  >
-    <span className="truncate px-1 text-sm">{node.name}</span>
-  </SidebarMenuSubButton>
+    <SidebarMenuSubButton
+      isActive={isSelected}
+      size="sm"
+      className={cn(
+        'w-full rounded-md',
+        isSelected
+          ? 'bg-sidebar-selected-bg text-white font-medium'
+          : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg hover:text-white'
+      )}
+    >
+      <span className="truncate pl-2 text-xs">{node.name}</span>
+    </SidebarMenuSubButton>
 </div>
 
           <div className="flex items-center gap-0.5 opacity-0 group-hover/sub-item-row:opacity-100 shrink-0">
@@ -202,7 +204,7 @@ export const SidebarNodes = memo(({
               onClick={handleAddChild}
               className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
             >
-              <PiPlus size={14} />
+              <Plus size={14} className="text-sidebar-foreground" />
               <Ripple />
             </button>
 
@@ -210,7 +212,7 @@ export const SidebarNodes = memo(({
               onClick={handleToggle}
               className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
             >
-              {node.isOpen ? <FaChevronDown size={10} /> : <FaChevronRight size={10} />}
+              {node.isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               <Ripple />
             </button>
           </div>
@@ -218,7 +220,7 @@ export const SidebarNodes = memo(({
         {node.isOpen && (
           <SidebarMenuSub 
             key={`sub-${node.id}`}
-            className="border-sidebar-border ml-0 pl-2.5 py-0.5 gap-1 mt-1"
+            className="border-sidebar-border ml-0 pl-2.5 pt-1 pb-0 gap-1"
           >
             {hasChildren ? (
               node.nodes!.map((childNode) => (
