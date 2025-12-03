@@ -5,6 +5,8 @@ import { Ripple } from '@/components/ui/ripple';
 import { Node } from '../../types/sidebar';
 import { cn } from '@/lib/tiptap-utils';
 import { useFileSystem } from '@/contexts/FileSystemContext';
+import { useSidebarContextMenu } from '@/hooks/use-sidebar-context-menu';
+import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -17,6 +19,12 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 
 
@@ -72,13 +80,22 @@ const Sidebar = memo(function Sidebar() {
           <span className="text-sidebar-foreground text-sm font-medium truncate min-w-0">
             {spaceName}
           </span>
-          <button
-            onClick={handleGlobalAdd}
-            className="flex items-center justify-center p-1.5 hover:opacity-70 shrink-0 relative overflow-hidden rounded-md"
-          >
-            <Plus size={14} className="text-sidebar-foreground" />
-            <Ripple />
-          </button>
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleGlobalAdd}
+                  className="flex items-center justify-center p-1.5 hover:opacity-70 shrink-0 relative overflow-hidden rounded-md"
+                >
+                  <Plus size={14} className="text-sidebar-foreground" />
+                  <Ripple />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs">
+                Create Child Note {getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </SidebarFooter>
     </ShadcnSidebar>
@@ -96,11 +113,27 @@ export const SidebarNodes = memo(({
   level?: number;
   isFirstChild?: boolean;
 }) => {
-  const { toggleFolder, addNode } = useFileSystem();
+  const { toggleFolder, addNode, deleteNode } = useFileSystem();
   const navigate = useNavigate();
 
   const hasChildren = node.nodes && node.nodes.length > 0;
   const isSelected = selectedItem === node.id;
+
+  // Context menu handler
+  const { handleContextMenu } = useSidebarContextMenu({
+    nodeId: node.id,
+    onCreateChild: (nodeId) => {
+      const newId = addNode(nodeId);
+      navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    },
+    onDelete: (nodeId) => {
+      deleteNode(nodeId);
+      // Navigate to root or first available node if current node is deleted
+      if (selectedItem === nodeId) {
+        navigate({ to: '/' });
+      }
+    }
+  });
 
   const handleAddChild = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -117,7 +150,10 @@ export const SidebarNodes = memo(({
   if (level === 0) {
     return (
       <SidebarMenuItem>
-        <div className="group/item-row flex items-center w-full gap-1">
+        <div 
+          className="group/item-row flex items-center w-full gap-1"
+          onContextMenu={handleContextMenu}
+        >
           <div
             onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
             className="flex-1 min-w-0 cursor-pointer"
@@ -183,7 +219,10 @@ export const SidebarNodes = memo(({
   return (
     <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1')}>
       <>
-        <div className="group/sub-item-row flex items-center w-full gap-1">
+        <div 
+          className="group/sub-item-row flex items-center w-full gap-1"
+          onContextMenu={handleContextMenu}
+        >
           <div
   onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
   className="flex-1 min-w-0 cursor-pointer"

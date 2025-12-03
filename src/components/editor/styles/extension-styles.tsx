@@ -33,7 +33,7 @@ export const editorClasses = {
     "border-t border-zinc-700/60 my-6",
 
   codeMark:
-    "bg-code-mark-bg-dark text-code-mark-text-dark rounded-[4px] py-0.5 px-1.5 font-mono text-xs font-medium border border-zinc-700/60",
+    "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-[4px] py-0.5 px-1.5 font-mono text-xs font-medium border border-zinc-700/60",
 
   codeBlock:
     "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-lg p-5 border border-zinc-700/60 shadow-sm overflow-x-auto my-4",

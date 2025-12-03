@@ -6,14 +6,12 @@ import "./styles/block-spacing.css";
 import { starterKit } from './extensions/starterkit';
 import CustomKeymap from "./extensions/custom-keymap";
 import { DocumentExtension } from "./extensions/document";
+import { DocumentTitle } from "./extensions/document-title";
 import { DragHandle } from "./extensions/drag-handle";
 import { DragHandleButton } from "./components/drag-handle-button";
 import { useParams } from "@tanstack/react-router";
 import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
-import { DocumentTitle } from "./extensions/document-title";
-import { PasteHandler } from "./extensions/paste-handler";
-import { useEffect } from "react";
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
@@ -27,7 +25,6 @@ function Editor() {
           DocumentTitle,
           HeadingExtension,
           DocumentExtension,
-          PasteHandler,
           CustomKeymap.configure({
             selectAllKey: settings.keybindings.selectAll,
           }),
@@ -36,7 +33,7 @@ function Editor() {
                  notAfter: ["paragraph"],
           }),
         ],
-        autofocus: false,
+        autofocus:true,
         content: file?.content || '',
         onUpdate: ({ editor }) => {
           if (fileId) {
@@ -50,29 +47,10 @@ function Editor() {
         },
         editorProps: {
           attributes: {
-            class: 'w-full outline-none border-none p-6 pt-12 pb-24 text-foreground min-h-full',
+            class: 'w-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
           },
         },
     });
-
-    // Update editor content when file changes
-    useEffect(() => {
-      if (editor && file) {
-        const currentContent = editor.getHTML();
-        const newContent = file.content || '';
-        if (currentContent !== newContent) {
-          editor.commands.setContent(newContent);
-        }
-
-        const isEmpty = !file.content || file.content === '<p></p>' || file.content.trim() === '';
-        
-        if (isEmpty) {
-          editor.commands.focus('start');
-        } else {
-          editor.commands.blur();
-        }
-      }
-    }, [editor, file?.id]); 
     
     if (!editor) {
         return null;
@@ -101,7 +79,7 @@ function Editor() {
             <DragHandleButton />
           </DragHandle>
 
-          <div className="">
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
             <EditorContent editor={editor} />
           </div>
         </div>

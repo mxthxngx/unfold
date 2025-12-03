@@ -4,6 +4,7 @@ import { LayoutProvider } from "./contexts/LayoutContext";
 import { RouterProvider } from "@tanstack/react-router";
 import { router } from "./router";
 import { FileSystemProvider } from "./contexts/FileSystemContext";
+import { EditorProvider } from "./contexts/EditorContext";
 
 function AppContent() {
   return <AppRouter />;
@@ -12,7 +13,9 @@ function AppContent() {
 function AppRouter() {
   return (
     <FileSystemProvider>
-      <RouterProvider router={router} />
+      <EditorProvider>
+        <RouterProvider router={router} />
+      </EditorProvider>
     </FileSystemProvider>
   );
 }

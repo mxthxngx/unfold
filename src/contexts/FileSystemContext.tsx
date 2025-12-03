@@ -11,6 +11,7 @@ interface FileSystemContextType {
   getNode: (id: string) => Node | null;
   toggleFolder: (id: string) => void;
   getNodePath: (id: string) => Node[];
+  deleteNode: (id: string) => void;
 }
 
 const FileSystemContext = createContext<FileSystemContextType | undefined>(undefined);
@@ -150,6 +151,25 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     });
   }, []);
 
+  const deleteNode = useCallback((id: string) => {
+    setFileTree(prev => {
+      const removeNode = (nodes: Node[]): Node[] => {
+        return nodes.filter(node => {
+          if (node.id === id) {
+            // This node should be deleted
+            return false;
+          }
+          if (node.nodes) {
+            // Recursively remove from children
+            node.nodes = removeNode(node.nodes);
+          }
+          return true;
+        });
+      };
+      return removeNode(prev);
+    });
+  }, []);
+
   const getNodePath = useCallback((id: string): Node[] => {
     const path: Node[] = [];
     
@@ -176,7 +196,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   }, [fileTree]);
 
   return (
-    <FileSystemContext.Provider value={{ fileTree, spaceName, addNode, updateNodeContent, getNode, toggleFolder, getNodePath }}>
+    <FileSystemContext.Provider value={{ fileTree, spaceName, addNode, updateNodeContent, getNode, toggleFolder, getNodePath, deleteNode }}>
       {children}
     </FileSystemContext.Provider>
   );

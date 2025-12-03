@@ -4,11 +4,18 @@ import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
 import { useSettings } from '@/hooks/use-settings';
 import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
+import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
+
+import { useEditorContext } from '@/contexts/EditorContext';
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
     const { settings } = useSettings();
     const { setOpen, open } = useSidebar();
+    const { focusEditor } = useEditorContext();
+    
+    // Register global keyboard shortcuts for sidebar operations
+    useGlobalSidebarShortcuts();
     
     const sidebarPosition = layout.sidebar_position || 'left';
 
@@ -39,7 +46,10 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                 {sidebarPosition === 'left' && <Sidebar />}
 
                 {/* Main Content Area */}
-                <SidebarInset className="flex-1 overflow-y-auto flex justify-center">
+                <SidebarInset 
+                    className="flex-1 overflow-y-auto flex justify-center"
+                    onClick={focusEditor}
+                >
                     <div className="w-full max-w-4xl min-h-full">
                         {children}
                     </div>
