@@ -57,6 +57,11 @@ export const starterKit = StarterKit.configure({
       color: "#c17bff",
       class: "ProseMirror-dropcursor",
     },
+    horizontalRule: {
+        HTMLAttributes: {
+            class: cx(editorClasses.horizontalRule),
+        },
+    },
     link:{
         HTMLAttributes: {
             class: cx(editorClasses.link),

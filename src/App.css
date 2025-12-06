@@ -210,8 +210,8 @@ html, body { background: transparent !important;
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -219,10 +219,10 @@ html, body { background: transparent !important;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46; /* zinc-700 */
-  border-radius: 4px;
+  background: #27272a; /* zinc-800 */
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b; /* zinc-600 */
+  background: #3f3f46; /* zinc-700 */
 }

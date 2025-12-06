@@ -1,6 +1,7 @@
 import type { Editor } from '@tiptap/core'
 import { getSelectionRanges, NodeRangeSelection } from '@tiptap/extension-node-range'
 import type { SelectionRange } from '@tiptap/pm/state'
+import { NodeSelection } from '@tiptap/pm/state'
 import { findElementNextToCoords } from './find-next-element-from-cursor'
 import { cloneElement } from './clone-element'
 import { removeNode } from './remove-node'
@@ -61,7 +62,12 @@ export function dragHandler(event: DragEvent, editor: Editor) {
     })
   })
 
-  const ranges = empty || !isDragHandleWithinSelection ? dragHandleRanges : selectionRanges
+  let ranges = empty || !isDragHandleWithinSelection ? dragHandleRanges : selectionRanges
+
+  // Fallback for atomic nodes (e.g., horizontal rule) where getSelectionRanges may return empty
+  if (!ranges.length && view.state.selection instanceof NodeSelection) {
+    ranges = [{ $from: view.state.selection.$from, $to: view.state.selection.$to } as SelectionRange]
+  }
 
   if (!ranges.length) {
     return

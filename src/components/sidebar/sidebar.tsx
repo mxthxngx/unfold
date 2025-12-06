@@ -19,13 +19,8 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { AnimatedIcon } from '@/components/ui/animated-icon';
 
 
 const Sidebar = memo(function Sidebar() {
@@ -80,22 +75,16 @@ const Sidebar = memo(function Sidebar() {
           <span className="text-sidebar-foreground text-sm font-medium truncate min-w-0">
             {spaceName}
           </span>
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleGlobalAdd}
-                  className="flex items-center justify-center p-1.5 hover:opacity-70 shrink-0 relative overflow-hidden rounded-md"
-                >
-                  <Plus size={14} className="text-sidebar-foreground" />
-                  <Ripple />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="text-xs">
-                Create Child Note {getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <button
+            onClick={handleGlobalAdd}
+            title={`Create Child Note ${getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}`}
+            className="flex items-center justify-center hover:opacity-70 shrink-0 relative overflow-hidden rounded-md size-7"
+          >
+            <AnimatedIcon className="w-full h-full flex items-center justify-center">
+              <Plus size={14} strokeWidth={3}/>
+            </AnimatedIcon>
+            <Ripple />
+          </button>
         </div>
       </SidebarFooter>
     </ShadcnSidebar>
@@ -113,7 +102,7 @@ export const SidebarNodes = memo(({
   level?: number;
   isFirstChild?: boolean;
 }) => {
-  const { toggleFolder, addNode, deleteNode } = useFileSystem();
+  const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode } = useFileSystem();
   const navigate = useNavigate();
 
   const hasChildren = node.nodes && node.nodes.length > 0;
@@ -127,11 +116,16 @@ export const SidebarNodes = memo(({
       navigate({ to: '/files/$fileId', params: { fileId: newId } });
     },
     onDelete: (nodeId) => {
-      deleteNode(nodeId);
-      // Navigate to root or first available node if current node is deleted
+      // If the deleted node is the selected one, navigate to the previous visible node
       if (selectedItem === nodeId) {
-        navigate({ to: '/' });
+        const prevNodeId = getPreviousVisibleNode(nodeId);
+        if (prevNodeId) {
+          navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
+        } else {
+          navigate({ to: '/' });
+        }
       }
+      deleteNode(nodeId);
     }
   });
 
@@ -175,17 +169,21 @@ export const SidebarNodes = memo(({
           <div className="flex items-center gap-0.5 opacity-0 group-hover/item-row:opacity-100 shrink-0">
             <button
               onClick={handleAddChild}
-              className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
+              className="rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden size-6 flex items-center justify-center"
             >
-              <Plus size={14} className="text-sidebar-foreground" />
+              <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                <Plus size={14} strokeWidth={3}/>
+              </AnimatedIcon>
               <Ripple />
             </button>
 
             <button
               onClick={handleToggle}
-              className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
+              className="rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden size-6 flex items-center justify-center"
             >
-              {node.isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+              </AnimatedIcon>
               <Ripple />
             </button>
           </div>
@@ -244,17 +242,21 @@ export const SidebarNodes = memo(({
           <div className="flex items-center gap-0.5 opacity-0 group-hover/sub-item-row:opacity-100 shrink-0">
             <button
               onClick={handleAddChild}
-              className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
+              className="rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden size-6 flex items-center justify-center"
             >
-              <Plus size={14} className="text-sidebar-foreground" />
+              <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                <Plus size={14} strokeWidth={3} />
+              </AnimatedIcon>
               <Ripple />
             </button>
 
             <button
               onClick={handleToggle}
-              className="p-1 rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden"
+              className="rounded hover:bg-sidebar-item-hover-bg relative overflow-hidden size-6 flex items-center justify-center"
             >
-              {node.isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+              </AnimatedIcon>
               <Ripple />
             </button>
           </div>

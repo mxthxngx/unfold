@@ -9,7 +9,7 @@ export type FindElementNextToCoords = {
 }
 
 export const findElementNextToCoords = (options: FindElementNextToCoords) => {
-  const { x, y, direction = 'right', editor, bandHeight = 5 } = options
+  const { x, y, direction = 'right', editor, bandHeight = 20 } = options
 
   const rect = {
     top: y - bandHeight,

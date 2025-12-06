@@ -1,4 +1,6 @@
 import { EditorContent, useEditor } from "@tiptap/react";
+import { useEffect } from "react";
+import { useEditorContext } from "@/contexts/EditorContext";
 import { HeadingExtension } from './extensions/heading';
 import { TrailingNode } from "@tiptap/extensions";
 import "./styles/drag-handle.css";
@@ -18,6 +20,7 @@ function Editor() {
     const { getNode, updateNodeContent } = useFileSystem();
     const file = fileId ? getNode(fileId) : null;
     const { settings } = useSettings();
+    const { setEditor } = useEditorContext();
 
     const editor = useEditor({
         extensions:[
@@ -47,17 +50,39 @@ function Editor() {
         },
         editorProps: {
           attributes: {
-            class: 'w-full overflow-y-auto outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
+            class: 'w-full outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
           },
         },
     });
+
+    // Register editor instance
+    useEffect(() => {
+        setEditor(editor);
+        return () => setEditor(null);
+    }, [editor, setEditor]);
+
+    // Update content when file changes
+    useEffect(() => {
+        if (editor && file) {
+            // Only update if the content is different to avoid cursor jumping or loops
+            // For now, we assume if fileId changed, we must update.
+            // We can check if the editor content is different from file content, 
+            // but file content might be stale if we just typed.
+            // Ideally we only set content if we switched files.
+            // We can track previous fileId.
+            editor.commands.setContent(file.content || '');
+            if (!file.content || file.content.trim() === '') {
+                editor.commands.focus('start');
+            }
+        }
+    }, [fileId, editor]); // Only trigger when fileId changes (or editor instance)
     
     if (!editor) {
         return null;
     }
 
     return (
-        <div className="">
+        <div className="relative w-full">
           <DragHandle 
             editor={editor} 
             shouldShow={(_node, pos) => {
@@ -79,7 +104,7 @@ function Editor() {
             <DragHandleButton />
           </DragHandle>
 
-          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+          <div className="">
             <EditorContent editor={editor} />
           </div>
         </div>

@@ -47,7 +47,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 
                 {/* Main Content Area */}
                 <SidebarInset 
-                    className="flex-1 overflow-y-auto flex justify-center"
+                    className="flex-1 overflow-y-auto flex items-center"
                     onClick={focusEditor}
                 >
                     <div className="w-full max-w-4xl min-h-full">

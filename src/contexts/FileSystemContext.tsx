@@ -12,6 +12,7 @@ interface FileSystemContextType {
   toggleFolder: (id: string) => void;
   getNodePath: (id: string) => Node[];
   deleteNode: (id: string) => void;
+  getPreviousVisibleNode: (id: string) => string | null;
 }
 
 const FileSystemContext = createContext<FileSystemContextType | undefined>(undefined);
@@ -195,8 +196,37 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     return path;
   }, [fileTree]);
 
+  const getPreviousVisibleNode = useCallback((id: string): string | null => {
+    const flattenNodes = (nodes: Node[]): Node[] => {
+      let flat: Node[] = [];
+      for (const node of nodes) {
+        flat.push(node);
+        if (node.isOpen && node.nodes) {
+          flat = [...flat, ...flattenNodes(node.nodes)];
+        }
+      }
+      return flat;
+    };
+
+    const flatList = flattenNodes(fileTree);
+    const index = flatList.findIndex(node => node.id === id);
+
+    if (index > 0) {
+      return flatList[index - 1].id;
+    }
+    
+    // If it's the first node, return null (or maybe parent if we want to go up?)
+    // Logic: if index > 0 return previous. If index === 0, return null.
+    // If we want to support selecting parent when first child is deleted, that's handled by the flat list order 
+    // (parent comes before children).
+    // BUT if we are deleting the first child, the previous node IS the parent.
+    // So this logic holds.
+    
+    return null;
+  }, [fileTree]);
+
   return (
-    <FileSystemContext.Provider value={{ fileTree, spaceName, addNode, updateNodeContent, getNode, toggleFolder, getNodePath, deleteNode }}>
+    <FileSystemContext.Provider value={{ fileTree, spaceName, addNode, updateNodeContent, getNode, toggleFolder, getNodePath, deleteNode, getPreviousVisibleNode }}>
       {children}
     </FileSystemContext.Provider>
   );

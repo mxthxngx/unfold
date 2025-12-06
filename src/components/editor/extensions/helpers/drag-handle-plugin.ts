@@ -2,7 +2,7 @@ import { type ComputePositionConfig, computePosition } from '@floating-ui/dom'
 import type { Editor } from '@tiptap/core'
 import { isChangeOrigin } from '@tiptap/extension-collaboration'
 import type { Node } from '@tiptap/pm/model'
-import { type EditorState, type Transaction, Plugin, PluginKey } from '@tiptap/pm/state'
+import { type EditorState, type Transaction, NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
 import {
   absolutePositionToRelativePosition,
@@ -85,6 +85,11 @@ export const DragHandlePlugin = ({
   let rafId: number | null = null
   let pendingMouseCoords: { x: number; y: number } | null = null
 
+  const updateDraggableState = () => {
+    if (!element) return
+    element.draggable = !locked
+  }
+
   function hideHandle() {
     if (!element) {
       return
@@ -115,16 +120,30 @@ export const DragHandlePlugin = ({
     }
 
     computePosition(virtualElement, element, computePositionConfig).then(val => {
+      const handleHeight = 24 // 1.5rem min-height
+      let verticalOffset = 0
+
+      if (rect.height < handleHeight) {
+        verticalOffset = (rect.height - handleHeight) / 2
+      }
+
       Object.assign(element.style, {
         position: val.strategy,
         left: `${val.x}px`,
-        top: `${val.y}px`,
-        height: `${rect.height}px`,
+        top: `${val.y + verticalOffset}px`,
       })
     })
   }
 
   function onDragStart(e: DragEvent) {
+    // Ensure the current node is selected (helps atomic nodes like horizontal rule)
+    if (currentNode && currentNodePos >= 0) {
+      const { state, view } = editor
+      const nodeSelection = NodeSelection.create(state.doc, currentNodePos)
+      const tr = state.tr.setSelection(nodeSelection)
+      view.dispatch(tr)
+    }
+
     onElementDragStart?.(e)
     // Push this to the end of the event cue
     // Fixes bug where incorrect drag pos is returned if drag handle has position: absolute
@@ -174,6 +193,7 @@ export const DragHandlePlugin = ({
 
           if (isLocked !== undefined) {
             locked = isLocked
+            updateDraggableState()
           }
 
           if (hideDragHandle) {
@@ -226,7 +246,7 @@ export const DragHandlePlugin = ({
       },
 
       view: view => {
-        element.draggable = true
+        updateDraggableState()
         element.style.pointerEvents = 'auto'
 
         editor.view.dom.parentElement?.appendChild(wrapper)
@@ -247,12 +267,8 @@ export const DragHandlePlugin = ({
               return
             }
 
-            // Prevent element being draggend while being open.
-            if (locked) {
-              element.draggable = false
-            } else {
-              element.draggable = true
-            }
+            // Prevent element being draggend while being open or for blocked nodes.
+            updateDraggableState()
 
             // Recalculate popup position if doc has changend and drag handler is visible.
             if (view.state.doc.eq(oldState.doc) || currentNodePos === -1) {
@@ -396,6 +412,8 @@ export const DragHandlePlugin = ({
 
                 currentNode = outerNode
                 currentNodePos = outerNodePos
+                updateDraggableState()
+                updateDraggableState()
 
                 // Memorize relative position to retrieve absolute position in case of collaboration
                 currentNodeRelPos = getRelativePos(view.state, currentNodePos)

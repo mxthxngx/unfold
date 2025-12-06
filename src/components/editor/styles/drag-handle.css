@@ -55,13 +55,16 @@
 }
 
 .drag-handle {
-  position: fixed;
+  position: absolute;
   opacity: 1;
   transition: opacity ease-in 0.2s;
   border-radius: 0.25rem;
   z-index: 50;
   transform: translateX(-0.75rem); /* Add space between drag handle and text by moving it further left */
- max-height: 1.75em;
+  max-height: 1.75em;
+  min-height: 1.5rem;
+  display: flex;
+  align-items: center;
   &.hide {
     opacity: 0;
     pointer-events: none;

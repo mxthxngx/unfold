@@ -254,6 +254,8 @@ function Sidebar({
   )
 }
 
+import { AnimatedIcon } from "@/components/ui/animated-icon"
+
 function SidebarTrigger({
   className,
   onClick,
@@ -274,7 +276,9 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <AnimatedIcon className="w-full h-full flex items-center justify-center">
+        <PanelLeftIcon />
+      </AnimatedIcon>
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
