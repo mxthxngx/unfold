@@ -12,6 +12,7 @@ import {
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import { Menu, MenuItem } from "@tauri-apps/api/menu";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { cn } from '@/lib/tiptap-utils';
 
 const MAX_VISIBLE_ITEMS = 3; 
 
@@ -63,14 +64,16 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
 
   if (!fileId || path.length === 0) {
     return (
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-sidebar-foreground">
-              {spaceName}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
+      <Breadcrumb className="w-full">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1.5 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
+          <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-white/75 font-normal tracking-tight">
+                {spaceName}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </div>
       </Breadcrumb>
     );
   }
@@ -78,89 +81,92 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
   const shouldCollapse = path.length > MAX_VISIBLE_ITEMS;
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <span className="text-sidebar-foreground/70 hover:text-sidebar-foreground text-xs font-light cursor-default">
-              {spaceName}
-            </span>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        
-        {shouldCollapse ? (
-          <>
-            {/* First item */}
-            <React.Fragment key={path[0].id}>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link
-                    to="/files/$fileId"
-                    params={{ fileId: path[0].id }}
-                    className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors text-xs font-light"
-                  >
-                    {path[0].name}
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </React.Fragment>
-            
-            {/* Ellipsis dropdown */}
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <button
-                onClick={handleEllipsisClick}
-                className="flex items-center gap-1 text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors cursor-pointer outline-none rounded-md px-1 py-0.5"
-              >
-                <BreadcrumbEllipsis className="size-4" />
-                <span className="sr-only">Toggle menu</span>
-              </button>
-            </BreadcrumbItem>
-            
-            {/* Last item */}
-            <React.Fragment key={path[path.length - 1].id}>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="text-toolbar-foreground-active text-xs font-light">
-                  {path[path.length - 1].name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </React.Fragment>
-          </>
-        ) : (
-          <>
-            {path.map((node, index) => {
-              const isLast = index === path.length - 1;
+    <Breadcrumb className="w-full">
+      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1.5 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
+        <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <span className="text-sidebar-foreground/70 hover:text-white/85 transition-colors font-normal tracking-tight text-[12px] cursor-default">
+                {spaceName}
+              </span>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          
+          {shouldCollapse ? (
+            <>
+              <React.Fragment key={path[0].id}>
+                <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link
+                      to="/files/$fileId"
+                      params={{ fileId: path[0].id }}
+                      className="text-sidebar-foreground/65 hover:text-white/85 transition-colors text-[12px] font-normal"
+                    >
+                      {path[0].name}
+                    </Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </React.Fragment>
               
-              return (
-                <React.Fragment key={node.id}>
-                  <BreadcrumbSeparator />
-                  {isLast ? (
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="text-toolbar-foreground-active text-xs font-light">
-                        {node.name}
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                  ) : (
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link
-                          to="/files/$fileId"
-                          params={{ fileId: node.id }}
-                          className="text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors text-xs font-light"
-                        >
-                          {node.name}
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
+              <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
+              <BreadcrumbItem>
+                <button
+                  onClick={handleEllipsisClick}
+                  className={cn(
+                    'flex items-center gap-1 rounded-md px-1.5 py-1 transition-colors',
+                    'bg-sidebar-icon-hover-bg/40 hover:bg-sidebar-icon-hover-bg',
+                    'text-sidebar-foreground/70 hover:text-white outline-none'
                   )}
-                </React.Fragment>
-              );
-            })}
-          </>
-        )}
-      </BreadcrumbList>
+                >
+                  <BreadcrumbEllipsis className="size-4" />
+                  <span className="sr-only">Toggle menu</span>
+                </button>
+              </BreadcrumbItem>
+              
+              <React.Fragment key={path[path.length - 1].id}>
+                <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="text-white/80 text-[12px] font-normal tracking-tight">
+                    {path[path.length - 1].name}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </React.Fragment>
+            </>
+          ) : (
+            <>
+              {path.map((node, index) => {
+                const isLast = index === path.length - 1;
+                
+                return (
+                  <React.Fragment key={node.id}>
+                    <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
+                      {isLast ? (
+                        <BreadcrumbItem>
+                          <BreadcrumbPage className="text-white/90 text-[12px] font-normal tracking-tight">
+                            {node.name}
+                          </BreadcrumbPage>
+                        </BreadcrumbItem>
+                      ) : (
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link
+                            to="/files/$fileId"
+                            params={{ fileId: node.id }}
+                            className="text-sidebar-foreground/65 hover:text-white/90 transition-colors text-[12px] font-normal"
+                          >
+                            {node.name}
+                          </Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </>
+          )}
+        </BreadcrumbList>
+      </div>
     </Breadcrumb>
   );
 });

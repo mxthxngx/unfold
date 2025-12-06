@@ -2,12 +2,17 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
+import {
+  SpaceDialogRoot,
+  SpaceDialogTrigger,
+  SpaceDialogContent,
+} from '@/components/ui/space-dialog';
 import { Node as SidebarNode } from '../../types/sidebar';
 import { cn } from '@/lib/tiptap-utils';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import { useSidebarContextMenu } from '@/hooks/use-sidebar-context-menu';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -49,6 +54,7 @@ const Sidebar = memo(function Sidebar() {
   const [draftName, setDraftName] = useState('');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const activeSpaceItemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (fileId && fileId !== lastExpandedFileId.current) {
@@ -77,6 +83,12 @@ const Sidebar = memo(function Sidebar() {
     window.addEventListener('mousedown', handleClickOutside);
     return () => window.removeEventListener('mousedown', handleClickOutside);
   }, [isSpaceMenuOpen]);
+
+  useEffect(() => {
+    if (isSpaceMenuOpen && activeSpaceItemRef.current) {
+      activeSpaceItemRef.current.scrollIntoView({ block: 'nearest' });
+    }
+  }, [isSpaceMenuOpen, activeSpaceId]);
 
   const handleGlobalAdd = () => {
     const newId = addNode(null);
@@ -167,133 +179,115 @@ const Sidebar = memo(function Sidebar() {
 
       <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-2 w-full">
-          <div className="relative flex-1">
-            <button
+          <SpaceDialogRoot className="relative flex-1">
+            <SpaceDialogTrigger
               ref={triggerRef}
+              label={spaceName}
+              isOpen={isSpaceMenuOpen}
               onClick={() => setIsSpaceMenuOpen((open) => !open)}
-              className={cn(
-                "w-full rounded-lg bg-sidebar-item-hover-bg/50 text-sidebar-foreground transition-colors px-3 py-2 flex items-center justify-between gap-2",
-                (isSpaceMenuOpen) && "bg-sidebar-item-hover-bg",
-                !isSpaceMenuOpen && "hover:bg-sidebar-item-hover-bg/80"
-              )}
+              className="bg-sidebar-item-hover-bg/50"
+            />
+
+            <SpaceDialogContent
+              isOpen={isSpaceMenuOpen}
+              menuRef={menuRef}
+              className="max-h-[60vh] bg-sidebar/95 backdrop-blur-xl px-3 py-2.5 space-y-2"
             >
-              <span className="truncate text-sm font-semibold">{spaceName}</span>
-              <AnimatedIcon className={cn('transition-transform', isSpaceMenuOpen && 'rotate-180')}>
-                <ChevronDown size={16} strokeWidth={2.5} />
-              </AnimatedIcon>
-            </button>
+              <div className="text-xs uppercase tracking-[0.08em] text-sidebar-foreground/60 px-1">
+                Spaces
+              </div>
+              <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-2 pr-1">
+                {sortedSpaces.map((space) => {
+                  const isActive = space.id === activeSpaceId;
+                  const isEditing = editingSpaceId === space.id;
 
-            <AnimatePresence>
-              {isSpaceMenuOpen && (
-                <motion.div
-                  key="space-menu"
-                  layout
-                  initial={{ opacity: 0, y: 8, scaleY: 0.96, scaleX: 0.94 }}
-                  animate={{ opacity: 1, y: 0, scaleY: 1, scaleX: 1.02 }}
-                  exit={{ opacity: 0, y: 8, scaleY: 0.96, scaleX: 0.94 }}
-                  transition={{
-                    type: 'spring',
-                    visualDuration: 0.2,
-                    bounce: 0.14,
-                  }}
-                  className="absolute left-0 bottom-full mb-2 z-20 w-full max-w-[22rem] min-w-[16rem] rounded-lg border border-sidebar-border/80 bg-sidebar/95 backdrop-blur-xl shadow-2xl px-3 py-2.5 space-y-2 ring-1 ring-sidebar-ring/30 will-change-transform"
-                  style={{ transformOrigin: 'bottom center' }}
-                  ref={menuRef}
-                >
-                  <div className="text-xs uppercase tracking-[0.08em] text-sidebar-foreground/60 px-1">
-                    Spaces
-                  </div>
-                  {sortedSpaces.map((space) => {
-                    const isActive = space.id === activeSpaceId;
-                    const isEditing = editingSpaceId === space.id;
+                  return (
+                    <motion.div
+                      key={space.id}
+                      ref={isActive ? activeSpaceItemRef : undefined}
+                      layout
+                      className={cn(
+                        'group/space flex items-center gap-.5 rounded-lg px-2.5 py-1.5 transition-colors',
+                        isActive
+                          ? 'bg-sidebar-selected-bg text-white border border-sidebar-border/60'
+                          : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg/80'
+                      )}
+                    >
+                      {isEditing ? (
+                        <input
+                          autoFocus
+                          value={draftName}
+                          onChange={(e) => setDraftName(e.target.value)}
+                          onBlur={() => handleRenameCommit(space.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRenameCommit(space.id);
+                            if (e.key === 'Escape') {
+                              setEditingSpaceId(null);
+                              setDraftName('');
+                            }
+                          }}
+                          className="w-full rounded-md bg-sidebar-accent text-sidebar-foreground px-2 py-1 text-sm outline-none border border-sidebar-border focus:border-sidebar-ring"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => handleSwitchSpace(space.id)}
+                          className="flex-1 text-left truncate text-sm font-medium text-inherit"
+                        >
+                          {space.name}
+                        </button>
+                      )}
 
-                    return (
-                      <motion.div
-                        key={space.id}
-                        layout
-                        className={cn(
-                          'group/space flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors',
-                          isActive
-                            ? 'bg-sidebar-selected-bg text-white border border-sidebar-border/60'
-                            : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg/80'
-                        )}
-                      >
-                        {isEditing ? (
-                          <input
-                            autoFocus
-                            value={draftName}
-                            onChange={(e) => setDraftName(e.target.value)}
-                            onBlur={() => handleRenameCommit(space.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleRenameCommit(space.id);
-                              if (e.key === 'Escape') {
-                                setEditingSpaceId(null);
-                                setDraftName('');
-                              }
-                            }}
-                            className="w-full rounded-md bg-sidebar-accent text-sidebar-foreground px-2 py-1 text-sm outline-none border border-sidebar-border focus:border-sidebar-ring"
-                          />
-                        ) : (
+                      {!isEditing && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity">
                           <button
-                            onClick={() => handleSwitchSpace(space.id)}
-                            className="flex-1 text-left truncate text-sm font-medium text-inherit"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingSpaceId(space.id);
+                              setDraftName(space.name);
+                            }}
+                            className="rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80"
                           >
-                            {space.name}
+                            <Pencil size={14} />
                           </button>
-                        )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSpace(space.id);
+                            }}
+                            disabled={sortedSpaces.length <= 1}
+                            className={cn(
+                              'rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed'
+                            )}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
 
-                        {!isEditing && (
-                          <div className="flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingSpaceId(space.id);
-                                setDraftName(space.name);
-                              }}
-                              className="rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteSpace(space.id);
-                              }}
-                              disabled={sortedSpaces.length <= 1}
-                              className={cn(
-                                'rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed'
-                              )}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        )}
-                      </motion.div>
-                    );
-                  })}
+              <button
+                onClick={handleAddSpace}
+                className="w-full mt-1 py-4 rounded-lg border border-dashed border-sidebar-border text-sidebar-foreground/80 hover:text-sidebar-foreground hover:border-sidebar-ring hover:bg-sidebar-item-hover-bg/70 transition-colors px-3 py-2.5 flex items-center gap-2 justify-center text-sm font-medium"
+              >
+                <Plus size={14} strokeWidth={2.5} />
+                Add new space
+              </button>
+            </SpaceDialogContent>
+          </SpaceDialogRoot>
 
-                  <button
-                    onClick={handleAddSpace}
-                    className="w-full mt-1 rounded-lg border border-dashed border-sidebar-border text-sidebar-foreground/80 hover:text-sidebar-foreground hover:border-sidebar-ring hover:bg-sidebar-item-hover-bg/70 transition-colors px-3 py-2.5 flex items-center gap-2 justify-center text-sm font-medium"
-                  >
-                    <Plus size={14} strokeWidth={2.5} />
-                    Add new space
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <button
-            onClick={handleGlobalAdd}
-            title={`Create Child Note ${getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}`}
-            className="flex items-center justify-center hover:opacity-70 shrink-0 relative overflow-hidden rounded-md size-7"
-          >
-            <AnimatedIcon className="w-full h-full flex items-center justify-center">
-              <Plus size={14} strokeWidth={3}/>
-            </AnimatedIcon>
-            <Ripple />
-          </button>
+        <button
+          onClick={handleGlobalAdd}
+          title={`Create Child Note ${getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}`}
+          className="flex items-center justify-center shrink-0 relative overflow-hidden size-7 rounded-full text-sidebar-foreground transition-all hover:bg-sidebar-item-hover-bg/80 active:scale-95"
+        >
+          <AnimatedIcon className="w-full h-full flex items-center justify-center">
+            <Plus size={14} strokeWidth={3}/>
+          </AnimatedIcon>
+          <Ripple />
+        </button>
         </div>
       </SidebarFooter>
     </ShadcnSidebar>
@@ -355,9 +349,9 @@ export const SidebarNodes = memo(({
       <SidebarMenuItem className="px-0">
         <div
           className={cn(
-            'group/item-row flex items-center w-full rounded-lg border transition-all text-sm px-2 py-1',
+            'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
             isSelected
-              ? 'bg-sidebar-selected-bg text-white font-semibold border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
               : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
           )}
           onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -439,9 +433,9 @@ export const SidebarNodes = memo(({
       <>
         <div 
           className={cn(
-            'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-sm px-2 py-1',
+            'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
             isSelected
-              ? 'bg-sidebar-selected-bg text-white font-semibold border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
               : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
           )}
           onContextMenu={handleContextMenu}

@@ -50,7 +50,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   }, [activeSpaceId, spaces]);
 
   const fileTree = activeSpace?.fileTree ?? [];
-  const spaceName = activeSpace?.name ?? 'Untitled Space';
+  const spaceName = activeSpace?.name ?? 'New Space';
 
   const setActiveSpace = useCallback(
     (id: string) => {
@@ -69,7 +69,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const addSpace = useCallback((name?: string) => {
     const newSpace: Space = {
       id: uuidv4(),
-      name: name?.trim() && name.trim().length > 0 ? name.trim() : 'Untitled Space',
+      name: name?.trim() && name.trim().length > 0 ? name.trim() : 'New Space',
       fileTree: [],
     };
     setSpaces((prev) => [...prev, newSpace]);
@@ -137,7 +137,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     (parentId: string | null) => {
       const newNode: Node = {
         id: uuidv4(),
-        name: 'Untitled',
+        name: 'New Page',
         parentId: parentId || undefined,
         nodes: [],
         content: '',
@@ -178,7 +178,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const extractNameFromContent = (content: string): string => {
     if (!content || content.trim() === '') {
       // Preserve existing name if content is empty
-      return 'Untitled';
+      return 'New Page';
     }
 
     const parser = new DOMParser();
@@ -197,7 +197,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
         return truncatedExtractedName;
       }
     }
-    return 'Untitled';
+    return 'New Page';
   };
 
   const updateNodeContent = useCallback(

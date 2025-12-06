@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { PiSidebarSimple } from 'react-icons/pi';
+import { PanelLeftIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 import { FileBreadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { cn } from '@/lib/tiptap-utils';
+import { Ripple } from '@/components/ui/ripple';
 import { useSidebar } from '@/components/ui/sidebar';
 
 export const Toolbar = memo(function Toolbar() {
@@ -29,17 +30,16 @@ export const Toolbar = memo(function Toolbar() {
         <motion.button 
           onClick={toggleSidebar}
           className={cn(
-            'flex items-center justify-center p-1.5',
-            'transition-all duration-200',
-            'hover:opacity-70',
-            'text-sidebar-foreground',
-            'relative z-20'
+            'relative z-20 flex items-center justify-center size-7 overflow-hidden',
+            'rounded-full bg-transparent text-sidebar-foreground',
+            'transition-all duration-200 hover:bg-sidebar-item-hover-bg/80 active:scale-95'
           )}
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.98 }}
           aria-label="Toggle sidebar"
         >
-          <PiSidebarSimple size={18} />
+          <PanelLeftIcon size={16} strokeWidth={2.2} />
+          <Ripple />
         </motion.button>
 
         <div className="flex-1 min-w-0 relative z-10"  data-tauri-drag-region>
