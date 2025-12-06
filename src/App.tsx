@@ -12,11 +12,7 @@ function AppContent() {
 
 function AppRouter() {
   return (
-    <FileSystemProvider>
-      <EditorProvider>
-        <RouterProvider router={router} />
-      </EditorProvider>
-    </FileSystemProvider>
+    <RouterProvider router={router} />
   );
 }
 
@@ -49,14 +45,18 @@ function LayoutInitializer() {
   const initialLayout = layout || { sidebar_position: 'right' };
 
   return (
-    <LayoutProvider
-      initialLayout={initialLayout}
-      updateLayoutFn={saveLayout}
-      isLoading={isLoading}
-      error={error}
-    >
-      <AppContent />
-    </LayoutProvider>
+    <FileSystemProvider>
+      <EditorProvider>
+        <LayoutProvider
+          initialLayout={initialLayout}
+          updateLayoutFn={saveLayout}
+          isLoading={isLoading}
+          error={error}
+        >
+          <AppContent />
+        </LayoutProvider>
+      </EditorProvider>
+    </FileSystemProvider>
   );
 }
 
