@@ -21,6 +21,7 @@ function Editor() {
     const file = fileId ? getNode(fileId) : null;
     const { settings } = useSettings();
     const { setEditor } = useEditorContext();
+    const hasInitialContent = Boolean(file?.content && file.content.trim() !== '');
 
     const editor = useEditor({
         extensions:[
@@ -36,7 +37,7 @@ function Editor() {
                  notAfter: ["paragraph"],
           }),
         ],
-        autofocus:true,
+        autofocus: hasInitialContent ? false : 'start',
         content: file?.content || '',
         onUpdate: ({ editor }) => {
           if (fileId) {

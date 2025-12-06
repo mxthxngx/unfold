@@ -114,12 +114,13 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                 <button
                   onClick={handleEllipsisClick}
                   className={cn(
-                    'flex items-center gap-1 rounded-md px-1.5 py-1 transition-colors',
-                    'bg-sidebar-icon-hover-bg/40 hover:bg-sidebar-icon-hover-bg',
-                    'text-sidebar-foreground/70 hover:text-white outline-none'
+                    'inline-flex items-center justify-center gap-1 rounded-md px-1 py-0 transition-colors text-[12px] leading-tight',
+                    'bg-transparent hover:bg-sidebar-item-hover-bg/40',
+                    'text-sidebar-foreground/70 hover:text-white',
+                    'outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/15'
                   )}
                 >
-                  <BreadcrumbEllipsis className="size-4" />
+                  <BreadcrumbEllipsis className="!size-3.5 shrink-0" />
                   <span className="sr-only">Toggle menu</span>
                 </button>
               </BreadcrumbItem>
