@@ -11,17 +11,31 @@ import { DocumentExtension } from "./extensions/document";
 import { DocumentTitle } from "./extensions/document-title";
 import { DragHandle } from "./extensions/drag-handle";
 import { DragHandleButton } from "./components/drag-handle-button";
-import { useParams } from "@tanstack/react-router";
+import { useParams, useNavigate } from "@tanstack/react-router";
 import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
+import { findFirstFileId } from "@/lib/file-tree";
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
-    const { getNode, updateNodeContent } = useFileSystem();
+    const navigate = useNavigate();
+    const { getNode, updateNodeContent, fileTree } = useFileSystem();
     const file = fileId ? getNode(fileId) : null;
     const { settings } = useSettings();
     const { setEditor } = useEditorContext();
     const hasInitialContent = Boolean(file?.content && file.content.trim() !== '');
+
+    useEffect(() => {
+        if (!fileId) return;
+        if (!file) {
+            const firstAvailableId = findFirstFileId(fileTree);
+            if (firstAvailableId) {
+                navigate({ to: '/files/$fileId', params: { fileId: firstAvailableId } });
+            } else {
+                navigate({ to: '/' });
+            }
+        }
+    }, [fileId, file, fileTree, navigate]);
 
     const editor = useEditor({
         extensions:[

@@ -16,11 +16,16 @@ function TooltipProvider({
   )
 }
 
+type TooltipProps = React.ComponentProps<typeof TooltipPrimitive.Root> & {
+  delayDuration?: number
+}
+
 function Tooltip({
+  delayDuration,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+}: TooltipProps) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={delayDuration}>
       <TooltipPrimitive.Root data-slot="tooltip" {...props} />
     </TooltipProvider>
   )
@@ -32,12 +37,17 @@ function TooltipTrigger({
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
 }
 
+type TooltipContentProps = React.ComponentProps<typeof TooltipPrimitive.Content> & {
+  showArrow?: boolean
+}
+
 function TooltipContent({
   className,
   sideOffset = 0,
   children,
+  showArrow = true,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+}: TooltipContentProps) {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Content
@@ -50,10 +60,62 @@ function TooltipContent({
         {...props}
       >
         {children}
-        <TooltipPrimitive.Arrow className="fill-zinc-800/95 z-50" />
+        {showArrow && <TooltipPrimitive.Arrow className="fill-zinc-800/95 z-50" />}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+type AppTooltipContentProps = TooltipContentProps & {
+  label?: string
+  shortcut?: string
+}
+
+/**
+ * App-wide default tooltip styling helper to keep consistent tone/spacing.
+ */
+function AppTooltipContent({
+  label,
+  shortcut,
+  children,
+  className,
+  side = "bottom",
+  sideOffset = 6,
+  showArrow = false,
+  ...props
+}: AppTooltipContentProps) {
+  return (
+    <TooltipContent
+      side={side}
+      sideOffset={sideOffset}
+      showArrow={showArrow}
+      className={cn(
+        "bg-zinc-900/90 text-zinc-100 border border-zinc-800/70 shadow-[0_12px_40px_rgba(0,0,0,0.35)]",
+        className
+      )}
+      {...props}
+    >
+      <div className="inline-flex items-center gap-2.5  p-.5">
+        {label ? (
+          <span className="text-[11px] font-medium text-zinc-200 whitespace-nowrap">
+            {label}
+          </span>
+        ) : null}
+        {shortcut ? (
+          <span className="text-[11px] font-semibold leading-none text-zinc-50 whitespace-nowrap">
+            {shortcut}
+          </span>
+        ) : null}
+        {children}
+      </div>
+    </TooltipContent>
+  )
+}
+
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+  AppTooltipContent
+}

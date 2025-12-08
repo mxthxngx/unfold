@@ -269,12 +269,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
-      className={cn(
-        "relative overflow-hidden size-7 rounded-full bg-transparent",
-        "text-sidebar-foreground transition-all",
-        "hover:bg-sidebar-item-hover-bg/80 active:scale-95",
-        className
-      )}
+      className={cn("size-7", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
@@ -282,9 +277,8 @@ function SidebarTrigger({
       {...props}
     >
       <AnimatedIcon className="w-full h-full flex items-center justify-center">
-        <PanelLeftIcon size={16} strokeWidth={2.2} />
+        <PanelLeftIcon />
       </AnimatedIcon>
-      <Ripple />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

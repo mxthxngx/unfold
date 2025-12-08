@@ -25,7 +25,7 @@ export function useSidebarContextMenu({
         const createChildItem = await MenuItem.new({
           id: `sidebar_create_child_${nodeId}`,
           text: "Create Child Note",
-          accelerator: KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE,
+          accelerator: KEYBOARD_SHORTCUTS.CREATE_FILE,
           action: () => {
             console.log("Create child action triggered");
             onCreateChild(nodeId);

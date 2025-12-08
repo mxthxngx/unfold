@@ -5,8 +5,11 @@
 
 export const KEYBOARD_SHORTCUTS = {
   // File operations
-  CREATE_CHILD_NOTE: "CmdOrCtrl+N",
+  CREATE_FILE: "CmdOrCtrl+N",
   DELETE_NOTE: "CmdOrCtrl+Backspace",
+  
+  // Navigation / search
+  FIND_IN_PAGE: "CmdOrCtrl+F",
   
   // Add more shortcuts as needed
   // TOGGLE_SIDEBAR: "Mod-B",

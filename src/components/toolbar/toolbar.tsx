@@ -14,12 +14,13 @@ export const Toolbar = memo(function Toolbar() {
     <div
       className={cn(
         'h-10 border-b border-border',
-        'bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60',
+        'bg-background',
         'flex items-center justify-between',
         'text-xs select-none',
         'pl-24 pr-4',
         'relative'
       )}
+      data-tauri-drag-region
     >
       <div 
         className="absolute inset-0" 
@@ -37,8 +38,9 @@ export const Toolbar = memo(function Toolbar() {
           whileHover={{ scale: 1.04 }}
           whileTap={{ scale: 0.98 }}
           aria-label="Toggle sidebar"
+          data-tauri-drag-region="false"
         >
-          <PanelLeftIcon size={16} strokeWidth={2.2} />
+          <PanelLeftIcon size={15} strokeWidth={2.2} />
           <Ripple />
         </motion.button>
 

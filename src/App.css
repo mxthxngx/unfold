@@ -53,10 +53,30 @@ html, body { background: transparent !important;
   --sidebar-accent-foreground: #f7f2f2;
   --sidebar-selected-bg: #18191a;
   --sidebar-item-hover-bg: #18191a;
-  --sidebar-icon-hover-bg: #0f0f11;
+  --sidebar-icon-hover-bg: #18191a;
   --sidebar-selection-indicator: #8b8a8d;
   --icon-hover: rgba(25, 25, 25, 0.585);
   --unselected-icon: #8e8d8d;
+  --modal-surface: #0f0f11;
+  --modal-surface-border: #23242a;
+  --modal-surface-foreground: #f7f2f2;
+  --modal-action-bg: #1b1c20;
+  --modal-action-bg-hover: #22232a;
+  --modal-action-text: #f7f2f2;
+  --modal-action-border: #2e3036;
+  --modal-primary-foreground: #0f1115;
+  /* Global button theme */
+  --button-bg: #18181b;
+  --button-border: #1a1a1a;
+  --button-hover: #1f1f1f;
+  --button-text: #f7f2f2;
+  --button-ghost-bg: rgba(255, 255, 255, 0.03);
+  --button-ring: #2a2a2a;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.25rem;
   --code-mark-bg-dark: rgba(24, 24, 27, 0.5);
   --code-mark-text-dark: #f7f2f2;
   --link: #f7f2f2;
@@ -64,6 +84,17 @@ html, body { background: transparent !important;
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "Google Sans Code", monospace;
 }
+
+/* Button theme utilities */
+.bg-button { background-color: var(--button-bg); }
+.bg-button-hover { background-color: var(--button-hover); }
+.bg-button-ghost { background-color: var(--button-ghost-bg); }
+.text-button { color: var(--button-text); }
+.border-button { border-color: var(--button-border); }
+.border-button-ring { border-color: var(--button-ring); }
+.hover\:bg-button-hover:hover { background-color: var(--button-hover); }
+.focus-visible\:ring-button:focus-visible { --tw-ring-color: var(--button-ring); }
+.focus-visible\:border-button-ring:focus-visible { border-color: var(--button-ring); }
 
 .light {
   /* Light mode (when explicitly toggled) */
@@ -104,6 +135,19 @@ html, body { background: transparent !important;
   --sidebar-foreground-active: #09090b;
   --sidebar-tab-accent: #rgb(163, 163, 163);
   --unselected-icon: #9f9f9f;
+  --modal-surface: #f6f6f8;
+  --modal-surface-border: #dcdde3;
+  --modal-surface-foreground: #0f1115;
+  --modal-action-bg: #e9e9ee;
+  --modal-action-bg-hover: #dedfe6;
+  --modal-action-text: #0f1115;
+  --modal-action-border: #d1d2d8;
+  --modal-primary-foreground: #0f1115;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.25rem;
   --code-mark-bg-dark: rgba(244, 244, 245, 0.8);
   --code-mark-text-dark: #09090b;
   --link: #09090b;
@@ -166,6 +210,19 @@ html, body { background: transparent !important;
   --color-sidebar-icon-hover-bg: var(--sidebar-icon-hover-bg);
   --color-sidebar-selection-indicator: var(--sidebar-selection-indicator);
   --color-icon-hover: var(--icon-hover);
+  --color-modal-surface: var(--modal-surface);
+  --color-modal-surface-border: var(--modal-surface-border);
+  --color-modal-surface-foreground: var(--modal-surface-foreground);
+  --color-modal-action-bg: var(--modal-action-bg);
+  --color-modal-action-bg-hover: var(--modal-action-bg-hover);
+  --color-modal-action-text: var(--modal-action-text);
+  --color-modal-action-border: var(--modal-action-border);
+  --color-modal-primary-foreground: var(--modal-primary-foreground);
+  --space-xs: var(--space-xs);
+  --space-sm: var(--space-sm);
+  --space-md: var(--space-md);
+  --space-lg: var(--space-lg);
+  --space-xl: var(--space-xl);
 }
 
 /* Global utility classes */
@@ -225,4 +282,20 @@ html, body { background: transparent !important;
 
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46; /* zinc-700 */
+}
+
+/* Search highlight styling (high contrast, clearly visible) */
+::highlight(search) {
+  background: #fdd835; /* bright yellow */
+  color: #0f172a;
+  text-decoration: none;
+  border-radius: 0.28rem;
+}
+
+::highlight(search-active) {
+  background: #ffb300; /* deeper amber for active */
+  color: #0b1020;
+  text-decoration: none;
+  border-radius: 0.32rem;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
 }

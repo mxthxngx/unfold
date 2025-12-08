@@ -28,7 +28,7 @@ export function useGlobalSidebarShortcuts() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const createChildShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE);
+    const createFileShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.CREATE_FILE);
     const deleteShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.DELETE_NOTE);
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -38,10 +38,10 @@ export function useGlobalSidebarShortcuts() {
 
       // Create child note shortcut
       if (
-        event.key.toLowerCase() === createChildShortcut.key &&
-        (!createChildShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
-        (!createChildShortcut.requiresAlt || isAlt) &&
-        (!createChildShortcut.requiresShift || isShift)
+        event.key.toLowerCase() === createFileShortcut.key &&
+        (!createFileShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
+        (!createFileShortcut.requiresAlt || isAlt) &&
+        (!createFileShortcut.requiresShift || isShift)
       ) {
         event.preventDefault();
         // If there's a current file, add as child; otherwise add to root
@@ -59,8 +59,9 @@ export function useGlobalSidebarShortcuts() {
         (!deleteShortcut.requiresShift || isShift)
       ) {
         event.preventDefault();
-        deleteNode(fileId);
-        navigate({ to: '/' });
+        window.dispatchEvent(
+          new CustomEvent('sidebar:delete-node', { detail: { nodeId: fileId } })
+        );
         return;
       }
     };

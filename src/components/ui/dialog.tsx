@@ -14,21 +14,21 @@ const mergeRefs = <T,>(...refs: Array<React.RefObject<T | null> | undefined>) =>
   };
 };
 
-type SpaceDialogRootProps = React.HTMLAttributes<HTMLDivElement>;
+type DialogRootProps = React.HTMLAttributes<HTMLDivElement>;
 
-export const SpaceDialogRoot = forwardRef<HTMLDivElement, SpaceDialogRootProps>(
-  function SpaceDialogRoot({ className, ...props }, ref) {
+export const DialogRoot = forwardRef<HTMLDivElement, DialogRootProps>(
+  function DialogRoot({ className, ...props }, ref) {
     return <div ref={ref} className={cn('relative flex-1', className)} {...props} />;
   }
 );
 
-type SpaceDialogTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+type DialogTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   isOpen: boolean;
 };
 
-export const SpaceDialogTrigger = forwardRef<HTMLButtonElement, SpaceDialogTriggerProps>(
-  function SpaceDialogTrigger({ label, isOpen, className, ...props }, ref) {
+export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
+  function DialogTrigger({ label, isOpen, className, ...props }, ref) {
     return (
       <button
         ref={ref}
@@ -39,7 +39,7 @@ export const SpaceDialogTrigger = forwardRef<HTMLButtonElement, SpaceDialogTrigg
         )}
         {...props}
       >
-        <span className="truncate text-sm font-semibold">{label}</span>
+        <span className="truncate text-sm font-medium">{label}</span>
         <span className="flex items-center justify-center size-5 transition-colors">
           <ChevronDown
             size={14}
@@ -52,19 +52,19 @@ export const SpaceDialogTrigger = forwardRef<HTMLButtonElement, SpaceDialogTrigg
   }
 );
 
-type SpaceDialogContentProps = {
+type DialogContentProps = {
   isOpen: boolean;
   menuRef?: React.RefObject<HTMLDivElement | null>;
   className?: string;
   children: React.ReactNode;
 };
 
-export function SpaceDialogContent({
+export function DialogContent({
   isOpen,
   menuRef,
   className,
   children,
-}: SpaceDialogContentProps) {
+}: DialogContentProps) {
   const internalMenuRef = useRef<HTMLDivElement>(null);
   const assignMenuRef = mergeRefs(menuRef, internalMenuRef);
 
@@ -72,7 +72,7 @@ export function SpaceDialogContent({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          key="space-menu"
+          key="dialog-menu"
           layout
           initial={{ opacity: 0, y: 8, scaleY: 0.96, scaleX: 0.94 }}
           animate={{ opacity: 1, y: 0, scaleY: 1, scaleX: 1.02 }}
@@ -83,8 +83,8 @@ export function SpaceDialogContent({
             bounce: 0.14,
           }}
           className={cn(
-            'absolute left-0 bottom-full mb-2 z-20 w-full max-w-[22rem] min-w-[16rem] rounded-lg border border-sidebar-border/80 bg-sidebar/95 backdrop-blur-3xl shadow-2xl px-2.5 py-1.75 space-y-1 ring-1 ring-sidebar-ring/30 will-change-transform',
-            'max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-sidebar-border/70 scrollbar-track-transparent',
+            'absolute left-0 bottom-full mb-2 z-20 w-full max-w-88 min-w-[16rem] rounded-lg border border-sidebar-border bg-linear-to-b from-sidebar-container-bg to-sidebar-container-bg/96 shadow-2xl px-2.5 py-1.75 space-y-1 ring-1 ring-sidebar-ring/30 will-change-transform backdrop-blur-md supports-backdrop-filter:backdrop-blur-md',
+            'max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-sidebar-border/70 scrollbar-track-transparent backdrop-saturate-150',
             className
           )}
           style={{ transformOrigin: 'bottom center' }}
@@ -97,8 +97,8 @@ export function SpaceDialogContent({
   );
 }
 
-type SpaceDialogHeaderProps = React.HTMLAttributes<HTMLDivElement>;
-export function SpaceDialogHeader({ className, children, ...props }: SpaceDialogHeaderProps) {
+type DialogHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+export function DialogHeader({ className, children, ...props }: DialogHeaderProps) {
   return (
     <div
       className={cn('text-xs uppercase tracking-[0.08em] text-sidebar-foreground/60 px-1', className)}
@@ -109,16 +109,16 @@ export function SpaceDialogHeader({ className, children, ...props }: SpaceDialog
   );
 }
 
-type SpaceDialogListProps = React.HTMLAttributes<HTMLDivElement>;
-export function SpaceDialogList({ className, ...props }: SpaceDialogListProps) {
+type DialogListProps = React.HTMLAttributes<HTMLDivElement>;
+export function DialogList({ className, ...props }: DialogListProps) {
   return <div className={cn('space-y-1', className)} {...props} />;
 }
 
-type SpaceDialogItemProps = HTMLMotionProps<'div'> & {
+type DialogItemProps = HTMLMotionProps<'div'> & {
   active?: boolean;
 };
 
-export function SpaceDialogItem({ active, className, ...props }: SpaceDialogItemProps) {
+export function DialogItem({ active, className, ...props }: DialogItemProps) {
   return (
     <motion.div
       layout
@@ -134,8 +134,8 @@ export function SpaceDialogItem({ active, className, ...props }: SpaceDialogItem
   );
 }
 
-type SpaceDialogActionsProps = React.HTMLAttributes<HTMLDivElement>;
-export function SpaceDialogActions({ className, ...props }: SpaceDialogActionsProps) {
+type DialogActionsProps = React.HTMLAttributes<HTMLDivElement>;
+export function DialogActions({ className, ...props }: DialogActionsProps) {
   return (
     <div
       className={cn(
@@ -147,8 +147,8 @@ export function SpaceDialogActions({ className, ...props }: SpaceDialogActionsPr
   );
 }
 
-type SpaceDialogAddButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
-export function SpaceDialogAddButton({ className, children, ...props }: SpaceDialogAddButtonProps) {
+type DialogAddButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
+export function DialogAddButton({ className, children, ...props }: DialogAddButtonProps) {
   return (
     <button
       className={cn(
@@ -163,13 +163,13 @@ export function SpaceDialogAddButton({ className, children, ...props }: SpaceDia
 }
 
 export type {
-  SpaceDialogRootProps,
-  SpaceDialogTriggerProps,
-  SpaceDialogContentProps,
-  SpaceDialogHeaderProps,
-  SpaceDialogListProps,
-  SpaceDialogItemProps,
-  SpaceDialogActionsProps,
-  SpaceDialogAddButtonProps,
+  DialogRootProps,
+  DialogTriggerProps,
+  DialogContentProps,
+  DialogHeaderProps,
+  DialogListProps,
+  DialogItemProps,
+  DialogActionsProps,
+  DialogAddButtonProps,
 };
 

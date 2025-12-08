@@ -64,8 +64,8 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
 
   if (!fileId || path.length === 0) {
     return (
-      <Breadcrumb className="w-full">
-        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1.5 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
+      <Breadcrumb className="w-full" data-tauri-drag-region>
+        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
           <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
             <BreadcrumbItem>
               <BreadcrumbPage className="text-white/75 font-normal tracking-tight">
@@ -81,12 +81,15 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
   const shouldCollapse = path.length > MAX_VISIBLE_ITEMS;
 
   return (
-    <Breadcrumb className="w-full">
-      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1.5 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
+    <Breadcrumb className="w-full" data-tauri-drag-region>
+      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
         <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <span className="text-sidebar-foreground/70 hover:text-white/85 transition-colors font-normal tracking-tight text-[12px] cursor-default">
+              <span
+                className="text-sidebar-foreground/70 hover:text-white/85 transition-colors font-normal tracking-tight text-[12px] cursor-default"
+                data-tauri-drag-region="false"
+              >
                 {spaceName}
               </span>
             </BreadcrumbLink>
@@ -101,7 +104,8 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                     <Link
                       to="/files/$fileId"
                       params={{ fileId: path[0].id }}
-                      className="text-sidebar-foreground/65 hover:text-white/85 transition-colors text-[12px] font-normal"
+                    className="text-sidebar-foreground/65 hover:text-white/85 transition-colors text-[12px] font-normal"
+                    data-tauri-drag-region="false"
                     >
                       {path[0].name}
                     </Link>
@@ -117,10 +121,11 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                     'inline-flex items-center justify-center gap-1 rounded-md px-1 py-0 transition-colors text-[12px] leading-tight',
                     'bg-transparent hover:bg-sidebar-item-hover-bg/40',
                     'text-sidebar-foreground/70 hover:text-white',
-                    'outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-white/15'
+                    'outline-none focus-visible:outline-[1px] focus-visible:outline-white/15'
                   )}
+                  data-tauri-drag-region="false"
                 >
-                  <BreadcrumbEllipsis className="!size-3.5 shrink-0" />
+                  <BreadcrumbEllipsis className="size-3.5! shrink-0" />
                   <span className="sr-only">Toggle menu</span>
                 </button>
               </BreadcrumbItem>
@@ -155,6 +160,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                             to="/files/$fileId"
                             params={{ fileId: node.id }}
                             className="text-sidebar-foreground/65 hover:text-white/90 transition-colors text-[12px] font-normal"
+                            data-tauri-drag-region="false"
                           >
                             {node.name}
                           </Link>

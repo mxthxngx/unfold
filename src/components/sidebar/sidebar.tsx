@@ -1,17 +1,16 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
-import {
-  SpaceDialogRoot,
-  SpaceDialogTrigger,
-  SpaceDialogContent,
-} from '@/components/ui/space-dialog';
+import { DialogRoot, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { Modal } from '@/components/ui/modal';
 import { Node as SidebarNode } from '../../types/sidebar';
 import { cn } from '@/lib/tiptap-utils';
+import { findFirstFileId } from '@/lib/file-tree';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import { useSidebarContextMenu } from '@/hooks/use-sidebar-context-menu';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
+import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
 import {
   Sidebar as ShadcnSidebar,
@@ -25,12 +24,6 @@ import {
 } from '@/components/ui/sidebar';
 import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
-
-const findFirstNode = (nodes: SidebarNode[]): string | null => {
-  if (!nodes || nodes.length === 0) return null;
-  const [first] = nodes;
-  return first?.id ?? null;
-};
 
 const Sidebar = memo(function Sidebar() {
   const {
@@ -50,8 +43,12 @@ const Sidebar = memo(function Sidebar() {
   const navigate = useNavigate();
   const lastExpandedFileId = useRef<string | null>(null);
   const [isSpaceMenuOpen, setIsSpaceMenuOpen] = useState(false);
+  const [isCreateSpaceOpen, setIsCreateSpaceOpen] = useState(false);
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState('');
+  const [newSpaceName, setNewSpaceName] = useState('');
+  const [createSpaceError, setCreateSpaceError] = useState('');
+  const [spaceToDelete, setSpaceToDelete] = useState<{ id: string; name: string } | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const activeSpaceItemRef = useRef<HTMLDivElement | null>(null);
@@ -105,7 +102,7 @@ const Sidebar = memo(function Sidebar() {
       return;
     }
 
-    const firstId = findFirstNode(target.fileTree);
+    const firstId = findFirstFileId(target.fileTree);
     if (firstId) {
       navigate({ to: '/files/$fileId', params: { fileId: firstId } });
     } else {
@@ -113,12 +110,32 @@ const Sidebar = memo(function Sidebar() {
     }
   };
 
-  const handleAddSpace = () => {
-    const newId = addSpace('New Space');
-    setEditingSpaceId(newId);
-    setDraftName('New Space');
-    setIsSpaceMenuOpen(true);
-    navigate({ to: '/' });
+  const handleOpenCreateSpace = () => {
+    setNewSpaceName('');
+    setCreateSpaceError('');
+    setIsSpaceMenuOpen(false);
+    setIsCreateSpaceOpen(true);
+  };
+
+  const handleCloseCreateSpace = () => {
+    setIsCreateSpaceOpen(false);
+    setNewSpaceName('');
+    setCreateSpaceError('');
+  };
+
+  const handleCreateSpace = (event?: React.FormEvent | KeyboardEvent | MouseEvent) => {
+    event?.preventDefault?.();
+    const nextName = newSpaceName.trim();
+    if (!nextName) {
+      setCreateSpaceError('Space name is required');
+      return;
+    }
+    addSpace(nextName);
+    setIsCreateSpaceOpen(false);
+    setEditingSpaceId(null);
+    setDraftName('');
+    setNewSpaceName('');
+    setCreateSpaceError('');
   };
 
   const handleRenameCommit = (spaceId: string) => {
@@ -127,20 +144,31 @@ const Sidebar = memo(function Sidebar() {
     setDraftName('');
   };
 
-  const handleDeleteSpace = (spaceId: string) => {
+  const handleRequestDeleteSpace = (spaceId: string) => {
     if (spaces.length <= 1) return;
+    const targetSpace = spaces.find((space) => space.id === spaceId);
+    if (!targetSpace) return;
+    setSpaceToDelete({ id: spaceId, name: targetSpace.name });
+  };
+
+  const handleCancelDeleteSpace = () => setSpaceToDelete(null);
+
+  const handleConfirmDeleteSpace = () => {
+    if (!spaceToDelete) return;
+    const spaceId = spaceToDelete.id;
     const remaining = spaces.filter((space) => space.id !== spaceId);
     const nextSpace = spaceId === activeSpaceId ? remaining[0] : spaces.find((s) => s.id === activeSpaceId);
 
     deleteSpace(spaceId);
     setIsSpaceMenuOpen(false);
+    setSpaceToDelete(null);
 
     if (!nextSpace) {
       navigate({ to: '/' });
       return;
     }
 
-    const firstId = findFirstNode(nextSpace.fileTree);
+    const firstId = findFirstFileId(nextSpace.fileTree);
     if (firstId) {
       navigate({ to: '/files/$fileId', params: { fileId: firstId } });
     } else {
@@ -151,6 +179,11 @@ const Sidebar = memo(function Sidebar() {
   const sortedSpaces = useMemo(
     () => [...spaces].sort((a, b) => a.name.localeCompare(b.name)),
     [spaces]
+  );
+
+  const addFileShortcut = useMemo(
+    () => getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_FILE),
+    []
   );
 
   return (
@@ -172,15 +205,21 @@ const Sidebar = memo(function Sidebar() {
       <SidebarContent className="px-4 overflow-y-auto">
         <SidebarMenu className="space-y-0.5">
           {fileTree.map((node) => (
-            <SidebarNodes key={node.id} node={node} selectedItem={fileId || null} level={0} />
+            <SidebarNodes
+              key={node.id}
+              node={node}
+              selectedItem={fileId || null}
+              level={0}
+              addFileShortcut={addFileShortcut}
+            />
           ))}
         </SidebarMenu>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-2 w-full">
-          <SpaceDialogRoot className="relative flex-1">
-            <SpaceDialogTrigger
+          <DialogRoot className="relative flex-1">
+            <DialogTrigger
               ref={triggerRef}
               label={spaceName}
               isOpen={isSpaceMenuOpen}
@@ -188,7 +227,7 @@ const Sidebar = memo(function Sidebar() {
               className="bg-sidebar-item-hover-bg/50"
             />
 
-            <SpaceDialogContent
+            <DialogContent
               isOpen={isSpaceMenuOpen}
               menuRef={menuRef}
               className="max-h-[60vh] bg-sidebar/95 backdrop-blur-xl px-3 py-2.5 space-y-2"
@@ -252,7 +291,7 @@ const Sidebar = memo(function Sidebar() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteSpace(space.id);
+                              handleRequestDeleteSpace(space.id);
                             }}
                             disabled={sortedSpaces.length <= 1}
                             className={cn(
@@ -269,27 +308,118 @@ const Sidebar = memo(function Sidebar() {
               </div>
 
               <button
-                onClick={handleAddSpace}
-                className="w-full mt-1 py-4 rounded-lg border border-dashed border-sidebar-border text-sidebar-foreground/80 hover:text-sidebar-foreground hover:border-sidebar-ring hover:bg-sidebar-item-hover-bg/70 transition-colors px-3 py-2.5 flex items-center gap-2 justify-center text-sm font-medium"
+                onClick={handleOpenCreateSpace}
+                className="w-full mt-1 px-3 py-3 rounded-xl border-2 border-dashed border-sidebar-border/40 bg-sidebar/25 text-sidebar-foreground/70 hover:text-sidebar-foreground/80 hover:bg-sidebar-item-hover-bg/35 hover:border-sidebar-border/50 transition-colors flex items-center gap-2 justify-center text-sm font-medium"
               >
                 <Plus size={14} strokeWidth={2.5} />
                 Add new space
               </button>
-            </SpaceDialogContent>
-          </SpaceDialogRoot>
+            </DialogContent>
+          </DialogRoot>
 
-        <button
-          onClick={handleGlobalAdd}
-          title={`Create Child Note ${getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_CHILD_NOTE)}`}
-          className="flex items-center justify-center shrink-0 relative overflow-hidden size-7 rounded-full text-sidebar-foreground transition-all hover:bg-sidebar-item-hover-bg/80 active:scale-95"
-        >
-          <AnimatedIcon className="w-full h-full flex items-center justify-center">
-            <Plus size={14} strokeWidth={3}/>
-          </AnimatedIcon>
-          <Ripple />
-        </button>
+          <Tooltip delayDuration={120}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleGlobalAdd}
+                title=""
+                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center shrink-0 relative overflow-hidden text-sidebar-foreground"
+              >
+                <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                  <Plus size={14} strokeWidth={3}/>
+                </AnimatedIcon>
+                <Ripple />
+              </button>
+            </TooltipTrigger>
+            <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+          </Tooltip>
         </div>
       </SidebarFooter>
+
+      <Modal
+        open={isCreateSpaceOpen}
+        onClose={handleCloseCreateSpace}
+        onCancel={handleCloseCreateSpace}
+        onConfirm={handleCreateSpace}
+      >
+        <form
+          onSubmit={handleCreateSpace}
+          className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]"
+        >
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-sidebar-foreground">Create space</h3>
+            <p className="text-sm text-sidebar-foreground/80">Name your new space.</p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs uppercase tracking-[0.08em] text-sidebar-foreground/70">
+              Space name
+            </label>
+            <input
+              autoFocus
+              value={newSpaceName}
+              onChange={(event) => {
+                setNewSpaceName(event.target.value);
+                if (createSpaceError) setCreateSpaceError('');
+              }}
+              aria-invalid={!!createSpaceError}
+              className="w-full rounded-lg border border-sidebar-border bg-sidebar-accent text-sidebar-foreground px-3 py-2 text-sm outline-none focus:border-sidebar-ring focus:ring-0"
+              placeholder="Enter a space name"
+            />
+            <p className="min-h-[1.1rem] text-xs text-red-400">
+              {createSpaceError ? createSpaceError : ''}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-[var(--space-sm)]">
+            <button
+              type="button"
+              onClick={handleCloseCreateSpace}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-white text-[color:var(--modal-primary-foreground)] px-3 py-2 text-sm font-medium hover:bg-[rgba(255,255,255,0.9)] transition-colors"
+            >
+              Create space
+            </button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        open={!!spaceToDelete}
+        onClose={handleCancelDeleteSpace}
+        onCancel={handleCancelDeleteSpace}
+        onConfirm={handleConfirmDeleteSpace}
+      >
+        <div className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-sidebar-foreground">
+              {spaceToDelete ? `Delete "${spaceToDelete.name}"?` : 'Delete space?'}
+            </h3>
+            <p className="text-sm text-sidebar-foreground/80">
+              This will move all the content to trash for 15 days. You can restore it from Trash during that window.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-[var(--space-sm)]">
+            <button
+              type="button"
+              onClick={handleCancelDeleteSpace}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDeleteSpace}
+              className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
+            >
+              Move to trash
+            </button>
+          </div>
+        </div>
+      </Modal>
     </ShadcnSidebar>
   );
 });
@@ -298,18 +428,36 @@ export const SidebarNodes = memo(({
   node, 
   selectedItem, 
   level = 0,
-  isFirstChild = false
+  isFirstChild = false,
+  addFileShortcut
 }: { 
   node: SidebarNode;
   selectedItem: null | string;
   level?: number;
   isFirstChild?: boolean;
+  addFileShortcut: string;
 }) => {
   const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode } = useFileSystem();
   const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const hasChildren = node.nodes && node.nodes.length > 0;
   const isSelected = selectedItem === node.id;
+
+  const handleOpenDeleteModal = useCallback((_nodeId?: string) => setIsDeleteModalOpen(true), []);
+  const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
+  const handleConfirmDeleteNode = () => {
+    if (selectedItem === node.id) {
+      const prevNodeId = getPreviousVisibleNode(node.id);
+      if (prevNodeId) {
+        navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
+      } else {
+        navigate({ to: '/' });
+      }
+    }
+    deleteNode(node.id);
+    setIsDeleteModalOpen(false);
+  };
 
   // Context menu handler
   const { handleContextMenu } = useSidebarContextMenu({
@@ -318,18 +466,7 @@ export const SidebarNodes = memo(({
       const newId = addNode(nodeId);
       navigate({ to: '/files/$fileId', params: { fileId: newId } });
     },
-    onDelete: (nodeId) => {
-      // If the deleted node is the selected one, navigate to the previous visible node
-      if (selectedItem === nodeId) {
-        const prevNodeId = getPreviousVisibleNode(nodeId);
-        if (prevNodeId) {
-          navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
-        } else {
-          navigate({ to: '/' });
-        }
-      }
-      deleteNode(nodeId);
-    }
+    onDelete: handleOpenDeleteModal
   });
 
   const handleAddChild = (e: React.MouseEvent) => {
@@ -343,172 +480,240 @@ export const SidebarNodes = memo(({
     toggleFolder(node.id);
   };
 
+  useEffect(() => {
+    const handleGlobalDeleteRequest = (event: Event) => {
+      const detail = (event as CustomEvent<{ nodeId: string }>).detail;
+      if (detail?.nodeId === node.id) {
+        setIsDeleteModalOpen(true);
+      }
+    };
+
+    window.addEventListener('sidebar:delete-node', handleGlobalDeleteRequest as EventListener);
+    return () => {
+      window.removeEventListener('sidebar:delete-node', handleGlobalDeleteRequest as EventListener);
+    };
+  }, [node.id]);
+
+  const deleteModal = (
+    <Modal
+      open={isDeleteModalOpen}
+      onClose={handleCancelDeleteNode}
+      onCancel={handleCancelDeleteNode}
+      onConfirm={handleConfirmDeleteNode}
+    >
+      <div className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]">
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-sidebar-foreground">
+            Delete "{node.name}"?
+          </h3>
+          <p className="text-sm text-sidebar-foreground/80">
+            This will move all the content to trash for 15 days. You can restore it from Trash during that window.
+          </p>
+        </div>
+        <div className="flex items-center justify-end gap-[var(--space-sm)]">
+          <button
+            type="button"
+            onClick={handleCancelDeleteNode}
+            className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmDeleteNode}
+            className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
+          >
+            Move to trash
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+
   // Root level items
   if (level === 0) {
     return (
-      <SidebarMenuItem className="px-0">
-        <div
-          className={cn(
-            'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
-            isSelected
-              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
-              : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
-          )}
-          onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
-          onContextMenu={handleContextMenu}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-            }
-          }}
-        >
-          <div className="flex-1 min-w-0">
-            <span className="block truncate">{node.name}</span>
-          </div>
+      <>
+        <SidebarMenuItem className="px-0">
           <div
             className={cn(
-              "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
-              "opacity-0 max-w-0 pointer-events-none",
-              "group-hover/item-row:opacity-100 group-hover/item-row:max-w-[5.5rem] group-hover/item-row:pointer-events-auto"
+              'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+              isSelected
+                ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
             )}
+            onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+            onContextMenu={handleContextMenu}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+              }
+            }}
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddChild(e);
-              }}
-            className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+            <div className="flex-1 min-w-0">
+              <span className="block truncate">{node.name}</span>
+            </div>
+            <div
+              className={cn(
+                "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+                "opacity-0 max-w-0 pointer-events-none",
+                "group-hover/item-row:opacity-100 group-hover/item-row:max-w-[5.5rem] group-hover/item-row:pointer-events-auto"
+              )}
             >
-              <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                <Plus size={14} strokeWidth={3}/>
-              </AnimatedIcon>
-              <Ripple />
-            </button>
+              <Tooltip delayDuration={120}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddChild(e);
+                    }}
+                    className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                  >
+                    <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                      <Plus size={14} strokeWidth={3}/>
+                    </AnimatedIcon>
+                    <Ripple />
+                  </button>
+                </TooltipTrigger>
+                <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+              </Tooltip>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle(e);
-              }}
-            className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
-            >
-              <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
-              </AnimatedIcon>
-              <Ripple />
-            </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggle(e);
+                }}
+                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+              >
+                <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                  {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+                </AnimatedIcon>
+                <Ripple />
+              </button>
+            </div>
           </div>
-        </div>
 
-        {node.isOpen && (
-          <SidebarMenuSub 
-            key={`sub-${node.id}`}
-            className="ml-2.5 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
-          >
-            {hasChildren ? (
-              node.nodes!.map((childNode, index) => (
-                <SidebarNodes
-                  key={childNode.id}
-                  node={childNode}
-                  selectedItem={selectedItem}
-                  level={level + 1}
-                  isFirstChild={index === 0}
-                />
-              ))
-            ) : (
-              <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
-            )}
-          </SidebarMenuSub>
-        )}
-      </SidebarMenuItem>
+          {node.isOpen && (
+            <SidebarMenuSub 
+              key={`sub-${node.id}`}
+              className="ml-2.5 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
+            >
+              {hasChildren ? (
+                node.nodes!.map((childNode, index) => (
+                  <SidebarNodes
+                    key={childNode.id}
+                    node={childNode}
+                    selectedItem={selectedItem}
+                    level={level + 1}
+                    isFirstChild={index === 0}
+                    addFileShortcut={addFileShortcut}
+                  />
+                ))
+              ) : (
+                <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
+              )}
+            </SidebarMenuSub>
+          )}
+        </SidebarMenuItem>
+    {deleteModal}
+      </>
     );
   }
 
   // Nested items
   return (
-    <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1', 'px-0')}>
-      <>
-        <div 
-          className={cn(
-            'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
-            isSelected
-              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
-              : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
-          )}
-          onContextMenu={handleContextMenu}
-          onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-            }
-          }}
-        >
-          <div className="flex-1 min-w-0">
-            <span className="block truncate">{node.name}</span>
-          </div>
-
-          <div
+    <>
+      <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1', 'px-0')}>
+        <>
+          <div 
             className={cn(
-              "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
-              "opacity-0 max-w-0 pointer-events-none",
-              "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-[5.5rem] group-hover/sub-item-row:pointer-events-auto"
+              'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+              isSelected
+                ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
             )}
+            onContextMenu={handleContextMenu}
+            onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+              }
+            }}
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddChild(e);
-              }}
-            className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
-            >
-              <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                <Plus size={14} strokeWidth={3} />
-              </AnimatedIcon>
-              <Ripple />
-            </button>
+            <div className="flex-1 min-w-0">
+              <span className="block truncate">{node.name}</span>
+            </div>
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggle(e);
-              }}
-            className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+            <div
+              className={cn(
+                "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+                "opacity-0 max-w-0 pointer-events-none",
+                "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-[5.5rem] group-hover/sub-item-row:pointer-events-auto"
+              )}
             >
-              <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
-              </AnimatedIcon>
-              <Ripple />
-            </button>
+              <Tooltip delayDuration={120}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddChild(e);
+                    }}
+                    className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                  >
+                    <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                      <Plus size={14} strokeWidth={3} />
+                    </AnimatedIcon>
+                    <Ripple />
+                  </button>
+                </TooltipTrigger>
+                <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+              </Tooltip>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggle(e);
+                }}
+                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+              >
+                <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                  {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+                </AnimatedIcon>
+                <Ripple />
+              </button>
+            </div>
           </div>
-        </div>
-        {node.isOpen && (
-          <SidebarMenuSub 
-            key={`sub-${node.id}`}
-            className="ml-0 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
-          >
-            {hasChildren ? (
-              node.nodes!.map((childNode, index) => (
-                <SidebarNodes
-                  key={childNode.id}
-                  node={childNode}
-                  selectedItem={selectedItem}
-                  level={level + 1}
-                  isFirstChild={index === 0}
-                />
-              ))
-            ) : (
-              <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
-            )}
-          </SidebarMenuSub>
-        )}
-      </>
-    </SidebarMenuSubItem>
+          {node.isOpen && (
+            <SidebarMenuSub 
+              key={`sub-${node.id}`}
+              className="ml-0 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
+            >
+              {hasChildren ? (
+                node.nodes!.map((childNode, index) => (
+                  <SidebarNodes
+                    key={childNode.id}
+                    node={childNode}
+                    selectedItem={selectedItem}
+                    level={level + 1}
+                    isFirstChild={index === 0}
+                    addFileShortcut={addFileShortcut}
+                  />
+                ))
+              ) : (
+                <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
+              )}
+            </SidebarMenuSub>
+          )}
+        </>
+      </SidebarMenuSubItem>
+    {deleteModal}
+    </>
   );
 });
 

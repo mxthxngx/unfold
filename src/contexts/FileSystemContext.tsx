@@ -137,7 +137,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     (parentId: string | null) => {
       const newNode: Node = {
         id: uuidv4(),
-        name: 'New Page',
+        name: 'new page',
         parentId: parentId || undefined,
         nodes: [],
         content: '',
@@ -178,7 +178,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const extractNameFromContent = (content: string): string => {
     if (!content || content.trim() === '') {
       // Preserve existing name if content is empty
-      return 'New Page';
+      return 'new page';
     }
 
     const parser = new DOMParser();
@@ -197,7 +197,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
         return truncatedExtractedName;
       }
     }
-    return 'New Page';
+    return 'new page';
   };
 
   const updateNodeContent = useCallback(
