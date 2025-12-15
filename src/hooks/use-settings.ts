@@ -1,35 +1,27 @@
-import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
+import { getKeybindings, saveKeybindings, DEFAULT_SETTINGS, Keybindings } from '@/services/settings-store';
 
-export interface Keybindings {
-  toggleSidebar: string;
-  selectAll: string;
-}
+export type { Keybindings } from '@/services/settings-store';
 
 export interface Settings {
   keybindings: Keybindings;
 }
 
-const defaultSettings: Settings = {
-  keybindings: {
-    toggleSidebar: 'Mod-b',
-    selectAll: 'Mod-a',
-  },
-};
-
 export function useSettings() {
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [settings, setSettings] = useState<Settings>({
+    keybindings: DEFAULT_SETTINGS.keybindings,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const loadedSettings = await invoke<Settings>('get_settings');
-        setSettings(loadedSettings);
+        const keybindings = await getKeybindings();
+        setSettings({ keybindings });
       } catch (error) {
         console.error('Failed to load settings:', error);
         // Fall back to default settings
-        setSettings(defaultSettings);
+        setSettings({ keybindings: DEFAULT_SETTINGS.keybindings });
       } finally {
         setIsLoading(false);
       }
@@ -38,9 +30,9 @@ export function useSettings() {
     loadSettings();
   }, []);
 
-  const saveSettings = async (newSettings: Settings) => {
+  const updateSettings = async (newSettings: Settings) => {
     try {
-      await invoke('save_settings', { settings: newSettings });
+      await saveKeybindings(newSettings.keybindings);
       setSettings(newSettings);
     } catch (error) {
       console.error('Failed to save settings:', error);
@@ -50,7 +42,7 @@ export function useSettings() {
 
   return {
     settings,
-    saveSettings,
+    saveSettings: updateSettings,
     isLoading,
   };
 }

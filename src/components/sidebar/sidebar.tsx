@@ -343,7 +343,7 @@ const Sidebar = memo(function Sidebar() {
       >
         <form
           onSubmit={handleCreateSpace}
-          className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]"
+          className="flex flex-col gap-(--space-md) p-(--space-lg)"
         >
           <div className="space-y-1">
             <h3 className="text-lg font-semibold text-sidebar-foreground">Create space</h3>
@@ -370,17 +370,17 @@ const Sidebar = memo(function Sidebar() {
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-[var(--space-sm)]">
+          <div className="flex items-center justify-end gap-(--space-sm)">
             <button
               type="button"
               onClick={handleCloseCreateSpace}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-white text-[color:var(--modal-primary-foreground)] px-3 py-2 text-sm font-medium hover:bg-[rgba(255,255,255,0.9)] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-white text-modal-primary-foreground px-3 py-2 text-sm font-medium hover:bg-[rgba(255,255,255,0.9)] transition-colors"
             >
               Create space
             </button>
@@ -393,7 +393,7 @@ const Sidebar = memo(function Sidebar() {
         onCancel={handleCancelDeleteSpace}
         onConfirm={handleConfirmDeleteSpace}
       >
-        <div className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]">
+        <div className="flex flex-col gap-(--space-md) p-(--space-lg)">
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-sidebar-foreground">
               {spaceToDelete ? `Delete "${spaceToDelete.name}"?` : 'Delete space?'}
@@ -402,11 +402,11 @@ const Sidebar = memo(function Sidebar() {
               This will move all the content to trash for 15 days. You can restore it from Trash during that window.
             </p>
           </div>
-          <div className="flex items-center justify-end gap-[var(--space-sm)]">
+          <div className="flex items-center justify-end gap-(--space-sm)">
             <button
               type="button"
               onClick={handleCancelDeleteSpace}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
             >
               Cancel
             </button>
@@ -501,7 +501,7 @@ export const SidebarNodes = memo(({
       onCancel={handleCancelDeleteNode}
       onConfirm={handleConfirmDeleteNode}
     >
-      <div className="flex flex-col gap-[var(--space-md)] p-[var(--space-lg)]">
+      <div className="flex flex-col gap-(--space-md) p-(--space-lg)]">
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-sidebar-foreground">
             Delete "{node.name}"?
@@ -510,11 +510,11 @@ export const SidebarNodes = memo(({
             This will move all the content to trash for 15 days. You can restore it from Trash during that window.
           </p>
         </div>
-        <div className="flex items-center justify-end gap-[var(--space-sm)]">
+        <div className="flex items-center justify-end gap-(--space-sm)">
           <button
             type="button"
             onClick={handleCancelDeleteNode}
-            className="inline-flex items-center gap-1.5 rounded-md border border-[color:var(--modal-action-border)] bg-[var(--modal-action-bg)] px-3 py-2 text-sm font-medium text-[color:var(--modal-action-text)] hover:bg-[var(--modal-action-bg-hover)] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
           >
             Cancel
           </button>
@@ -554,13 +554,13 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate">{node.name}</span>
+              <span className="block truncate select-none">{node.name}</span>
             </div>
             <div
               className={cn(
                 "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
                 "opacity-0 max-w-0 pointer-events-none",
-                "group-hover/item-row:opacity-100 group-hover/item-row:max-w-[5.5rem] group-hover/item-row:pointer-events-auto"
+                "group-hover/item-row:opacity-100 group-hover/item-row:max-w-22 group-hover/item-row:pointer-events-auto"
               )}
             >
               <Tooltip delayDuration={120}>
@@ -647,14 +647,14 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate">{node.name}</span>
+              <span className="block truncate select-none">{node.name}</span>
             </div>
 
             <div
               className={cn(
                 "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
                 "opacity-0 max-w-0 pointer-events-none",
-                "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-[5.5rem] group-hover/sub-item-row:pointer-events-auto"
+                "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-22 group-hover/sub-item-row:pointer-events-auto"
               )}
             >
               <Tooltip delayDuration={120}>

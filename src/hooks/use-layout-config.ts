@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '@/types/layout';
-import invoke from '@/utils/invoke';
+import { getLayoutSettings, updateLayoutSettings, DEFAULT_SETTINGS } from '@/services/settings-store';
 
 interface UseLayoutConfigReturn {
   layout: Layout | null;
@@ -10,8 +10,8 @@ interface UseLayoutConfigReturn {
 }
 
 /**
- * Hook to load and manage layout configuration from the Tauri backend.
- * Loads the merged layout settings (default + custom) on mount.
+ * Hook to load and manage layout configuration using the Tauri Store plugin.
+ * Loads the layout settings on mount and provides methods to update them.
  */
 export const useLayoutConfig = (): UseLayoutConfigReturn => {
   const [layout, setLayout] = useState<Layout | null>(null);
@@ -24,10 +24,12 @@ export const useLayoutConfig = (): UseLayoutConfigReturn => {
       try {
         setIsLoading(true);
         setError(null);
-        const layoutSettings = await invoke('get_layout_settings', {});
+        const layoutSettings = await getLayoutSettings();
         setLayout(layoutSettings);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load layout settings');
+        // Fall back to default settings
+        setLayout(DEFAULT_SETTINGS.layout);
       } finally {
         setIsLoading(false);
       }
@@ -39,8 +41,7 @@ export const useLayoutConfig = (): UseLayoutConfigReturn => {
   // Save layout settings
   const saveLayout = async (updates: Partial<Layout>) => {
     try {
-      const updatedLayout = { ...layout, ...updates } as Layout;
-      await invoke('save_layout_settings', { layout: updatedLayout });
+      const updatedLayout = await updateLayoutSettings(updates);
       setLayout(updatedLayout);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save layout settings');
