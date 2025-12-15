@@ -10,9 +10,9 @@ export const KEYBOARD_SHORTCUTS = {
   
   // Navigation / search
   FIND_IN_PAGE: "CmdOrCtrl+F",
+  TOGGLE_SIDEBAR: "CmdOrCtrl+B",
   
   // Add more shortcuts as needed
-  // TOGGLE_SIDEBAR: "Mod-B",
   // SAVE: "CmdOrCtrl+S",
 } as const;
 

@@ -14,7 +14,6 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { settings } = useSettings();
     const { setOpen, open } = useSidebar();
     const { focusEditor } = useEditorContext();
-    const contentScrollerRef = useRef<HTMLDivElement | null>(null);
 
     const {
         isOpen: isSearchOpen,
@@ -27,10 +26,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
         updateQuery,
         goToNext,
         goToPrev,
-    } = useEditorSearch({
-        containerRef: contentScrollerRef,
-        selector: '.ProseMirror',
-    });
+    } = useEditorSearch();
     
     // Register global keyboard shortcuts for sidebar operations
     useGlobalSidebarShortcuts();
@@ -91,7 +87,6 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                     className="flex-1 relative"
                 >
                     <div
-                        ref={contentScrollerRef}
                         onClick={focusEditor}
                         className="flex-1 overflow-y-auto"
                     >

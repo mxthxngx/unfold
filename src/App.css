@@ -19,6 +19,7 @@ html, body { background: transparent !important;
   --popover-foreground: #f7f2f2;
   --primary: #f7f2f2;
   --primary-foreground: #09090b;
+  --primary-highlight: #c17bff;
   --secondary: #18181b;
   --secondary-foreground: #8e8d8d;
   --muted: #343434;
@@ -83,6 +84,22 @@ html, body { background: transparent !important;
   --tooltip: #0f0e11;
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "Google Sans Code", monospace;
+
+  /* Table theme - minimalistic code block aesthetic
+   * Using existing global theme colors mapped to table-* variables
+   * Matching the code block styling for consistent minimalistic UI
+   */
+  --table-surface: rgba(24, 24, 27, 0.5);
+  --table-surface-muted: rgba(15, 14, 17, 0.5);
+  --table-border: rgba(255, 255, 255, 0.16);
+  --table-header-bg: var(--secondary);
+  --table-header-foreground: var(--foreground);
+  --table-text: var(--foreground);
+  --table-text-muted: var(--foreground-muted);
+  --table-row-alt: var(--table-surface);
+  --table-row-bg: rgba(24, 24, 27, 0.5);
+  --table-row-hover: rgba(34, 34, 38, 0.65);
+  --table-ring: var(--ring);
 }
 
 /* Button theme utilities */
@@ -107,6 +124,7 @@ html, body { background: transparent !important;
   --popover-foreground: #09090b;
   --primary: #09090b;
   --primary-foreground: #efefef;
+  --primary-highlight: #7c3aed;
   --secondary: #f4f4f5;
   --secondary-foreground: #09090b;
   --muted: #f4f4f5;
@@ -152,6 +170,18 @@ html, body { background: transparent !important;
   --code-mark-text-dark: #09090b;
   --link: #09090b;
   --tooltip: #ffffff;
+  /* Table theme - light mode */
+  --table-surface: rgba(244, 244, 245, 0.8);
+  --table-surface-muted: rgba(255, 255, 255, 0.5);
+  --table-border: rgba(0, 0, 0, 0.2);
+  --table-header-bg: var(--secondary);
+  --table-header-foreground: var(--foreground);
+  --table-text: var(--foreground);
+  --table-text-muted: var(--muted-foreground);
+  --table-row-alt: var(--table-surface);
+  --table-row-bg: rgba(244, 244, 245, 0.8);
+  --table-row-hover: rgba(228, 228, 231, 0.9);
+  --table-ring: var(--ring);
 }
 
 @theme inline {
@@ -218,6 +248,17 @@ html, body { background: transparent !important;
   --color-modal-action-text: var(--modal-action-text);
   --color-modal-action-border: var(--modal-action-border);
   --color-modal-primary-foreground: var(--modal-primary-foreground);
+  --color-table-surface: var(--table-surface);
+  --color-table-surface-muted: var(--table-surface-muted);
+  --color-table-border: var(--table-border);
+  --color-table-header-bg: var(--table-header-bg);
+  --color-table-header-foreground: var(--table-header-foreground);
+  --color-table-text: var(--table-text);
+  --color-table-text-muted: var(--table-text-muted);
+  --color-table-row-alt: var(--table-row-alt);
+  --color-table-row-bg: var(--table-row-bg);
+  --color-table-row-hover: var(--table-row-hover);
+  --color-table-ring: var(--table-ring);
   --space-xs: var(--space-xs);
   --space-sm: var(--space-sm);
   --space-md: var(--space-md);
@@ -246,9 +287,179 @@ html, body { background: transparent !important;
   line-height: 1.2 !important;
 }
 
+/* Table column resize handles (Tiptap resizable tables) */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--table-border);
+  opacity: 0;
+  cursor: col-resize;
+  z-index: 20;
+  transition: opacity 0.2s ease;
+}
+
+.ProseMirror td:hover .column-resize-handle,
+.ProseMirror th:hover .column-resize-handle {
+  opacity: 1;
+  background: var(--primary-highlight);
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+.ProseMirror.resize-cursor .column-resize-handle {
+  background: var(--primary-highlight);
+  opacity: 1;
+}
+
+/* Table edge handles (top row / first column) */
+.edge-cell {
+  position: relative;
+}
+
+.edge-grip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  color: inherit;
+  z-index: 15;
+}
+
+.edge-grip.edge-row {
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 26px;
+}
+
+.edge-grip.edge-col {
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 10px;
+}
+
+.edge-grip::before {
+  content: "";
+  display: block;
+  border-left: 1px dashed var(--table-border);
+  width: 1px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+.edge-grip.edge-col::before {
+  border-left: none;
+  border-top: 1px dashed var(--table-border);
+  width: 16px;
+  height: 1px;
+}
+
+.edge-grip .edge-dots {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  background: #1c1c1f;
+  border-radius: 999px;
+  padding: 4px 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+
+.edge-grip .edge-dots span {
+  width: 3px;
+  height: 3px;
+  background: #7c7c7d;
+  border-radius: 999px;
+  display: block;
+}
+
+.edge-grip:hover::before {
+  display: none;
+}
+
+.edge-grip:hover .edge-dots {
+  display: inline-flex;
+}
+
+.edge-grip.edge-col .edge-dots {
+  flex-direction: row;
+}
+
+.edge-grip.edge-row .edge-dots {
+  flex-direction: column;
+}
+
+.edge-selected-row {
+  background: color-mix(in srgb, var(--primary-highlight) 8%, transparent);
+}
+
+.edge-selected-col {
+  background: color-mix(in srgb, var(--primary-highlight) 8%, transparent);
+}
+
+.edge-drop-line {
+  position: absolute;
+  background: var(--primary-highlight);
+  z-index: 25;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
+}
+
+.ProseMirror.resize-cursor .column-resize-handle {
+  background: var(--primary-highlight);
+  opacity: 1;
+}
+
+/* Table wrapper for add buttons and overflow */
+.table-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.table-wrapper > div {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.table-wrapper > div > div:first-child {
+  overflow-x: auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.table-wrapper > div > div:first-child > table {
+  min-width: 100%;
+}
+
+.table-wrapper button[aria-label="Add column"] {
+  position: sticky;
+  right: 0;
+  flex-shrink: 0;
+  min-width: 24px;
+  background: var(--table-surface);
+  border-color: var(--table-border);
+}
+
+.table-wrapper button[aria-label="Add row"] {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: calc(100% - 30px);
+  z-index: 10;
+}
+
 ::selection { 
-  color: #c17bff;
-  background: rgba(124, 58, 237, 0.061);
+  color: var(--primary-highlight);
+  background: color-mix(in srgb, var(--primary-highlight) 12%, transparent);
   padding: 2px 6px;
   border-radius: 6px;
 }

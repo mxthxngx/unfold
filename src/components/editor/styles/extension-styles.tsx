@@ -58,4 +58,17 @@ export const editorClasses = {
 
   taskItem:
     "flex items-start gap-2",
+
+  // Minimalistic table styling matching code block aesthetic
+  table:
+    "w-full border-collapse text-sm text-table-text bg-table-surface border border-table-border rounded-lg overflow-hidden shadow-sm my-4",
+
+  tableRow:
+    "bg-table-row-bg hover:bg-table-row-hover transition-colors duration-150 last:[&>td]:border-b-0 last:[&>th]:border-b-0 [&>td]:border-r [&>td]:border-table-border [&>td]:last:border-r-0 [&>th]:border-r [&>th]:border-table-border [&>th]:last:border-r-0",
+
+  tableHeader:
+    "relative px-4 py-3 pb-0 text-left font-medium text-table-header-foreground bg-table-header-bg border-b border-table-border border-r last:border-r-0 edge-cell",
+
+  tableCell:
+    "relative px-4 py-3 text-table-text-muted border-b border-table-border border-r last:border-r-0 [&_p]:mb-0 [&_p]:pb-0 edge-cell",
 };

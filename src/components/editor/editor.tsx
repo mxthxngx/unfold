@@ -15,6 +15,11 @@ import { useParams, useNavigate } from "@tanstack/react-router";
 import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
 import { findFirstFileId } from "@/lib/file-tree";
+import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { editorClasses } from "./styles/extension-styles";
+import TableView from "./components/table-view";
+import { TableEdgeHandles } from "./extensions/table-edge-handles-extension";
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
@@ -43,6 +48,34 @@ function Editor() {
           DocumentTitle,
           HeadingExtension,
           DocumentExtension,
+          Table.extend({
+            addNodeView() {
+              return ReactNodeViewRenderer(TableView, {
+                contentDOMElementTag: "table",
+              });
+            },
+          }).configure({
+            resizable: true,
+            HTMLAttributes: {
+              class: editorClasses.table,
+            },
+          }),
+          TableRow.configure({
+            HTMLAttributes: {
+              class: editorClasses.tableRow,
+            },
+          }),
+          TableHeader.configure({
+            HTMLAttributes: {
+              class: editorClasses.tableHeader,
+            },
+          }),
+          TableCell.configure({
+            HTMLAttributes: {
+              class: editorClasses.tableCell,
+            },
+          }),
+          TableEdgeHandles,
           CustomKeymap.configure({
             selectAllKey: settings.keybindings.selectAll,
           }),

@@ -22,7 +22,7 @@ export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(function Sea
     value,
     matchesCount,
     activeIndex,
-    placeholder = 'Search in page...',
+    placeholder = 'curious about...',
     inputRef,
     onChange,
     onNext,
