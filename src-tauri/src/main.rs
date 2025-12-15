@@ -16,6 +16,9 @@ fn main() {
             commands::upload_image,
             commands::get_image,
             commands::delete_image,
+            commands::check_database_schema,
+            commands::check_nodes_schema,
+            commands::repair_nodes_schema,
         ])
         .setup(|_app| Ok(()))
         .run(tauri::generate_context!())

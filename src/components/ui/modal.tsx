@@ -126,8 +126,8 @@ export function Modal({
             transition={{ type: 'spring', stiffness: 220, damping: 26 }}
             className={cn(
               'relative w-full max-w-md min-h-0 overflow-hidden rounded-xl border',
-              'border-[color:var(--modal-surface-border)] ring-1 ring-[color:var(--modal-surface-border)]',
-              'bg-[var(--modal-surface)] text-[color:var(--modal-surface-foreground)] shadow-2xl',
+              'border-modal-surface-border ring-1 ring-modal-surface-border',
+              'bg-modal-surface text-modal-surface-foreground shadow-2xl',
               'max-h-[82vh]',
               className
             )}

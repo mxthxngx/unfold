@@ -57,14 +57,17 @@ async function uploadImageFromFile(
   // Convert file to base64
   const base64 = await fileToBase64(file);
   
+  // Generate a unique ID for this upload to track the placeholder
+  const uploadId = `uploading-${Date.now()}-${Math.random()}`;
+  
   // Insert placeholder node
   const tr = view.state.tr;
-  const node = view.state.schema.nodes.image.create({
+  const imageNode = view.state.schema.nodes.image.create({
     src: "",
-    attachmentId: "uploading",
+    attachmentId: uploadId,
     size: file.size,
   });
-  tr.insert(pos, node);
+  tr.insert(pos, imageNode);
   view.dispatch(tr);
 
   try {
@@ -80,26 +83,49 @@ async function uploadImageFromFile(
     // Convert the file path to a valid URL for Tauri
     const assetUrl = convertFileSrc(result.path);
 
-    // Update the node with the actual image data
+    // Find the placeholder node by searching for the uploadId
     const { state } = view;
-    const nodePos = state.doc.resolve(pos);
-    const updateTr = state.tr;
+    let foundPos: number | null = null;
     
-    updateTr.setNodeMarkup(pos, undefined, {
-      src: assetUrl,
-      attachmentId: result.id,
-      size: result.size,
-      alt: file.name,
+    state.doc.descendants((node, pos) => {
+      if (node.type.name === "image" && node.attrs.attachmentId === uploadId) {
+        foundPos = pos;
+        return false; // Stop searching
+      }
+      return true;
     });
-    
-    view.dispatch(updateTr);
+
+    // Update the node with the actual image data if we found it
+    if (foundPos !== null) {
+      const updateTr = state.tr;
+      updateTr.setNodeMarkup(foundPos, undefined, {
+        src: assetUrl,
+        attachmentId: result.id,
+        size: result.size,
+        alt: file.name,
+      });
+      view.dispatch(updateTr);
+    }
   } catch (error) {
     console.error("Failed to upload image:", error);
     
-    // Remove the placeholder node on error
-    const deleteTr = view.state.tr;
-    deleteTr.delete(pos, pos + 1);
-    view.dispatch(deleteTr);
+    // Find and remove the placeholder node by searching for the uploadId
+    const { state } = view;
+    let foundPos: number | null = null;
+    
+    state.doc.descendants((node, pos) => {
+      if (node.type.name === "image" && node.attrs.attachmentId === uploadId) {
+        foundPos = pos;
+        return false; // Stop searching
+      }
+      return true;
+    });
+    
+    if (foundPos !== null) {
+      const deleteTr = state.tr;
+      deleteTr.delete(foundPos, foundPos + 1);
+      view.dispatch(deleteTr);
+    }
   }
 }
 

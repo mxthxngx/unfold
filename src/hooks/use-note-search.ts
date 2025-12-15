@@ -69,19 +69,22 @@ export function useNoteSearch(_options: UseNoteSearchOptions = {}): UseNoteSearc
             if (!scopeId) {
               throw new Error('Space ID required for space-scoped search');
             }
-            searchResults = await db.searchInSpace(scopeId, ftsQuery);
+            // TODO: Implement searchInSpace
+            searchResults = [];
             break;
 
           case 'node':
             if (!scopeId) {
               throw new Error('Node ID required for node-scoped search');
             }
-            searchResults = await db.searchInNode(scopeId, ftsQuery);
+            // TODO: Implement searchInNode
+            searchResults = [];
             break;
 
           case 'global':
           default:
-            searchResults = await db.searchGlobal(ftsQuery);
+            // TODO: Implement searchGlobal
+            searchResults = [];
             break;
         }
 

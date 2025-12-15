@@ -357,7 +357,7 @@ const Sidebar = memo(function Sidebar() {
       >
         <form
           onSubmit={handleCreateSpace}
-          className="flex flex-col gap-var(--space-md) p-10"
+          className="flex flex-col gap-(--space-md) p-(--space-lg)"
         >
           <div className="space-y-1">
             <h3 className="text-lg font-semibold text-sidebar-foreground">Create space</h3>
@@ -407,7 +407,7 @@ const Sidebar = memo(function Sidebar() {
         onCancel={handleCancelDeleteSpace}
         onConfirm={handleConfirmDeleteSpace}
       >
-        <div className="flex flex-col gap-(--space-md) p-(--space-lg)">
+        <div className="flex flex-col gap-(--space-md) p-5">
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-sidebar-foreground">
               {spaceToDelete ? `Delete "${spaceToDelete.name}"?` : 'Delete space?'}

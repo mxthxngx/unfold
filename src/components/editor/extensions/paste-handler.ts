@@ -1,20 +1,44 @@
-import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import type { EditorView } from "@tiptap/pm/view";
+import { handleImagePaste, handleImageDrop } from "./image-paste-handler";
 
+/**
+ * Generic paste handler that delegates to specific handlers
+ * Can be extended to handle other paste types (links, code blocks, etc.)
+ */
+export const handlePaste = (
+  view: EditorView,
+  event: ClipboardEvent,
+  noteId: string,
+) => {
+  // Try image paste first
+  if (handleImagePaste(view, event, noteId)) {
+    return true;
+  }
 
-export const PasteHandler = Extension.create({
-  name: 'pasteHandler',
+  // Add more paste handlers here as needed
+  // e.g., handleLinkPaste, handleCodePaste, etc.
 
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        key: new PluginKey('pasteHandler'),
-        props: {
-          transformPastedHTML(html) {
-            return html.replace(/<h1/g, '<h2').replace(/<\/h1>/g, '</h2>')
-          },
-        },
-      }),
-    ]
-  },
-})
+  // Let TipTap handle default paste behavior
+  return false;
+};
+
+/**
+ * Generic drop handler that delegates to specific handlers
+ * Can be extended to handle other drop types
+ */
+export const handleDrop = (
+  view: EditorView,
+  event: DragEvent,
+  moved: boolean,
+  noteId: string,
+) => {
+  // Try image drop first
+  if (handleImageDrop(view, event, moved, noteId)) {
+    return true;
+  }
+
+  // Add more drop handlers here as needed
+
+  // Let TipTap handle default drop behavior
+  return false;
+};

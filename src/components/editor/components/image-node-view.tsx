@@ -1,28 +1,13 @@
 import { NodeViewWrapper } from "@tiptap/react";
 import { NodeViewProps } from "@tiptap/core";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
-export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
-  const { src, attachmentId, alt, align, width } = node.attrs;
-  const [loading, setLoading] = useState(!src && attachmentId === "uploading");
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    // Update loading state when src changes
-    if (src && attachmentId !== "uploading") {
-      setLoading(false);
-    }
-  }, [src, attachmentId]);
-
-  const handleImageLoad = () => {
-    setLoading(false);
-    setError(false);
-  };
-
-  const handleImageError = () => {
-    setLoading(false);
-    setError(true);
-  };
+export const ImageNodeView = ({ node }: NodeViewProps) => {
+  const { src, attachmentId, alt, align, width, height } = node.attrs;
+  
+  // Compute loading and error states based on node attributes
+  const loading = useMemo(() => !src && attachmentId === "uploading", [src, attachmentId]);
+  const error = useMemo(() => !src && attachmentId && attachmentId !== "uploading", [src, attachmentId]);
 
   const getAlignmentClass = () => {
     switch (align) {
@@ -76,9 +61,14 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
         <img
           src={src}
           alt={alt || ""}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
           draggable={false}
+          style={{
+            maxHeight: height || "600px",
+            maxWidth: "100%",
+            width: "auto",
+            height: "auto",
+            objectFit: "contain"
+          }}
         />
       </div>
     </NodeViewWrapper>

@@ -49,10 +49,18 @@ export default function invoke<TInvocationName extends InvocationName>(
 
 // Convenience functions for image operations
 export const uploadImage = (request: UploadImageRequest) => 
-    invoke('upload_image', request);
+    tauriInvoke<UploadImageResponse>('upload_image', {
+        request: {
+            note_id: request.noteId,
+            file_name: request.fileName,
+            base64_data: request.base64Data,
+            mime_type: request.mimeType,
+            size: request.size,
+        }
+    });
 
 export const getImage = (attachmentId: string) => 
-    invoke('get_image', { attachmentId });
+    tauriInvoke<string>('get_image', { attachmentId });
 
 export const deleteImage = (attachmentId: string) => 
-    invoke('delete_image', { attachmentId });
+    tauriInvoke('delete_image', { attachmentId });

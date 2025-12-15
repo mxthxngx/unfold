@@ -94,7 +94,16 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
           // Priority: saved space > "mine" space > first space
           const mineSpace = loadedSpaces.find(s => s.name === 'mine');
           const activeId = savedSpaceExists ? savedSpaceId : (mineSpace?.id ?? loadedSpaces[0]?.id ?? '');
+          
+          // Clear invalid saved space ID
+          if (!savedSpaceExists && savedSpaceId) {
+            localStorage.removeItem('activeSpaceId');
+          }
+          
           setActiveSpaceId(activeId);
+          if (activeId) {
+            localStorage.setItem('activeSpaceId', activeId);
+          }
           setHasInitialized(true);
         }
       } catch (error) {
@@ -120,7 +129,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   }, [activeSpaceId, spaces]);
 
   const fileTree = activeSpace?.fileTree ?? [];
-  const spaceName = activeSpace?.name ?? (isLoading ? 'Loading...' : 'New Space');
+  const spaceName = activeSpace?.name ??  'Loading...' ;
   
   // Helper to find a node in the tree
   const findNode = useCallback((nodes: Node[], id: string): Node | null => {
@@ -180,7 +189,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
 
   const addSpace = useCallback(async (name?: string) => {
     const newSpaceId = uuidv4();
-    const spaceName = name?.trim() && name.trim().length > 0 ? name.trim() : 'New Space';
+    const spaceName = name?.trim() && name.trim().length > 0 ? name.trim() : 'new Space';
     
     try {
       await db.createSpace({
@@ -204,7 +213,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     if (trimmedName.length === 0) return;
     
     try {
-      await db.updateSpace(id, { name: trimmedName });
+      await db.updateSpace(id,  trimmedName );
       setSpaces((prev) =>
         prev.map((space) =>
           space.id === id ? { ...space, name: trimmedName } : space

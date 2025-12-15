@@ -24,7 +24,8 @@ import { TableEdgeHandles } from "./extensions/table-edge-handles-extension";
 import { useDebouncedCallback } from "@/hooks/use-debounce";
 import { TiptapImage } from "./extensions/image";
 import { ImageNodeView } from "./components/image-node-view";
-import { ImagePasteExtension } from "./extensions/image-paste-extension";
+import { handlePaste, handleDrop } from "./extensions/paste-handler";
+import NodeRange from "@tiptap/extension-node-range";
 
 // Debounce delay for auto-saving content (ms)
 const SAVE_DEBOUNCE_DELAY = 500;
@@ -69,7 +70,7 @@ function Editor() {
         [updateNodeContent]
     );
 
-    const { debouncedCallback: debouncedSave, flush: flushSave } = useDebouncedCallback(
+    const { debouncedCallback: debouncedSave, flush: flushSave } = useDebouncedCallback<typeof saveContent>(
         saveContent,
         SAVE_DEBOUNCE_DELAY
     );
@@ -87,12 +88,10 @@ function Editor() {
           DocumentTitle,
           HeadingExtension,
           DocumentExtension,
+          NodeRange,
           TiptapImage.configure({
             view: ImageNodeView,
             allowBase64: false,
-          }),
-          ImagePasteExtension.configure({
-            noteId: fileId,
           }),
           Table.extend({
             addNodeView() {
@@ -147,6 +146,14 @@ function Editor() {
         editorProps: {
           attributes: {
             class: 'w-full outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full',
+          },
+          handlePaste: (view, event) => {
+            if (fileId) return handlePaste(view, event, fileId);
+            return false;
+          },
+          handleDrop: (view, event, _slice, moved) => {
+            if (fileId) return handleDrop(view, event, moved, fileId);
+            return false;
           },
         },
     });
