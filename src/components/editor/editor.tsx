@@ -1,10 +1,11 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useEditorContext } from "@/contexts/EditorContext";
 import { HeadingExtension } from './extensions/heading';
 import { TrailingNode } from "@tiptap/extensions";
 import "./styles/drag-handle.css";
 import "./styles/block-spacing.css";
+import "./styles/image-node.css";
 import { starterKit } from './extensions/starterkit';
 import CustomKeymap from "./extensions/custom-keymap";
 import { DocumentExtension } from "./extensions/document";
@@ -20,15 +21,30 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { editorClasses } from "./styles/extension-styles";
 import TableView from "./components/table-view";
 import { TableEdgeHandles } from "./extensions/table-edge-handles-extension";
+import { useDebouncedCallback } from "@/hooks/use-debounce";
+import { TiptapImage } from "./extensions/image";
+import { ImageNodeView } from "./components/image-node-view";
+import { ImagePasteExtension } from "./extensions/image-paste-extension";
+
+// Debounce delay for auto-saving content (ms)
+const SAVE_DEBOUNCE_DELAY = 500;
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
     const navigate = useNavigate();
-    const { getNode, updateNodeContent, fileTree } = useFileSystem();
+    const { getNode, updateNodeContent, fileTree, activeSpaceId } = useFileSystem();
     const file = fileId ? getNode(fileId) : null;
     const { settings } = useSettings();
     const { setEditor } = useEditorContext();
     const hasInitialContent = Boolean(file?.content && file.content.trim() !== '');
+    const lastSavedContentRef = useRef<string>('');
+
+    // Save current fileId to localStorage when it changes
+    useEffect(() => {
+        if (fileId && activeSpaceId) {
+            localStorage.setItem(`lastOpenedFile_${activeSpaceId}`, fileId);
+        }
+    }, [fileId, activeSpaceId]);
 
     useEffect(() => {
         if (!fileId) return;
@@ -42,12 +58,42 @@ function Editor() {
         }
     }, [fileId, file, fileTree, navigate]);
 
+    // Debounced save function for content updates
+    const saveContent = useCallback(
+        (id: string, content: string) => {
+            // Skip if content hasn't actually changed
+            if (content === lastSavedContentRef.current) return;
+            lastSavedContentRef.current = content;
+            updateNodeContent(id, content);
+        },
+        [updateNodeContent]
+    );
+
+    const { debouncedCallback: debouncedSave, flush: flushSave } = useDebouncedCallback(
+        saveContent,
+        SAVE_DEBOUNCE_DELAY
+    );
+
+    // Flush pending saves when switching files or unmounting
+    useEffect(() => {
+        return () => {
+            flushSave();
+        };
+    }, [fileId, flushSave]);
+
     const editor = useEditor({
         extensions:[
           starterKit,
           DocumentTitle,
           HeadingExtension,
           DocumentExtension,
+          TiptapImage.configure({
+            view: ImageNodeView,
+            allowBase64: false,
+          }),
+          ImagePasteExtension.configure({
+            noteId: fileId,
+          }),
           Table.extend({
             addNodeView() {
               return ReactNodeViewRenderer(TableView, {
@@ -88,7 +134,9 @@ function Editor() {
         content: file?.content || '',
         onUpdate: ({ editor }) => {
           if (fileId) {
-            updateNodeContent(fileId, editor.getHTML());
+            // Store as JSON string for SQLite persistence
+            const jsonContent = JSON.stringify(editor.getJSON());
+            debouncedSave(fileId, jsonContent);
           }
         },
         coreExtensionOptions: {
@@ -112,14 +160,23 @@ function Editor() {
     // Update content when file changes
     useEffect(() => {
         if (editor && file) {
-            // Only update if the content is different to avoid cursor jumping or loops
-            // For now, we assume if fileId changed, we must update.
-            // We can check if the editor content is different from file content, 
-            // but file content might be stale if we just typed.
-            // Ideally we only set content if we switched files.
-            // We can track previous fileId.
-            editor.commands.setContent(file.content || '');
-            if (!file.content || file.content.trim() === '') {
+            // Parse JSON content (TipTap JSON format)
+            const rawContent = file.content || '';
+            let content: object | string = '';
+            
+            if (rawContent) {
+                try {
+                    content = JSON.parse(rawContent);
+                } catch {
+                    // If not valid JSON, start fresh
+                    content = '';
+                }
+            }
+            
+            editor.commands.setContent(content);
+            lastSavedContentRef.current = rawContent;
+            
+            if (!rawContent || rawContent.trim() === '') {
                 editor.commands.focus('start');
             }
         }

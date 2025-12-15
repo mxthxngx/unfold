@@ -18,16 +18,13 @@ export function useSidebarContextMenu({
 
   useEffect(() => {
     const initMenu = async () => {
-      try {
-        console.log("Creating menu for node:", nodeId);
-        
+      try {        
         // Create menu items
         const createChildItem = await MenuItem.new({
           id: `sidebar_create_child_${nodeId}`,
           text: "Create Child Note",
           accelerator: KEYBOARD_SHORTCUTS.CREATE_FILE,
           action: () => {
-            console.log("Create child action triggered");
             onCreateChild(nodeId);
           }
         });
@@ -37,7 +34,6 @@ export function useSidebarContextMenu({
           text: "Delete",
           accelerator: KEYBOARD_SHORTCUTS.DELETE_NOTE,
           action: () => {
-            console.log("Delete action triggered");
             onDelete(nodeId);
           }
         });
@@ -47,7 +43,6 @@ export function useSidebarContextMenu({
           items: [createChildItem, deleteItem]
         });
         
-        console.log("Menu created successfully");
       } catch (error) {
         console.error("Error creating menu:", error);
       }
@@ -60,13 +55,11 @@ export function useSidebarContextMenu({
     event.preventDefault();
     event.stopPropagation();
     
-    console.log("Context menu triggered");
     
     try {
       if (menuPromiseRef.current) {
         const menu = await menuPromiseRef.current;
         const window = getCurrentWindow();
-        console.log("Showing popup menu");
         await menu.popup(undefined, window);
       } else {
         console.error("Menu not initialized");

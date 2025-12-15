@@ -14,20 +14,32 @@ export function useSettings() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const loadSettings = async () => {
       try {
         const keybindings = await getKeybindings();
-        setSettings({ keybindings });
+        if (mounted) {
+          setSettings({ keybindings });
+        }
       } catch (error) {
         console.error('Failed to load settings:', error);
-        // Fall back to default settings
-        setSettings({ keybindings: DEFAULT_SETTINGS.keybindings });
+        if (mounted) {
+          // Fall back to default settings
+          setSettings({ keybindings: DEFAULT_SETTINGS.keybindings });
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadSettings();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const updateSettings = async (newSettings: Settings) => {

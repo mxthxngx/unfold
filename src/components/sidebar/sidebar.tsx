@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/sidebar';
 import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Sidebar = memo(function Sidebar() {
   const {
@@ -31,6 +32,7 @@ const Sidebar = memo(function Sidebar() {
     activeSpaceId,
     fileTree,
     spaceName,
+    isLoading,
     addNode,
     addSpace,
     renameSpace,
@@ -87,8 +89,8 @@ const Sidebar = memo(function Sidebar() {
     }
   }, [isSpaceMenuOpen, activeSpaceId]);
 
-  const handleGlobalAdd = () => {
-    const newId = addNode(null);
+  const handleGlobalAdd = async () => {
+    const newId = await addNode(null);
     navigate({ to: '/files/$fileId', params: { fileId: newId } });
   };
 
@@ -123,14 +125,14 @@ const Sidebar = memo(function Sidebar() {
     setCreateSpaceError('');
   };
 
-  const handleCreateSpace = (event?: React.FormEvent | KeyboardEvent | MouseEvent) => {
+  const handleCreateSpace = async (event?: React.FormEvent | KeyboardEvent | MouseEvent) => {
     event?.preventDefault?.();
     const nextName = newSpaceName.trim();
     if (!nextName) {
       setCreateSpaceError('Space name is required');
       return;
     }
-    addSpace(nextName);
+    await addSpace(nextName);
     setIsCreateSpaceOpen(false);
     setEditingSpaceId(null);
     setDraftName('');
@@ -138,8 +140,8 @@ const Sidebar = memo(function Sidebar() {
     setCreateSpaceError('');
   };
 
-  const handleRenameCommit = (spaceId: string) => {
-    renameSpace(spaceId, draftName || 'Untitled Space');
+  const handleRenameCommit = async (spaceId: string) => {
+    await renameSpace(spaceId, draftName || 'Untitled Space');
     setEditingSpaceId(null);
     setDraftName('');
   };
@@ -153,13 +155,13 @@ const Sidebar = memo(function Sidebar() {
 
   const handleCancelDeleteSpace = () => setSpaceToDelete(null);
 
-  const handleConfirmDeleteSpace = () => {
+  const handleConfirmDeleteSpace = async () => {
     if (!spaceToDelete) return;
     const spaceId = spaceToDelete.id;
     const remaining = spaces.filter((space) => space.id !== spaceId);
     const nextSpace = spaceId === activeSpaceId ? remaining[0] : spaces.find((s) => s.id === activeSpaceId);
 
-    deleteSpace(spaceId);
+    await deleteSpace(spaceId);
     setIsSpaceMenuOpen(false);
     setSpaceToDelete(null);
 
@@ -204,15 +206,27 @@ const Sidebar = memo(function Sidebar() {
 
       <SidebarContent className="px-4 overflow-y-auto">
         <SidebarMenu className="space-y-0.5">
-          {fileTree.map((node) => (
-            <SidebarNodes
-              key={node.id}
-              node={node}
-              selectedItem={fileId || null}
-              level={0}
-              addFileShortcut={addFileShortcut}
-            />
-          ))}
+          {isLoading ? (
+            <>
+              {[1, 2, 3].map((i) => (
+                <SidebarMenuItem key={i}>
+                  <div className="flex items-center px-2 py-1.5">
+                    <Skeleton className="h-4 w-50 rounded" />
+                  </div>
+                </SidebarMenuItem>
+              ))}
+            </>
+          ) : (
+            fileTree.map((node) => (
+              <SidebarNodes
+                key={node.id}
+                node={node}
+                selectedItem={fileId || null}
+                level={0}
+                addFileShortcut={addFileShortcut}
+              />
+            ))
+          )}
         </SidebarMenu>
       </SidebarContent>
 
@@ -343,7 +357,7 @@ const Sidebar = memo(function Sidebar() {
       >
         <form
           onSubmit={handleCreateSpace}
-          className="flex flex-col gap-(--space-md) p-(--space-lg)"
+          className="flex flex-col gap-var(--space-md) p-10"
         >
           <div className="space-y-1">
             <h3 className="text-lg font-semibold text-sidebar-foreground">Create space</h3>
@@ -446,7 +460,7 @@ export const SidebarNodes = memo(({
 
   const handleOpenDeleteModal = useCallback((_nodeId?: string) => setIsDeleteModalOpen(true), []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
-  const handleConfirmDeleteNode = () => {
+  const handleConfirmDeleteNode = async () => {
     if (selectedItem === node.id) {
       const prevNodeId = getPreviousVisibleNode(node.id);
       if (prevNodeId) {
@@ -455,23 +469,23 @@ export const SidebarNodes = memo(({
         navigate({ to: '/' });
       }
     }
-    deleteNode(node.id);
+    await deleteNode(node.id);
     setIsDeleteModalOpen(false);
   };
 
   // Context menu handler
   const { handleContextMenu } = useSidebarContextMenu({
     nodeId: node.id,
-    onCreateChild: (nodeId) => {
-      const newId = addNode(nodeId);
+    onCreateChild: async (nodeId) => {
+      const newId = await addNode(nodeId);
       navigate({ to: '/files/$fileId', params: { fileId: newId } });
     },
     onDelete: handleOpenDeleteModal
   });
 
-  const handleAddChild = (e: React.MouseEvent) => {
+  const handleAddChild = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const newId = addNode(node.id);
+    const newId = await addNode(node.id);
     navigate({ to: '/files/$fileId', params: { fileId: newId } });
   };
 
@@ -501,7 +515,7 @@ export const SidebarNodes = memo(({
       onCancel={handleCancelDeleteNode}
       onConfirm={handleConfirmDeleteNode}
     >
-      <div className="flex flex-col gap-(--space-md) p-(--space-lg)]">
+      <div className="flex flex-col gap-(--space-md) p-5">
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-sidebar-foreground">
             Delete "{node.name}"?

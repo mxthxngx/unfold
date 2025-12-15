@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { Node } from '../types/sidebar';
 import { v4 as uuidv4 } from 'uuid';
-import { INITIAL_DATA } from '../data/initial-filesystem';
+import * as db from '../services/database';
 
 type Space = {
   id: string;
@@ -14,16 +14,17 @@ interface FileSystemContextType {
   spaceName: string;
   spaces: Space[];
   activeSpaceId: string;
+  isLoading: boolean;
   setActiveSpace: (id: string) => void;
-  addSpace: (name?: string) => string;
-  renameSpace: (id: string, name: string) => void;
-  deleteSpace: (id: string) => void;
-  addNode: (parentId: string | null) => string;
-  updateNodeContent: (id: string, content: string) => void;
+  addSpace: (name?: string) => Promise<string>;
+  renameSpace: (id: string, name: string) => Promise<void>;
+  deleteSpace: (id: string) => Promise<void>;
+  addNode: (parentId: string | null) => Promise<string>;
+  updateNodeContent: (id: string, content: string) => Promise<void>;
   getNode: (id: string) => Node | null;
-  toggleFolder: (id: string) => void;
+  toggleFolder: (id: string) => Promise<void>;
   getNodePath: (id: string) => Node[];
-  deleteNode: (id: string) => void;
+  deleteNode: (id: string) => Promise<void>;
   getPreviousVisibleNode: (id: string) => string | null;
 }
 
@@ -34,87 +35,94 @@ const sortNodes = (nodes: Node[]): Node[] => {
 };
 
 export function FileSystemProvider({ children }: { children: React.ReactNode }) {
-  const initialSpaceId = useMemo(() => uuidv4(), []);
+  const [spaces, setSpaces] = useState<Space[]>([]);
+  const [activeSpaceId, setActiveSpaceId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  const [spaces, setSpaces] = useState<Space[]>([
-    {
-      id: initialSpaceId,
-      name: 'System Design',
-      fileTree: INITIAL_DATA,
-    },
-  ]);
-  const [activeSpaceId, setActiveSpaceId] = useState<string>(initialSpaceId);
+  // Load initial data from database
+  useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized) {
+      return;
+    }
+
+    let mounted = true;
+
+    const loadData = async () => {
+      try {
+        const spaceRows = await db.getSpaces();
+        
+        if (!mounted) return;
+        
+        if (spaceRows.length === 0) {
+          const defaultSpaceId = uuidv4();
+          await db.createSpace({
+            id: defaultSpaceId,
+            name: 'mine',
+            sort_order: 0,
+          });
+          
+          if (!mounted) return;
+          
+          setSpaces([{ id: defaultSpaceId, name: 'mine', fileTree: [] }]);
+          setActiveSpaceId(defaultSpaceId);
+          localStorage.setItem('activeSpaceId', defaultSpaceId);
+          setHasInitialized(true);
+        } else {
+          // Load all spaces with their nodes
+          const loadedSpaces = await Promise.all(
+            spaceRows.map(async (spaceRow) => {
+              const nodeRows = await db.getNodesBySpace(spaceRow.id);
+              const fileTree = db.buildNodeTree(nodeRows);
+              return {
+                id: spaceRow.id,
+                name: spaceRow.name,
+                fileTree,
+              };
+            })
+          );
+          
+          if (!mounted) return;
+          
+          setSpaces(loadedSpaces);
+          
+          // Try to restore last active space from localStorage
+          const savedSpaceId = localStorage.getItem('activeSpaceId');
+          const savedSpaceExists = savedSpaceId && loadedSpaces.some(s => s.id === savedSpaceId);
+          
+          // Priority: saved space > "mine" space > first space
+          const mineSpace = loadedSpaces.find(s => s.name === 'mine');
+          const activeId = savedSpaceExists ? savedSpaceId : (mineSpace?.id ?? loadedSpaces[0]?.id ?? '');
+          setActiveSpaceId(activeId);
+          setHasInitialized(true);
+        }
+      } catch (error) {
+        if (!mounted) return;
+        console.error('[FileSystemContext] Failed to load data from database:', error);
+        setHasInitialized(true); // Mark as initialized even on error to prevent infinite retries
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadData();
+
+    return () => {
+      mounted = false;
+    };
+  }, [hasInitialized]);
 
   const activeSpace = useMemo(() => {
     return spaces.find((space) => space.id === activeSpaceId) ?? spaces[0] ?? null;
   }, [activeSpaceId, spaces]);
 
   const fileTree = activeSpace?.fileTree ?? [];
-  const spaceName = activeSpace?.name ?? 'New Space';
-
-  const setActiveSpace = useCallback(
-    (id: string) => {
-      const exists = spaces.some((space) => space.id === id);
-      if (exists) {
-        setActiveSpaceId(id);
-      } else if (spaces.length > 0) {
-        setActiveSpaceId(spaces[0].id);
-      } else {
-        setActiveSpaceId('');
-      }
-    },
-    [spaces]
-  );
-
-  const addSpace = useCallback((name?: string) => {
-    const newSpace: Space = {
-      id: uuidv4(),
-      name: name?.trim() && name.trim().length > 0 ? name.trim() : 'New Space',
-      fileTree: [],
-    };
-    setSpaces((prev) => [...prev, newSpace]);
-    setActiveSpaceId(newSpace.id);
-    return newSpace.id;
-  }, []);
-
-  const renameSpace = useCallback((id: string, name: string) => {
-    setSpaces((prev) =>
-      prev.map((space) =>
-        space.id === id
-          ? { ...space, name: name.trim().length > 0 ? name.trim() : space.name }
-          : space
-      )
-    );
-  }, []);
-
-  const deleteSpace = useCallback(
-    (id: string) => {
-      setSpaces((prev) => {
-        if (prev.length <= 1) return prev;
-        const filtered = prev.filter((space) => space.id !== id);
-        if (activeSpaceId === id) {
-          const fallback = filtered[0]?.id ?? '';
-          setActiveSpaceId(fallback);
-        }
-        return filtered;
-      });
-    },
-    [activeSpaceId]
-  );
-
-  const updateActiveSpaceTree = useCallback(
-    (updater: (nodes: Node[]) => Node[]) => {
-      setSpaces((prev) =>
-        prev.map((space) =>
-          space.id === (activeSpace?.id ?? '')
-            ? { ...space, fileTree: updater(space.fileTree) }
-            : space
-        )
-      );
-    },
-    [activeSpace?.id]
-  );
-
+  const spaceName = activeSpace?.name ?? (isLoading ? 'Loading...' : 'New Space');
+  
+  // Helper to find a node in the tree
   const findNode = useCallback((nodes: Node[], id: string): Node | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
@@ -132,145 +140,263 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     },
     [fileTree, findNode]
   );
+  
+  // Reload active space tree from database
+  const reloadActiveSpaceTree = useCallback(async () => {
+    if (!activeSpaceId) return;
+    
+    const currentSpaceId = activeSpaceId;
+    
+    try {
+      const nodeRows = await db.getNodesBySpace(currentSpaceId);
+      const fileTree = db.buildNodeTree(nodeRows);
+      
+      setSpaces((prev) =>
+        prev.map((space) =>
+          space.id === currentSpaceId ? { ...space, fileTree } : space
+        )
+      );
+    } catch (error) {
+      console.error('Failed to reload space tree:', error);
+    }
+  }, [activeSpaceId]);
+
+  const setActiveSpace = useCallback(
+    (id: string) => {
+      const exists = spaces.some((space) => space.id === id);
+      if (exists) {
+        setActiveSpaceId(id);
+        localStorage.setItem('activeSpaceId', id);
+      } else if (spaces.length > 0) {
+        setActiveSpaceId(spaces[0].id);
+        localStorage.setItem('activeSpaceId', spaces[0].id);
+      } else {
+        setActiveSpaceId('');
+        localStorage.removeItem('activeSpaceId');
+      }
+    },
+    [spaces]
+  );
+
+  const addSpace = useCallback(async (name?: string) => {
+    const newSpaceId = uuidv4();
+    const spaceName = name?.trim() && name.trim().length > 0 ? name.trim() : 'New Space';
+    
+    try {
+      await db.createSpace({
+        id: newSpaceId,
+        name: spaceName,
+        sort_order: spaces.length,
+      });
+      
+      setSpaces((prev) => [...prev, { id: newSpaceId, name: spaceName, fileTree: [] }]);
+      setActiveSpaceId(newSpaceId);
+      localStorage.setItem('activeSpaceId', newSpaceId);
+      return newSpaceId;
+    } catch (error) {
+      console.error('Failed to create space:', error);
+      throw error;
+    }
+  }, [spaces.length]);
+
+  const renameSpace = useCallback(async (id: string, name: string) => {
+    const trimmedName = name.trim();
+    if (trimmedName.length === 0) return;
+    
+    try {
+      await db.updateSpace(id, { name: trimmedName });
+      setSpaces((prev) =>
+        prev.map((space) =>
+          space.id === id ? { ...space, name: trimmedName } : space
+        )
+      );
+    } catch (error) {
+      console.error('Failed to rename space:', error);
+      throw error;
+    }
+  }, []);
+
+  const deleteSpace = useCallback(
+    async (id: string) => {
+      if (spaces.length <= 1) return;
+      
+      try {
+        await db.deleteSpace(id);
+        
+        setSpaces((prev) => {
+          const filtered = prev.filter((space) => space.id !== id);
+          if (activeSpaceId === id) {
+            const fallback = filtered[0]?.id ?? '';
+            setActiveSpaceId(fallback);
+          }
+          return filtered;
+        });
+      } catch (error) {
+        console.error('Failed to delete space:', error);
+        throw error;
+      }
+    },
+    [activeSpaceId, spaces.length]
+  );
 
   const addNode = useCallback(
-    (parentId: string | null) => {
-      const newNode: Node = {
-        id: uuidv4(),
-        name: 'new page',
-        parentId: parentId || undefined,
-        nodes: [],
-        content: '',
-        isOpen: false,
-      };
-
-      updateActiveSpaceTree((prev) => {
-        const updateNodes = (nodes: Node[]): Node[] => {
-          if (!parentId) {
-            return sortNodes([...nodes, newNode]);
-          }
-
-          return nodes.map((node) => {
-            if (node.id === parentId) {
-              return {
-                ...node,
-                nodes: sortNodes([...(node.nodes || []), newNode]),
-                isOpen: true,
-              };
-            }
-            if (node.nodes) {
-              return { ...node, nodes: updateNodes(node.nodes) };
-            }
-            return node;
-          });
-        };
-
-        if (!parentId) {
-          return sortNodes([...prev, newNode]);
-        }
-        return updateNodes(prev);
-      });
-      return newNode.id;
+    async (parentId: string | null) => {
+      if (!activeSpaceId) return '';
+      
+      const newNodeId = uuidv4();
+      
+      try {
+        await db.createNode({
+          id: newNodeId,
+          space_id: activeSpaceId,
+          parent_id: parentId,
+          name: 'new page',
+          content: '',
+          is_open: 0,
+        });
+        
+        // Reload tree from database
+        await reloadActiveSpaceTree();
+        
+        return newNodeId;
+      } catch (error) {
+        console.error('Failed to add node:', error);
+        throw error;
+      }
     },
-    [updateActiveSpaceTree]
+    [activeSpaceId, reloadActiveSpaceTree]
   );
+
+  // Helper to recursively extract text from TipTap JSON node
+  const extractTextFromNode = (node: { type?: string; text?: string; content?: unknown[] }): string => {
+    if (node.text) return node.text;
+    if (node.content && Array.isArray(node.content)) {
+      return node.content
+        .map((child) => extractTextFromNode(child as { type?: string; text?: string; content?: unknown[] }))
+        .join('');
+    }
+    return '';
+  };
 
   const extractNameFromContent = (content: string): string => {
     if (!content || content.trim() === '') {
-      // Preserve existing name if content is empty
       return 'new page';
     }
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(content, 'text/html');
-    let firstBlock = null;
-    for (const el of Array.from(doc.body.children)) {
-      if (el.textContent && el.textContent.trim().length > 0) {
-        firstBlock = el;
-        break;
+    try {
+      const json = JSON.parse(content);
+      if (json.content && Array.isArray(json.content)) {
+        for (const block of json.content) {
+          const text = extractTextFromNode(block);
+          if (text && text.trim().length > 0) {
+            return text.trim().slice(0, 50);
+          }
+        }
       }
+    } catch {
+      // Invalid JSON - return default name
     }
-    if (firstBlock) {
-      const extractedName = firstBlock.textContent?.trim();
-      const truncatedExtractedName = extractedName?.slice(0, 50);
-      if (truncatedExtractedName && truncatedExtractedName.length > 0) {
-        return truncatedExtractedName;
-      }
-    }
+
     return 'new page';
   };
 
   const updateNodeContent = useCallback(
-    (id: string, content: string) => {
-      updateActiveSpaceTree((prev) => {
-        const updateNodes = (nodes: Node[]): Node[] => {
-          return nodes.map((node) => {
-            if (node.id === id) {
-              const newName = extractNameFromContent(content);
-              return { ...node, content, name: newName };
-            }
-            if (node.nodes) {
-              return { ...node, nodes: updateNodes(node.nodes) };
-            }
-            return node;
-          });
-        };
-
-        // We need to re-sort after name change
-        const recursiveSort = (nodes: Node[]): Node[] => {
-          return sortNodes(
-            nodes.map((node) => {
-              if (node.nodes) {
-                return { ...node, nodes: recursiveSort(node.nodes) };
-              }
-              return node;
-            })
-          );
-        };
-
-        return recursiveSort(updateNodes(prev));
-      });
+    async (id: string, content: string) => {
+      const newName = extractNameFromContent(content);
+      
+      try {
+        await db.updateNodeContent(id, content, newName);
+        
+        // Update local state optimistically (will be synced on reload)
+        setSpaces((prev) =>
+          prev.map((space) => {
+            if (space.id !== activeSpaceId) return space;
+            
+            const updateNodesInPlace = (nodes: Node[]): Node[] => {
+              return nodes.map((node) => {
+                if (node.id === id) {
+                  return { ...node, content, name: newName };
+                }
+                if (node.nodes) {
+                  return { ...node, nodes: updateNodesInPlace(node.nodes) };
+                }
+                return node;
+              });
+            };
+            
+            const recursiveSort = (nodes: Node[]): Node[] => {
+              return sortNodes(
+                nodes.map((node) => {
+                  if (node.nodes) {
+                    return { ...node, nodes: recursiveSort(node.nodes) };
+                  }
+                  return node;
+                })
+              );
+            };
+            
+            return { ...space, fileTree: recursiveSort(updateNodesInPlace(space.fileTree)) };
+          })
+        );
+      } catch (error) {
+        console.error('Failed to update node content:', error);
+        throw error;
+      }
     },
-    [updateActiveSpaceTree]
+    [activeSpaceId]
   );
 
   const toggleFolder = useCallback(
-    (id: string) => {
-      updateActiveSpaceTree((prev) => {
-        const updateNodes = (nodes: Node[]): Node[] => {
-          return nodes.map((node) => {
-            if (node.id === id) {
-              return { ...node, isOpen: !node.isOpen };
-            }
-            if (node.nodes) {
-              return { ...node, nodes: updateNodes(node.nodes) };
-            }
-            return node;
-          });
-        };
-        return updateNodes(prev);
-      });
+    async (id: string) => {
+      const node = getNode(id);
+      if (!node) return;
+      
+      const newOpenState = !node.isOpen;
+      
+      try {
+        await db.toggleNodeOpen(id, newOpenState);
+        
+        // Update local state immediately for responsiveness
+        setSpaces((prev) =>
+          prev.map((space) => {
+            if (space.id !== activeSpaceId) return space;
+            
+            const updateNodes = (nodes: Node[]): Node[] => {
+              return nodes.map((node) => {
+                if (node.id === id) {
+                  return { ...node, isOpen: newOpenState };
+                }
+                if (node.nodes) {
+                  return { ...node, nodes: updateNodes(node.nodes) };
+                }
+                return node;
+              });
+            };
+            
+            return { ...space, fileTree: updateNodes(space.fileTree) };
+          })
+        );
+      } catch (error) {
+        console.error('Failed to toggle folder:', error);
+        throw error;
+      }
     },
-    [updateActiveSpaceTree]
+    [activeSpaceId, getNode]
   );
 
   const deleteNode = useCallback(
-    (id: string) => {
-      updateActiveSpaceTree((prev) => {
-        const removeNode = (nodes: Node[]): Node[] => {
-          return nodes
-            .map((node) => {
-              if (node.nodes) {
-                return { ...node, nodes: removeNode(node.nodes) };
-              }
-              return node;
-            })
-            .filter((node) => node.id !== id);
-        };
-        return removeNode(prev);
-      });
+    async (id: string) => {
+      try {
+        await db.deleteNode(id);
+        
+        // Reload tree from database (deletion cascades to children)
+        await reloadActiveSpaceTree();
+      } catch (error) {
+        console.error('Failed to delete node:', error);
+        throw error;
+      }
     },
-    [updateActiveSpaceTree]
+    [reloadActiveSpaceTree]
   );
 
   const getNodePath = useCallback(
@@ -332,6 +458,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       spaceName,
       spaces,
       activeSpaceId,
+      isLoading,
       setActiveSpace,
       addSpace,
       renameSpace,
@@ -349,6 +476,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       spaceName,
       spaces,
       activeSpaceId,
+      isLoading,
       setActiveSpace,
       addSpace,
       renameSpace,

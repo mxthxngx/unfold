@@ -20,22 +20,34 @@ export const useLayoutConfig = (): UseLayoutConfigReturn => {
 
   // Load layout settings on mount
   useEffect(() => {
+    let mounted = true;
+
     const loadLayout = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const layoutSettings = await getLayoutSettings();
-        setLayout(layoutSettings);
+        if (mounted) {
+          setLayout(layoutSettings);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load layout settings');
-        // Fall back to default settings
-        setLayout(DEFAULT_SETTINGS.layout);
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'Failed to load layout settings');
+          // Fall back to default settings
+          setLayout(DEFAULT_SETTINGS.layout);
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     loadLayout();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Save layout settings

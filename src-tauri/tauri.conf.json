@@ -12,8 +12,8 @@
   "macOSPrivateApi": true,
   "security": {
     "assetProtocol": {
-      "enable": false,
-      "scope": []
+      "enable": true,
+      "scope": ["$APPLOCALDATA/**"]
     },
     "capabilities": [{
       "identifier": "draggable-window",
@@ -21,6 +21,10 @@
         "*"
       ],
       "permissions": [
+        "sql:default",
+        "sql:allow-load",
+        "sql:allow-execute",
+        "sql:allow-select",
         "store:default",
         "core:window:allow-start-dragging",
         "core:menu:default",
@@ -45,7 +49,12 @@
         "core:menu:allow-set-as-help-menu-for-nsapp",
         "core:menu:allow-is-checked",
         "core:menu:allow-set-checked",
-        "core:menu:allow-set-icon"
+        "core:menu:allow-set-icon",
+        "core:path:default",
+        "fs:default",
+        "fs:allow-app-write-recursive",
+        "fs:allow-app-read-recursive",
+        "fs:scope-applocaldata-recursive"
       ]
     }],
     "dangerousDisableAssetCspModification": false,

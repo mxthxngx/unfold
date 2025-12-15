@@ -31,7 +31,7 @@ export function useGlobalSidebarShortcuts() {
     const createFileShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.CREATE_FILE);
     const deleteShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.DELETE_NOTE);
 
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
       const isCmdOrCtrl = event.metaKey || event.ctrlKey;
       const isAlt = event.altKey;
       const isShift = event.shiftKey;
@@ -45,7 +45,7 @@ export function useGlobalSidebarShortcuts() {
       ) {
         event.preventDefault();
         // If there's a current file, add as child; otherwise add to root
-        const newId = addNode(fileId || null);
+        const newId = await addNode(fileId || null);
         navigate({ to: '/files/$fileId', params: { fileId: newId } });
         return;
       }

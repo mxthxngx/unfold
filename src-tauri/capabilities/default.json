@@ -8,6 +8,7 @@
   "permissions": [
     "fs:default",
     "fs:allow-write-text-file",
-    "store:default"
+    "store:default",
+    "sql:default"
   ]
 }

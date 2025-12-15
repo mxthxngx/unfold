@@ -140,7 +140,7 @@ export function Modal({
                   onCancel?.();
                   onClose?.();
                 }}
-                className="absolute top-3 right-3 rounded-md p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg transition-colors"
+                className="absolute top-4 right-4 rounded-md p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg transition-colors z-10"
               >
                 <X size={16} />
               </button>

@@ -16,22 +16,46 @@ const rootRoute = createRootRoute({
 });
 
 function IndexRedirect() {
-  const { fileTree, addNode } = useFileSystem();
+  const { fileTree, addNode, activeSpaceId, isLoading } = useFileSystem();
   const navigate = useNavigate();
 
   const firstFileId = useMemo(() => findFirstFileId(fileTree), [fileTree]);
+  
   useEffect(() => {
-    if (firstFileId) {
-      navigate({ to: '/files/$fileId', params: { fileId: firstFileId } });
+    // Don't navigate until data is loaded
+    if (isLoading) return;
+    
+    // Try to restore last opened file from localStorage
+    const savedFileId = localStorage.getItem(`lastOpenedFile_${activeSpaceId}`);
+    
+    // Check if saved file still exists in current file tree
+    const findNodeById = (nodes: any[], id: string): boolean => {
+      for (const node of nodes) {
+        if (node.id === id) return true;
+        if (node.nodes && findNodeById(node.nodes, id)) return true;
+      }
+      return false;
+    };
+    
+    const savedFileExists = savedFileId && findNodeById(fileTree, savedFileId);
+    const targetFileId = savedFileExists ? savedFileId : firstFileId;
+    
+    if (targetFileId) {
+      navigate({ to: '/files/$fileId', params: { fileId: targetFileId } });
     }
-  }, [firstFileId, navigate]);
+  }, [firstFileId, navigate, activeSpaceId, fileTree, isLoading]);
 
-  const handleCreateFile = () => {
-    const newId = addNode(null);
+  const handleCreateFile = async () => {
+    const newId = await addNode(null);
     navigate({ to: '/files/$fileId', params: { fileId: newId } });
   };
 
   const hasFiles = fileTree.length > 0;
+
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <div className="flex h-full w-full min-h-[calc(100vh-3rem)] items-center justify-start px-6 text-muted-foreground">

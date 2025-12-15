@@ -31,7 +31,6 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
     event.stopPropagation();
     
     try {
-      console.log("Creating breadcrumb dropdown menu");
       
       // Create menu items for collapsed paths
       const collapsedItems = path.slice(1, path.length - 1);
@@ -41,7 +40,6 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
             id: `breadcrumb_${node.id}`,
             text: node.name,
             action: () => {
-              console.log("Navigating to:", node.id);
               navigate({ to: '/files/$fileId', params: { fileId: node.id } });
             }
           });
@@ -56,7 +54,6 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
       const window = getCurrentWindow();
       await menu.popup(undefined, window);
       
-      console.log("Breadcrumb menu shown");
     } catch (error) {
       console.error("Error showing breadcrumb menu:", error);
     }
