@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import Sidebar from "../components/sidebar/sidebar";
 import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
@@ -7,7 +7,7 @@ import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sideb
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
 import { useEditorContext } from '@/contexts/EditorContext';
 import { SearchBar } from '@/components/search/search-bar';
-import { useEditorSearch } from '@/hooks/use-editor-search';
+
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
@@ -15,18 +15,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { setOpen, open } = useSidebar();
     const { focusEditor } = useEditorContext();
 
-    const {
-        isOpen: isSearchOpen,
-        query: searchQuery,
-        inputRef: searchInputRef,
-        matchesCount,
-        activeIndex,
-        openSearch,
-        closeSearch,
-        updateQuery,
-        goToNext,
-        goToPrev,
-    } = useEditorSearch();
+
     
     // Register global keyboard shortcuts for sidebar operations
     useGlobalSidebarShortcuts();
@@ -55,15 +44,10 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 
         if (isFindShortcut) {
             e.preventDefault();
-            openSearch();
+            document.dispatchEvent(new CustomEvent('openFindDialogFromEditor'));
             return;
         }
-
-        if (e.key === 'Escape' && isSearchOpen) {
-            e.preventDefault();
-            closeSearch();
-        }
-    }, [openSearch, closeSearch, isSearchOpen]);
+    }, []);
 
     useEffect(() => {
         window.addEventListener('keydown', handleKeydown);
@@ -100,17 +84,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                 {sidebarPosition === 'right' && <Sidebar />}
             </div>
 
-            <SearchBar
-                isOpen={isSearchOpen}
-                value={searchQuery}
-                inputRef={searchInputRef}
-                matchesCount={matchesCount}
-                activeIndex={activeIndex}
-                onChange={updateQuery}
-                onNext={goToNext}
-                onPrev={goToPrev}
-                onClose={closeSearch}
-            />
+            <SearchBar />
         </div>
     );
 }

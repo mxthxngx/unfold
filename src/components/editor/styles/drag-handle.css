@@ -1,7 +1,7 @@
 .ProseMirror:not(.dragging) .ProseMirror-selectednode {
   outline: none !important;
-  color: var(--primary-highlight);
-  background: color-mix(in srgb, var(--primary-highlight) 12%, transparent);
+  color: rgb(193, 123, 255);
+  background: rgba(193, 123, 255, 0.25);
   transition: background-color 0.2s;
   box-shadow: none;
 }
@@ -9,10 +9,10 @@
 /* Highlight dragged block when dragging starts */
 .ProseMirror.dragging .ProseMirror-selectednode {
   outline: none !important;
-  color: var(--primary-highlight);
-  background: color-mix(in srgb, var(--primary-highlight) 22%, transparent);
+  color: rgb(193, 123, 255);
+  background: rgba(193, 123, 255, 0.4);
   transition: background-color 0.2s;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 0 2px rgba(193, 123, 255, 0.3);
   border-radius: 0.375rem;
   padding: 0.5rem;
 }

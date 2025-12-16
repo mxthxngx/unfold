@@ -1,0 +1,40 @@
+/* Search and Replace Styles */
+
+.search-result {
+  background-color: color-mix(in srgb, var(--primary-highlight) 15%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--primary-highlight) 40%, transparent);
+  padding: 2px 0;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-current {
+  background-color: color-mix(in srgb, var(--primary-highlight) 25%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--primary-highlight) 70%, transparent);
+  padding: 2px 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
+  border-radius: 2px;
+  animation: pulse-highlight 1s ease-in-out;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    background-color: color-mix(in srgb, var(--primary-highlight) 25%, transparent);
+  }
+  50% {
+    background-color: color-mix(in srgb, var(--primary-highlight) 35%, transparent);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .search-result {
+    background-color: color-mix(in srgb, var(--primary-highlight) 18%, transparent);
+    border-bottom: 2px solid color-mix(in srgb, var(--primary-highlight) 45%, transparent);
+  }
+
+  .search-result-current {
+    background-color: color-mix(in srgb, var(--primary-highlight) 28%, transparent);
+    border-bottom: 2px solid color-mix(in srgb, var(--primary-highlight) 75%, transparent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-highlight) 25%, transparent);
+  }
+}

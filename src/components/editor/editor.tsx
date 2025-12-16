@@ -6,6 +6,7 @@ import { TrailingNode } from "@tiptap/extensions";
 import "./styles/drag-handle.css";
 import "./styles/block-spacing.css";
 import "./styles/image-node.css";
+import "./styles/search-and-replace.css";
 import { starterKit } from './extensions/starterkit';
 import CustomKeymap from "./extensions/custom-keymap";
 import { DocumentExtension } from "./extensions/document";
@@ -26,6 +27,7 @@ import { TiptapImage } from "./extensions/image";
 import { ImageNodeView } from "./components/image-node-view";
 import { handlePaste, handleDrop } from "./extensions/paste-handler";
 import NodeRange from "@tiptap/extension-node-range";
+import { SearchAndReplace } from "./extensions/search-and-replace";
 
 // Debounce delay for auto-saving content (ms)
 const SAVE_DEBOUNCE_DELAY = 500;
@@ -89,7 +91,16 @@ function Editor() {
           HeadingExtension,
           DocumentExtension,
           NodeRange,
+          SearchAndReplace.configure({
+            searchResultClass: 'search-result',
+            searchResultCurrentClass: 'search-result-current',
+            caseSensitive: false,
+            disableRegex: true,
+          }),
           TiptapImage.configure({
+            resize:{
+              enabled:true
+            },
             view: ImageNodeView,
             allowBase64: false,
           }),
@@ -170,7 +181,7 @@ function Editor() {
             // Parse JSON content (TipTap JSON format)
             const rawContent = file.content || '';
             let content: object | string = '';
-            
+
             if (rawContent) {
                 try {
                     content = JSON.parse(rawContent);
@@ -179,37 +190,37 @@ function Editor() {
                     content = '';
                 }
             }
-            
+
             editor.commands.setContent(content);
             lastSavedContentRef.current = rawContent;
-            
+
             if (!rawContent || rawContent.trim() === '') {
                 editor.commands.focus('start');
             }
         }
     }, [fileId, editor]); // Only trigger when fileId changes (or editor instance)
-    
+
     if (!editor) {
         return null;
     }
 
     return (
         <div className="relative w-full">
-          <DragHandle 
-            editor={editor} 
+          <DragHandle
+            editor={editor}
             shouldShow={(_node, pos) => {
               // Don't show for first position
               if (pos <= 0) return false;
-              
+
               const { doc } = editor.state;
               const docText = doc.textContent.trim();
-              
+
               // Don't show if document is empty or only whitespace
               if (!docText || docText.length === 0) return false;
-              
+
               // Don't show if document has only one empty paragraph (default state)
               if (doc.childCount === 1 && doc.firstChild?.textContent === '') return false;
-              
+
               return true;
             }}
           >

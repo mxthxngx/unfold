@@ -1,39 +1,161 @@
-import { X, Search as SearchIcon, ChevronUp, ChevronDown } from 'lucide-react';
-import { forwardRef } from 'react';
+import { X, Search as SearchIcon, ChevronUp, ChevronDown, CaseSensitive, Replace } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { cn } from '@/lib/utils';
+import { useEditorContext } from '@/contexts/EditorContext';
 
-type SearchBarProps = {
-  isOpen: boolean;
-  value: string;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  matchesCount: number;
-  activeIndex: number;
-  placeholder?: string;
-  onChange: (value: string) => void;
-  onNext: () => void;
-  onPrev: () => void;
-  onClose: () => void;
-};
 
-export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(function SearchBar(
-  {
-    isOpen,
-    value,
-    matchesCount,
-    activeIndex,
-    placeholder = 'curious about...',
-    inputRef,
-    onChange,
-    onNext,
-    onPrev,
-    onClose,
-  },
+export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
+  _props,
   ref
 ) {
   const shortcut = getShortcutDisplay(KEYBOARD_SHORTCUTS.FIND_IN_PAGE);
+  const { editorRef } = useEditorContext();
+  const editor = editorRef.current;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [replaceText, setReplaceText] = useState('');
+  const [caseSensitive, setCaseSensitive] = useState(false);
+  const [showReplace, setShowReplace] = useState(false);
+  
+  const inputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
+
+  const searchStorage = (editor?.storage as any)?.searchAndReplace;
+  const matchesCount = searchStorage?.results?.length || 0;
+  const activeIndex = searchStorage?.resultIndex ?? -1;
+  
   const hasMatches = matchesCount > 0;
   const activeDisplay = hasMatches && activeIndex >= 0 ? activeIndex + 1 : 0;
+
+  const searchInputEvent = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchText(event.target.value);
+  };
+
+  const replaceInputEvent = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setReplaceText(event.target.value);
+  };
+
+  const closeDialog = () => {
+    setSearchText('');
+    setReplaceText('');
+    setIsOpen(false);
+    if (showReplace) {
+      setShowReplace(false);
+    }
+    if (editor) {
+      editor.commands.setSearchTerm('');
+    }
+  };
+
+  const goToSelection = () => {
+    if (!editor) return;
+
+    const { results, resultIndex } = (editor.storage as any).searchAndReplace;
+    const position = results[resultIndex];
+
+    if (!position) return;
+
+    editor.commands.setTextSelection(position);
+
+    const element = document.querySelector('.search-result-current');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    editor.commands.setTextSelection(0);
+  };
+
+  const next = () => {
+    if (!editor) return;
+    editor.commands.nextSearchResult();
+    goToSelection();
+  };
+
+  const previous = () => {
+    if (!editor) return;
+    editor.commands.previousSearchResult();
+    goToSelection();
+  };
+
+  const replace = () => {
+    if (!editor) return;
+    editor.commands.setReplaceTerm(replaceText);
+    editor.commands.replace();
+    goToSelection();
+  };
+
+  const replaceAll = () => {
+    if (!editor) return;
+    editor.commands.setReplaceTerm(replaceText);
+    editor.commands.replaceAll();
+  };
+
+  const toggleCaseSensitive = () => {
+    setCaseSensitive(!caseSensitive);
+  };
+
+  const toggleReplace = () => {
+    setShowReplace(!showReplace);
+    if (!showReplace) {
+      setTimeout(() => replaceInputRef.current?.focus(), 50);
+    }
+  };
+
+  // Effect to update search term in editor
+  useEffect(() => {
+    if (!editor) return;
+    editor.commands.setSearchTerm(searchText);
+    editor.commands.resetIndex();
+    editor.commands.selectCurrentItem();
+  }, [searchText, editor]);
+
+  // Effect to update case sensitivity
+  useEffect(() => {
+    if (!editor) return;
+    editor.commands.setCaseSensitive(caseSensitive);
+    editor.commands.resetIndex();
+    editor.commands.selectCurrentItem();
+    goToSelection();
+  }, [caseSensitive, editor]);
+
+  // Handle open event from editor
+  const handleOpenEvent = () => {
+    setIsOpen(true);
+    
+    if (editor) {
+      const selectedText = editor.state.doc.textBetween(
+        editor.state.selection.from,
+        editor.state.selection.to,
+      );
+      if (selectedText !== '') {
+        setSearchText(selectedText);
+      }
+    }
+    
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 50);
+  };
+
+  const handleCloseEvent = () => {
+    closeDialog();
+  };
+
+  // Listen for editor events
+  useEffect(() => {
+    document.addEventListener('openFindDialogFromEditor', handleOpenEvent);
+    document.addEventListener('closeFindDialogFromEditor', handleCloseEvent);
+
+    return () => {
+      document.removeEventListener('openFindDialogFromEditor', handleOpenEvent);
+      document.removeEventListener('closeFindDialogFromEditor', handleCloseEvent);
+    };
+  }, [editor]);
+
+
 
   return (
     <div
@@ -46,79 +168,203 @@ export const SearchBar = forwardRef<HTMLDivElement, SearchBarProps>(function Sea
     >
       <div
         className={cn(
-          'pointer-events-auto flex items-center gap-2 rounded-full border border-border/70',
-          'bg-card/95 backdrop-blur-xl px-3 py-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.45)]'
+          'pointer-events-auto flex flex-col gap-2 rounded-xl border border-border/70',
+          'bg-card/95 backdrop-blur-xl p-3 shadow-[0_18px_60px_rgba(0,0,0,0.45)]'
         )}
       >
-        <SearchIcon size={14} className="text-muted-foreground/70" />
-        <input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
-          value={value}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onNext();
-            }
-          }}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="none"
-          spellCheck={false}
-          className={cn(
-            'bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60',
-            'focus:outline-none w-48 sm:w-60'
-          )}
-        />
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground/70">
-          <span className="px-1.5 py-0.5 rounded-md bg-muted/50 border border-border/60 leading-none">
-            {shortcut}
-          </span>
-          <span className="hidden sm:inline text-muted-foreground/60">to open</span>
-        </div>
-        <div className="flex items-center gap-2 pl-1 pr-1 text-xs text-muted-foreground/70">
-          <button
-            type="button"
-            onClick={onPrev}
-            disabled={!hasMatches}
-            className={cn(
-              'inline-flex items-center justify-center rounded-full size-7 transition border border-border/80',
-              'bg-muted/70 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed'
-            )}
-            aria-label="Previous match"
-          >
-            <ChevronUp size={14} />
-          </button>
-          <div className="min-w-[46px] text-center tabular-nums font-medium text-foreground/85">
-            {activeDisplay}/{matchesCount}
+        {/* Search Row */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
+            <SearchIcon size={14} className="text-muted-foreground/70" />
+            <input
+              ref={inputRef}
+              value={searchText}
+              placeholder="Find in page..."
+              onChange={searchInputEvent}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (e.shiftKey) {
+                    previous();
+                  } else {
+                    next();
+                  }
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  closeDialog();
+                } else if (e.altKey && e.key.toLowerCase() === 'c') {
+                  e.preventDefault();
+                  toggleCaseSensitive();
+                } else if (e.altKey && e.key.toLowerCase() === 'r') {
+                  e.preventDefault();
+                  toggleReplace();
+                }
+              }}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              className={cn(
+                'bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60',
+                'focus:outline-none w-48 sm:w-60'
+              )}
+            />
           </div>
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!hasMatches}
-            className={cn(
-              'inline-flex items-center justify-center rounded-full size-7 transition border border-border/80',
-              'bg-muted/70 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed'
-            )}
-            aria-label="Next match"
-          >
-            <ChevronDown size={14} />
-          </button>
+
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+            <span className="min-w-[46px] text-center tabular-nums font-medium text-foreground/85">
+              {searchText.trim() ? (
+                hasMatches ? `${activeDisplay}/${matchesCount}` : 'No results'
+              ) : ''}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={previous}
+              disabled={!hasMatches}
+              title="Previous match (Shift+Enter)"
+              className={cn(
+                'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
+                'bg-muted/50 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed'
+              )}
+              aria-label="Previous match"
+            >
+              <ChevronUp size={14} />
+            </button>
+            
+            <button
+              type="button"
+              onClick={next}
+              disabled={!hasMatches}
+              title="Next match (Enter)"
+              className={cn(
+                'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
+                'bg-muted/50 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed'
+              )}
+              aria-label="Next match"
+            >
+              <ChevronDown size={14} />
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleCaseSensitive}
+              title="Match case (Alt+C)"
+              className={cn(
+                'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
+                caseSensitive
+                  ? 'bg-[rgba(193,123,255,0.2)] border-[rgba(193,123,255,0.5)] text-[rgb(193,123,255)]'
+                  : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
+              )}
+              aria-label="Toggle case sensitive"
+            >
+              <CaseSensitive size={14} />
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleReplace}
+              title="Replace (Alt+R)"
+              className={cn(
+                'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
+                showReplace
+                  ? 'bg-[rgba(193,123,255,0.2)] border-[rgba(193,123,255,0.5)] text-[rgb(193,123,255)]'
+                  : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
+              )}
+              aria-label="Toggle replace"
+            >
+              <Replace size={14} />
+            </button>
+
+            <button
+              type="button"
+              onClick={closeDialog}
+              title={`Close (${shortcut})`}
+              className={cn(
+                'inline-flex items-center justify-center rounded-md',
+                'size-7 text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition'
+              )}
+              aria-label="Close search"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className={cn(
-            'inline-flex items-center justify-center rounded-full',
-            'size-7 text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition'
-          )}
-          aria-label="Close search"
-        >
-          <X size={14} />
-        </button>
+
+        {/* Replace Row */}
+        {showReplace && (
+          <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+            <div className="flex items-center gap-2 flex-1">
+              <Replace size={14} className="text-muted-foreground/70" />
+              <input
+                ref={replaceInputRef}
+                value={replaceText}
+                placeholder="Replace with..."
+                onChange={replaceInputEvent}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.ctrlKey || e.metaKey) {
+                      replaceAll();
+                    } else {
+                      replace();
+                    }
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setShowReplace(false);
+                  } else if (e.altKey && e.key.toLowerCase() === 'c') {
+                    e.preventDefault();
+                    toggleCaseSensitive();
+                  } else if (e.altKey && e.key.toLowerCase() === 'r') {
+                    e.preventDefault();
+                    toggleReplace();
+                  }
+                }}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                className={cn(
+                  'bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60',
+                  'focus:outline-none w-48 sm:w-60'
+                )}
+              />
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={replace}
+                disabled={!hasMatches || !replaceText}
+                title="Replace (Enter)"
+                className={cn(
+                  'px-2.5 py-1 text-xs rounded-md transition border border-border/60',
+                  'bg-muted/50 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed',
+                  'font-medium text-foreground/90'
+                )}
+              >
+                Replace
+              </button>
+              
+              <button
+                type="button"
+                onClick={replaceAll}
+                disabled={!hasMatches || !replaceText}
+                title="Replace All (Cmd/Ctrl+Enter)"
+                className={cn(
+                  'px-2.5 py-1 text-xs rounded-md transition border border-border/60',
+                  'bg-muted/50 hover:bg-muted/80 disabled:opacity-30 disabled:cursor-not-allowed',
+                  'font-medium text-foreground/90 whitespace-nowrap'
+                )}
+              >
+                Replace All
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 });
-

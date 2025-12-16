@@ -458,8 +458,8 @@ html, body { background: transparent !important;
 }
 
 ::selection { 
-  color: var(--primary-highlight);
-  background: color-mix(in srgb, var(--primary-highlight) 12%, transparent);
+  color: inherit;
+  background: rgba(193, 123, 255, 0.25);
   padding: 2px 6px;
   border-radius: 6px;
 }
@@ -497,16 +497,136 @@ html, body { background: transparent !important;
 
 /* Search highlight styling (high contrast, clearly visible) */
 ::highlight(search) {
-  background: #fdd835; /* bright yellow */
-  color: #0f172a;
+  background: rgba(193, 123, 255, 0.25); /* purple highlight */
+  color: inherit;
   text-decoration: none;
   border-radius: 0.28rem;
 }
 
 ::highlight(search-active) {
-  background: #ffb300; /* deeper amber for active */
-  color: #0b1020;
+  background: rgba(193, 123, 255, 0.4); /* deeper purple for active */
+  color: inherit;
   text-decoration: none;
   border-radius: 0.32rem;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 2px rgba(193, 123, 255, 0.3);
+}
+
+/* Resize handles for images and resizable elements */
+[data-resize-handle] {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid var(--primary-highlight);
+  border-radius: 2px;
+  z-index: 10;
+  transition: all 0.15s ease;
+  opacity: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+
+  &:hover {
+    background: var(--primary-highlight);
+    border-color: #ffffff;
+    transform: scale(1.15);
+    box-shadow: 0 2px 12px rgba(193, 123, 255, 0.6);
+  }
+
+  /* Corner handles - larger and more visible */
+  &[data-resize-handle='top-left'],
+  &[data-resize-handle='top-right'],
+  &[data-resize-handle='bottom-left'],
+  &[data-resize-handle='bottom-right'] {
+    width: 12px;
+    height: 12px;
+  }
+
+  &[data-resize-handle='top-left'] {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+  }
+
+  &[data-resize-handle='top-right'] {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+  }
+
+  &[data-resize-handle='bottom-left'] {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+  }
+
+  &[data-resize-handle='bottom-right'] {
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+  }
+
+  /* Edge handles */
+  &[data-resize-handle='top'],
+  &[data-resize-handle='bottom'] {
+    height: 8px;
+    left: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  &[data-resize-handle='top'] {
+    top: -4px;
+    cursor: ns-resize;
+  }
+
+  &[data-resize-handle='bottom'] {
+    bottom: -4px;
+    cursor: ns-resize;
+  }
+
+  &[data-resize-handle='left'],
+  &[data-resize-handle='right'] {
+    width: 8px;
+    top: 16px;
+    bottom: 16px;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  &[data-resize-handle='left'] {
+    left: -4px;
+    cursor: ew-resize;
+  }
+
+  &[data-resize-handle='right'] {
+    right: -4px;
+    cursor: ew-resize;
+  }
+}
+
+[data-resize-state='true'] [data-resize-wrapper] {
+  outline: 2px solid var(--primary-highlight);
+  border-radius: 0.25rem;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-highlight) 15%, transparent);
+}
+
+/* Light mode adjustments */
+.light [data-resize-handle] {
+  background: #ffffff;
+  border: 2px solid var(--primary-highlight);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  
+  &:hover {
+    background: var(--primary-highlight);
+    border-color: #000000;
+    box-shadow: 0 2px 12px rgba(124, 58, 237, 0.4);
+  }
+
+  &[data-resize-handle='top'],
+  &[data-resize-handle='bottom'],
+  &[data-resize-handle='left'],
+  &[data-resize-handle='right'] {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+.light [data-resize-state='true'] [data-resize-wrapper] {
+  outline: 2px solid var(--primary-highlight);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
 }
