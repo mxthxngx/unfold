@@ -45,7 +45,7 @@ export const starterKit = StarterKit.configure({
             HTMLAttributes: {
                 class: cx(editorClasses.blockquote),
             },
-        },  
+        },
 
         paragraph: {
             HTMLAttributes: {
@@ -63,6 +63,7 @@ export const starterKit = StarterKit.configure({
         },
     },
     link:{
+      openOnClick:false,
         HTMLAttributes: {
             class: cx(editorClasses.link),
         },

@@ -39,7 +39,7 @@ export const editorClasses = {
     "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-lg p-5 border border-zinc-700/60 shadow-sm overflow-x-auto my-4",
 
   link:
-    "text-zinc-100 underline decoration-zinc-500 decoration-[0.025em] decoration-solid hover:text-zinc-300 hover:decoration-zinc-400 transition-colors",
+    "text-zinc-400 underline decoration-zinc-600 decoration-[0.025em] decoration-solid hover:text-zinc-200 hover:decoration-zinc-400 transition-colors",
 
   paragraph:
     "text-base mb-3",
