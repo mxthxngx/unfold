@@ -4,6 +4,8 @@
   background: rgba(193, 123, 255, 0.25);
   transition: background-color 0.2s;
   box-shadow: none;
+  border: 1px solid rgb(193, 123, 255);
+  border-radius: 5px;
 }
 
 /* Highlight dragged block when dragging starts */

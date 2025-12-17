@@ -205,7 +205,7 @@ const Sidebar = memo(function Sidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-4 overflow-y-auto">
-        <SidebarMenu className="space-y-0.5">
+        <SidebarMenu className="space-y-0.5 pt-px">
           {isLoading ? (
             <>
               {[1, 2, 3].map((i) => (
