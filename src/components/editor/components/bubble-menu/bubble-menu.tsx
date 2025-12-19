@@ -1,6 +1,7 @@
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import {
   isNodeSelection,
+  isTextSelection,
   useEditor,
   useEditorState,
 } from "@tiptap/react";
@@ -33,7 +34,9 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
   const [isTextAlignmentSelectorOpen, setIsTextAlignmentOpen] = useState(false);
   const [isColorSelectorOpen, setIsColorSelectorOpen] = useState(false);
   const [isLinkSelectorOpen, setIsLinkSelectorOpen] = useState(false);
+  const [showBubbleMenu, setShowBubbleMenu] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
+  const reopenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const editorState = useEditorState({
         editor: props.editor,
@@ -52,6 +55,32 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
             };
         }
             });
+
+
+    useEffect(()=>{
+      isTextSelection(props.editor)
+    },[])
+
+    const handleNodeSelect = () => {
+      setShowBubbleMenu(false);
+      setIsNodeSelectorOpen(false);
+      
+      // Reopen the bubble menu after a brief delay
+      if (reopenTimeoutRef.current) {
+        clearTimeout(reopenTimeoutRef.current);
+      }
+      reopenTimeoutRef.current = setTimeout(() => {
+        setShowBubbleMenu(true);
+      }, 150);
+    };
+
+    useEffect(() => {
+      return () => {
+        if (reopenTimeoutRef.current) {
+          clearTimeout(reopenTimeoutRef.current);
+        }
+      };
+    }, []);
 
     const items: BubbleMenuItem[] = [
         {
@@ -91,43 +120,25 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
         }
     ];
 
-    const bubbleMenuProps: EditorBubbleMenuProps = {
-        ...props,
-        shouldShow: ({ state, editor }) => {
-            const {selection} = state;
-            const {empty} = selection;
-            console.log("selection:",selection);
-      if (
-        !editor.isEditable ||
-        editor.isActive("image") ||
-        empty ||
-        isNodeSelection(selection)
-      ) {
-        console.log("isnodeselection:",isNodeSelection(selection), "isempty:",empty, "iseditable:",editor.isEditable, "isactiveimage:",editor.isActive("image"));
-        return false;
-      }
-      console.log("istextselected:",isTextSelected(editor));
-    return isTextSelected(editor);
-    },
-}
 
-return props.editor ? (
-    <BubbleMenu {...bubbleMenuProps}>
+return (props.editor && showBubbleMenu) ?  (
+    <BubbleMenu editor={props.editor} options={{placement:'top',offset:8,flip:true}}>
         <div ref={menuRef} className={editorClasses.bubbleMenu}>
-            <NodeSelector 
-                editor={props.editor} 
-                isOpen={isNodeSelectorOpen} 
+            <NodeSelector
+                editor={props.editor}
+                isOpen={isNodeSelectorOpen}
                 setIsOpen={()=>{
                     setIsNodeSelectorOpen(!isNodeSelectorOpen);
                     setIsTextAlignmentOpen(false);
                     setIsColorSelectorOpen(false);
                     setIsLinkSelectorOpen(false);
                 }}
+                onSelect={handleNodeSelect}
                 container={menuRef.current}
             />
-            
+
             <div className="w-px h-6 bg-border mx-1" />
-            
+
             <ButtonGroup>
                 {items.map((item, index) => (
                   <Tooltip key={index}>
@@ -151,7 +162,7 @@ return props.editor ? (
             </ButtonGroup>
 
             <div className="w-px h-6 bg-border mx-1" />
-            
+
             <LinkSelector
                 editor={props.editor}
                 isOpen={isLinkSelectorOpen}
@@ -192,4 +203,3 @@ return props.editor ? (
     </BubbleMenu>
 ) : null;
 };
-    

@@ -54,10 +54,10 @@ export const editorClasses = {
     "list-decimal pl-6 space-y-1",
 
   taskList:
-    "flex not-prose pl-2 space-y-2",
+  "list-none not-prose pl-2 space-y-2",
 
   taskItem:
-    "flex items-start gap-2",
+  "flex items-start gap-2 [&_.task-item-content]:flex-1 [&_.task-item-content_p]:mb-0",
 
   // Minimalistic table styling matching code block aesthetic
   table:
@@ -74,4 +74,5 @@ export const editorClasses = {
 
   bubbleMenu:
     "bg-editor-bubble-menu-surface border border-editor-bubble-menu-surface-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
+
 };

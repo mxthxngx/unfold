@@ -5,14 +5,18 @@ import { KEYBOARD_SHORTCUTS } from "@/config/keyboard-shortcuts";
 
 interface SidebarContextMenuProps {
   nodeId: string;
+  isPinned: boolean;
   onCreateChild: (nodeId: string) => void;
   onDelete: (nodeId: string) => void;
+  onTogglePin: (nodeId: string) => void;
 }
 
 export function useSidebarContextMenu({ 
-  nodeId, 
+  nodeId,
+  isPinned,
   onCreateChild, 
-  onDelete 
+  onDelete,
+  onTogglePin,
 }: SidebarContextMenuProps) {
   const menuPromiseRef = useRef<Promise<Menu> | null>(null);
 
@@ -22,16 +26,25 @@ export function useSidebarContextMenu({
         // Create menu items
         const createChildItem = await MenuItem.new({
           id: `sidebar_create_child_${nodeId}`,
-          text: "Create Child Note",
+          text: "create child note",
           accelerator: KEYBOARD_SHORTCUTS.CREATE_FILE,
           action: () => {
             onCreateChild(nodeId);
           }
         });
 
+        const pinItem = await MenuItem.new({
+          id: `sidebar_pin_${nodeId}`,
+          text: isPinned ? "unpin" : "pin",
+          accelerator: KEYBOARD_SHORTCUTS.PIN_NOTE,
+          action: () => {
+            onTogglePin(nodeId);
+          }
+        });
+
         const deleteItem = await MenuItem.new({
           id: `sidebar_delete_${nodeId}`,
-          text: "Delete",
+          text: "delete",
           accelerator: KEYBOARD_SHORTCUTS.DELETE_NOTE,
           action: () => {
             onDelete(nodeId);
@@ -40,7 +53,7 @@ export function useSidebarContextMenu({
 
         // Create the menu with items
         menuPromiseRef.current = Menu.new({
-          items: [createChildItem, deleteItem]
+          items: [createChildItem, pinItem, deleteItem]
         });
         
       } catch (error) {
@@ -49,7 +62,7 @@ export function useSidebarContextMenu({
     };
 
     initMenu();
-  }, [nodeId, onCreateChild, onDelete]);
+  }, [nodeId, isPinned, onCreateChild, onDelete, onTogglePin]);
 
   const handleContextMenu = useCallback(async (event: React.MouseEvent) => {
     event.preventDefault();

@@ -7,10 +7,12 @@ type Space = {
   id: string;
   name: string;
   fileTree: Node[];
+  pinnedNodes: Node[];
 };
 
 interface FileSystemContextType {
   fileTree: Node[];
+  pinnedNodes: Node[];
   spaceName: string;
   spaces: Space[];
   activeSpaceId: string;
@@ -23,6 +25,8 @@ interface FileSystemContextType {
   updateNodeContent: (id: string, content: string) => Promise<void>;
   getNode: (id: string) => Node | null;
   toggleFolder: (id: string) => Promise<void>;
+  togglePinNode: (id: string) => Promise<void>;
+  isNodePinned: (id: string) => boolean;
   getNodePath: (id: string) => Node[];
   deleteNode: (id: string) => Promise<void>;
   getPreviousVisibleNode: (id: string) => string | null;
@@ -65,7 +69,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
           
           if (!mounted) return;
           
-          setSpaces([{ id: defaultSpaceId, name: 'mine', fileTree: [] }]);
+          setSpaces([{ id: defaultSpaceId, name: 'mine', fileTree: [], pinnedNodes: [] }]);
           setActiveSpaceId(defaultSpaceId);
           localStorage.setItem('activeSpaceId', defaultSpaceId);
           setHasInitialized(true);
@@ -75,10 +79,20 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
             spaceRows.map(async (spaceRow) => {
               const nodeRows = await db.getNodesBySpace(spaceRow.id);
               const fileTree = db.buildNodeTree(nodeRows);
+              // Extract pinned nodes from all nodes (flattened)
+              const pinnedNodes = nodeRows
+                .filter(row => row.is_pinned === 1)
+                .map(row => ({
+                  id: row.id,
+                  name: row.name,
+                  content: row.content || undefined,
+                  isPinned: true,
+                }));
               return {
                 id: spaceRow.id,
                 name: spaceRow.name,
                 fileTree,
+                pinnedNodes,
               };
             })
           );
@@ -129,6 +143,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   }, [activeSpaceId, spaces]);
 
   const fileTree = activeSpace?.fileTree ?? [];
+  const pinnedNodes = activeSpace?.pinnedNodes ?? [];
   const spaceName = activeSpace?.name ??  'Loading...' ;
   
   // Helper to find a node in the tree
@@ -159,10 +174,19 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     try {
       const nodeRows = await db.getNodesBySpace(currentSpaceId);
       const fileTree = db.buildNodeTree(nodeRows);
+      // Extract pinned nodes
+      const pinnedNodes = nodeRows
+        .filter(row => row.is_pinned === 1)
+        .map(row => ({
+          id: row.id,
+          name: row.name,
+          content: row.content || undefined,
+          isPinned: true,
+        }));
       
       setSpaces((prev) =>
         prev.map((space) =>
-          space.id === currentSpaceId ? { ...space, fileTree } : space
+          space.id === currentSpaceId ? { ...space, fileTree, pinnedNodes } : space
         )
       );
     } catch (error) {
@@ -198,7 +222,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
         sort_order: spaces.length,
       });
       
-      setSpaces((prev) => [...prev, { id: newSpaceId, name: spaceName, fileTree: [] }]);
+      setSpaces((prev) => [...prev, { id: newSpaceId, name: spaceName, fileTree: [], pinnedNodes: [] }]);
       setActiveSpaceId(newSpaceId);
       localStorage.setItem('activeSpaceId', newSpaceId);
       return newSpaceId;
@@ -392,6 +416,33 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     [activeSpaceId, getNode]
   );
 
+  const togglePinNode = useCallback(
+    async (id: string) => {
+      const node = getNode(id);
+      if (!node) return;
+      
+      const newPinnedState = !node.isPinned;
+      
+      try {
+        await db.toggleNodePinned(id, newPinnedState);
+        
+        // Reload tree from database to get updated pinned state
+        await reloadActiveSpaceTree();
+      } catch (error) {
+        console.error('Failed to toggle pin:', error);
+        throw error;
+      }
+    },
+    [getNode, reloadActiveSpaceTree]
+  );
+
+  const isNodePinned = useCallback(
+    (id: string): boolean => {
+      return pinnedNodes.some(node => node.id === id);
+    },
+    [pinnedNodes]
+  );
+
   const deleteNode = useCallback(
     async (id: string) => {
       try {
@@ -463,6 +514,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const contextValue = useMemo(
     () => ({
       fileTree,
+      pinnedNodes,
       spaceName,
       spaces,
       activeSpaceId,
@@ -475,12 +527,15 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       updateNodeContent,
       getNode,
       toggleFolder,
+      togglePinNode,
+      isNodePinned,
       getNodePath,
       deleteNode,
       getPreviousVisibleNode,
     }),
     [
       fileTree,
+      pinnedNodes,
       spaceName,
       spaces,
       activeSpaceId,
@@ -493,6 +548,8 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       updateNodeContent,
       getNode,
       toggleFolder,
+      togglePinNode,
+      isNodePinned,
       getNodePath,
       deleteNode,
       getPreviousVisibleNode,

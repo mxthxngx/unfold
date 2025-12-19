@@ -7,6 +7,7 @@ export const KEYBOARD_SHORTCUTS = {
   // File operations
   CREATE_FILE: "CmdOrCtrl+N",
   DELETE_NOTE: "CmdOrCtrl+Backspace",
+  PIN_NOTE: "CmdOrCtrl+P",
   
   // Navigation / search
   FIND_IN_PAGE: "CmdOrCtrl+F",

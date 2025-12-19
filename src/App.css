@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&family=Lexend:wght@100..900&family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Rethink+Sans:ital,wght@0,400..800;1,400..800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -84,6 +85,7 @@ html, body { background: transparent !important;
   --tooltip: #0f0e11;
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "Google Sans Code", monospace;
+  --font-sans-serif: "Bricolage Grotesque", sans-serif;
 
   /* Table theme - minimalistic code block aesthetic
    * Using existing global theme colors mapped to table-* variables
@@ -232,6 +234,7 @@ html, body { background: transparent !important;
   --color-sidebar-tab-accent: var(--sidebar-tab-accent);
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "Google Sans Code", monospace;
+  --font-sans-serif: "Bricolage Grotesque", sans-serif;
   --color-unselected-icon: var(--unselected-icon);
   --color-sidebar-foreground-active: var(--sidebar-foreground-active);
   --color-link: var(--link);
@@ -303,7 +306,25 @@ html, body { background: transparent !important;
   list-style-type: square;
 }
 
-/* Table column resize handles (Tiptap resizable tables) */
+ul[data-type="taskList"] li label {
+  pointer-events: auto;
+  user-select: none;
+}
+
+ul[data-type="taskList"] li > div {
+  flex: 1;
+  caret-color: #f7f2f2 !important;
+}
+
+ul[data-type="taskList"] li > div * {
+  caret-color: #f7f2f2 !important;
+}
+
+ul[data-type="taskList"] li > div p {
+  margin: 0 !important;
+  caret-color: inherit !important;
+}
+
 .ProseMirror .column-resize-handle {
   position: absolute;
   right: -2px;
@@ -473,7 +494,7 @@ html, body { background: transparent !important;
   z-index: 10;
 }
 
-::selection { 
+::selection {
   color: inherit;
   background: rgba(193, 123, 255, 0.25);
   padding: 2px 6px;
@@ -627,7 +648,7 @@ html, body { background: transparent !important;
   background: #ffffff;
   border: 2px solid var(--primary-highlight);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  
+
   &:hover {
     background: var(--primary-highlight);
     border-color: #000000;

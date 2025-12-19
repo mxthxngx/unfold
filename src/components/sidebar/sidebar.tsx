@@ -22,7 +22,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Trash2, Pencil, Pin } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -31,6 +31,7 @@ const Sidebar = memo(function Sidebar() {
     spaces,
     activeSpaceId,
     fileTree,
+    pinnedNodes,
     spaceName,
     isLoading,
     addNode,
@@ -40,6 +41,8 @@ const Sidebar = memo(function Sidebar() {
     setActiveSpace,
     getNodePath,
     toggleFolder,
+    togglePinNode,
+    isNodePinned,
   } = useFileSystem();
   const { fileId } = useParams({ strict: false });
   const navigate = useNavigate();
@@ -204,32 +207,58 @@ const Sidebar = memo(function Sidebar() {
         <div className="h-1" />
       </SidebarHeader>
 
-      <SidebarContent className="px-4 overflow-y-auto">
-        <SidebarMenu className="space-y-0.5 pt-px">
-          {isLoading ? (
-            <>
-              {[1, 2, 3].map((i) => (
-                <SidebarMenuItem key={i}>
-                  <div className="flex items-center px-2 py-1.5">
-                    <Skeleton className="h-4 w-50 rounded" />
-                  </div>
-                </SidebarMenuItem>
+         <SidebarContent className="px-4 overflow-y-auto">
+        {!isLoading && pinnedNodes.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
+              <span className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase">
+                pinned
+              </span>
+            </div>
+            <SidebarMenu className="space-y-0.5">
+              {pinnedNodes.map((node) => (
+                <PinnedNodeItem
+                  key={node.id}
+                  node={node}
+                  selectedItem={fileId || null}
+                  addFileShortcut={addFileShortcut}
+                />
               ))}
-            </>
-          ) : (
-            fileTree.map((node) => (
-              <SidebarNodes
-                key={node.id}
-                node={node}
-                selectedItem={fileId || null}
-                level={0}
-                addFileShortcut={addFileShortcut}
-              />
-            ))
-          )}
-        </SidebarMenu>
-      </SidebarContent>
+            </SidebarMenu>
+          </div>
+        )}
 
+        <div className={cn(!isLoading && pinnedNodes.length > 0 && 'mt-2')}>
+          <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
+            <span className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase">
+              notes
+            </span>
+          </div>
+          <SidebarMenu className="space-y-0.5 pt-px">
+            {isLoading ? (
+              <>
+                {[1, 2, 3].map((i) => (
+                  <SidebarMenuItem key={i}>
+                    <div className="flex items-center px-2 py-1.5">
+                      <Skeleton className="h-4 w-50 rounded" />
+                    </div>
+                  </SidebarMenuItem>
+                ))}
+              </>
+            ) : (
+              fileTree.map((node) => (
+                <SidebarNodes
+                  key={node.id}
+                  node={node}
+                  selectedItem={fileId || null}
+                  level={0}
+                  addFileShortcut={addFileShortcut}
+                />
+              ))
+            )}
+          </SidebarMenu>
+        </div>
+      </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center gap-2 w-full">
           <DialogRoot className="relative flex-1">
@@ -438,6 +467,144 @@ const Sidebar = memo(function Sidebar() {
   );
 });
 
+const PinnedNodeItem = memo(({
+  node,
+  selectedItem,
+  addFileShortcut,
+}: {
+  node: SidebarNode;
+  selectedItem: null | string;
+  addFileShortcut: string;
+}) => {
+  const { addNode, deleteNode, getPreviousVisibleNode, togglePinNode } = useFileSystem();
+  const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const isSelected = selectedItem === node.id;
+
+  const handleOpenDeleteModal = useCallback(() => setIsDeleteModalOpen(true), []);
+  const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
+  const handleConfirmDeleteNode = async () => {
+    if (selectedItem === node.id) {
+      const prevNodeId = getPreviousVisibleNode(node.id);
+      if (prevNodeId) {
+        navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
+      } else {
+        navigate({ to: '/' });
+      }
+    }
+    await deleteNode(node.id);
+    setIsDeleteModalOpen(false);
+  };
+
+  const { handleContextMenu } = useSidebarContextMenu({
+    nodeId: node.id,
+    isPinned: true,
+    onCreateChild: async (nodeId) => {
+      const newId = await addNode(nodeId);
+      navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    },
+    onDelete: handleOpenDeleteModal,
+    onTogglePin: async (nodeId) => {
+      await togglePinNode(nodeId);
+    },
+  });
+
+  const handleAddChild = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newId = await addNode(node.id);
+    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+  };
+
+  return (
+    <>
+      <SidebarMenuItem className="px-0">
+        <div
+          className={cn(
+            'group/pinned-item flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+            isSelected
+              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+              : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
+          )}
+          onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+          onContextMenu={handleContextMenu}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+            }
+          }}
+        >
+          <div className="flex-1 min-w-0">
+            <span className="block truncate select-none">{node.name}</span>
+          </div>
+          <div
+            className={cn(
+              "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+              "opacity-0 max-w-0 pointer-events-none",
+              "group-hover/pinned-item:opacity-100 group-hover/pinned-item:max-w-22 group-hover/pinned-item:pointer-events-auto"
+            )}
+          >
+            <Tooltip delayDuration={120}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddChild(e);
+                  }}
+                  className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                >
+                  <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                    <Plus size={14} strokeWidth={3}/>
+                  </AnimatedIcon>
+                  <Ripple />
+                </button>
+              </TooltipTrigger>
+              <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+            </Tooltip>
+          </div>
+        </div>
+      </SidebarMenuItem>
+
+      <Modal
+        open={isDeleteModalOpen}
+        onClose={handleCancelDeleteNode}
+        onCancel={handleCancelDeleteNode}
+        onConfirm={handleConfirmDeleteNode}
+      >
+        <div className="flex flex-col gap-(--space-md) p-5">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-sidebar-foreground">
+              Delete "{node.name}"?
+            </h3>
+            <p className="text-sm text-sidebar-foreground/80">
+              This will move all the content to trash for 15 days. You can restore it from Trash during that window.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-(--space-sm)">
+            <button
+              type="button"
+              onClick={handleCancelDeleteNode}
+              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDeleteNode}
+              className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
+            >
+              Move to trash
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
+});
+
 export const SidebarNodes = memo(({ 
   node, 
   selectedItem, 
@@ -451,12 +618,13 @@ export const SidebarNodes = memo(({
   isFirstChild?: boolean;
   addFileShortcut: string;
 }) => {
-  const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode } = useFileSystem();
+  const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode, togglePinNode, isNodePinned } = useFileSystem();
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const hasChildren = node.nodes && node.nodes.length > 0;
   const isSelected = selectedItem === node.id;
+  const isPinned = isNodePinned(node.id);
 
   const handleOpenDeleteModal = useCallback((_nodeId?: string) => setIsDeleteModalOpen(true), []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
@@ -476,11 +644,15 @@ export const SidebarNodes = memo(({
   // Context menu handler
   const { handleContextMenu } = useSidebarContextMenu({
     nodeId: node.id,
+    isPinned,
     onCreateChild: async (nodeId) => {
       const newId = await addNode(nodeId);
       navigate({ to: '/files/$fileId', params: { fileId: newId } });
     },
-    onDelete: handleOpenDeleteModal
+    onDelete: handleOpenDeleteModal,
+    onTogglePin: async (nodeId) => {
+      await togglePinNode(nodeId);
+    },
   });
 
   const handleAddChild = async (e: React.MouseEvent) => {

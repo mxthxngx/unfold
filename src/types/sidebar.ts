@@ -17,4 +17,5 @@ export interface Node {
   parentId?: string;
   nodes?: Node[];
   isOpen?: boolean;
+  isPinned?: boolean;
 }

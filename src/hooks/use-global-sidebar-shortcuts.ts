@@ -20,16 +20,31 @@ const parseAccelerator = (accelerator: string) => {
 };
 
 /**
+ * Check if user is currently editing/focused on an input element
+ */
+const isEditingContent = (): boolean => {
+  const activeElement = document.activeElement as HTMLElement;
+  if (!activeElement) return false;
+  
+  const tagName = activeElement.tagName.toLowerCase();
+  const isEditableInput = tagName === 'input' || tagName === 'textarea';
+  const isContentEditable = activeElement.contentEditable === 'true';
+  
+  return isEditableInput || isContentEditable;
+};
+
+/**
  * Global keyboard shortcuts for sidebar operations
  */
 export function useGlobalSidebarShortcuts() {
   const { fileId } = useParams({ strict: false });
-  const { addNode, deleteNode } = useFileSystem();
+  const { addNode, deleteNode, togglePinNode } = useFileSystem();
   const navigate = useNavigate();
 
   useEffect(() => {
     const createFileShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.CREATE_FILE);
     const deleteShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.DELETE_NOTE);
+    const pinShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.PIN_NOTE);
 
     const handleKeyDown = async (event: KeyboardEvent) => {
       const isCmdOrCtrl = event.metaKey || event.ctrlKey;
@@ -50,9 +65,10 @@ export function useGlobalSidebarShortcuts() {
         return;
       }
 
-      // Delete note shortcut
+      // Delete note shortcut (only when not editing content)
       if (
         fileId &&
+        !isEditingContent() &&
         event.key.toLowerCase() === deleteShortcut.key.toLowerCase() &&
         (!deleteShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
         (!deleteShortcut.requiresAlt || isAlt) &&
@@ -64,9 +80,22 @@ export function useGlobalSidebarShortcuts() {
         );
         return;
       }
+
+      // Pin/unpin note shortcut
+      if (
+        fileId &&
+        event.key.toLowerCase() === pinShortcut.key.toLowerCase() &&
+        (!pinShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
+        (!pinShortcut.requiresAlt || isAlt) &&
+        (!pinShortcut.requiresShift || isShift)
+      ) {
+        event.preventDefault();
+        await togglePinNode(fileId);
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId, addNode, deleteNode, navigate]);
+  }, [fileId, addNode, deleteNode, togglePinNode, navigate]);
 }

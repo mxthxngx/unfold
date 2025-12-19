@@ -16,6 +16,7 @@ interface NodeSelectorProps {
   editor: Editor | null;
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  onSelect?: () => void;
   container?: HTMLElement | null;
 }
 
@@ -30,6 +31,7 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
   editor,
   isOpen,
   setIsOpen,
+  onSelect,
   container,
 }) => {
 
@@ -155,6 +157,7 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
             onMouseDown={(e) => {
               e.preventDefault();
               item.command();
+              onSelect?.();
             }}
             onSelect={(e) => e.preventDefault()}
           >

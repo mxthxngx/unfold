@@ -24,6 +24,7 @@ export interface NodeRow {
   content: string | null;
   is_open: number;
   sort_order: number;
+  is_pinned: number;
 }
 
 export async function getSpaces(): Promise<SpaceRow[]> {
@@ -67,6 +68,7 @@ export async function createNode(node: {
   name: string;
   content: string | null;
   is_open: number;
+  is_pinned?: number;
 }): Promise<void> {
   const database = await getDb();
   
@@ -80,7 +82,7 @@ export async function createNode(node: {
   const sortOrder = (maxOrderResult[0]?.max_order ?? -1) + 1;
   
   await database.execute(
-    "INSERT INTO nodes (id, space_id, parent_id, name, content, is_open, sort_order) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+    "INSERT INTO nodes (id, space_id, parent_id, name, content, is_open, sort_order, is_pinned) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
     [
       node.id,
       node.space_id,
@@ -89,6 +91,7 @@ export async function createNode(node: {
       node.content,
       node.is_open,
       sortOrder,
+      node.is_pinned ?? 0,
     ]
   );
 }
@@ -154,6 +157,22 @@ export async function toggleNodeOpen(id: string, isOpen: boolean): Promise<void>
   );
 }
 
+export async function toggleNodePinned(id: string, isPinned: boolean): Promise<void> {
+  const database = await getDb();
+  await database.execute(
+    "UPDATE nodes SET is_pinned = $1 WHERE id = $2",
+    [isPinned ? 1 : 0, id]
+  );
+}
+
+export async function getPinnedNodes(spaceId: string): Promise<NodeRow[]> {
+  const database = await getDb();
+  return await database.select<NodeRow[]>(
+    "SELECT * FROM nodes WHERE space_id = $1 AND is_pinned = 1 ORDER BY name",
+    [spaceId]
+  );
+}
+
 export async function deleteNode(id: string): Promise<void> {
   const database = await getDb();
   await database.execute("DELETE FROM nodes WHERE id = $1", [id]);
@@ -176,6 +195,7 @@ export function buildNodeTree(rows: NodeRow[]): Node[] {
       name: row.name,
       content: row.content || undefined,
       isOpen: Boolean(row.is_open),
+      isPinned: Boolean(row.is_pinned),
     });
   }
 

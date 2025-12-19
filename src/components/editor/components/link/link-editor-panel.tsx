@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputGroup } from "@/components/ui/input-group";
 import { Link } from "lucide-react";
-import React from "react";
 import { LinkEditorPanelProps } from "./types";
 import { useLinkEditorState } from "./use-link-editor-state";
 
