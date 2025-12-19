@@ -169,3 +169,4 @@ function selectColumn(table: HTMLTableElement, colIndex: number) {
     }
   });
 }
+

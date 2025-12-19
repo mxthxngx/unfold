@@ -8,3 +8,4 @@ export const TableEdgeHandles = Extension.create({
     return [createTableEdgeHandlesPlugin()];
   },
 });
+

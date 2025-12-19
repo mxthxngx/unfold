@@ -23,6 +23,7 @@ interface FileSystemContextType {
   deleteSpace: (id: string) => Promise<void>;
   addNode: (parentId: string | null) => Promise<string>;
   updateNodeContent: (id: string, content: string) => Promise<void>;
+  renameNode: (id: string, name: string) => Promise<void>;
   getNode: (id: string) => Node | null;
   toggleFolder: (id: string) => Promise<void>;
   togglePinNode: (id: string) => Promise<void>;
@@ -283,7 +284,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
           id: newNodeId,
           space_id: activeSpaceId,
           parent_id: parentId,
-          name: 'new page',
+          name: '',
           content: '',
           is_open: 0,
         });
@@ -300,44 +301,10 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     [activeSpaceId, reloadActiveSpaceTree]
   );
 
-  // Helper to recursively extract text from TipTap JSON node
-  const extractTextFromNode = (node: { type?: string; text?: string; content?: unknown[] }): string => {
-    if (node.text) return node.text;
-    if (node.content && Array.isArray(node.content)) {
-      return node.content
-        .map((child) => extractTextFromNode(child as { type?: string; text?: string; content?: unknown[] }))
-        .join('');
-    }
-    return '';
-  };
-
-  const extractNameFromContent = (content: string): string => {
-    if (!content || content.trim() === '') {
-      return 'new page';
-    }
-
-    try {
-      const json = JSON.parse(content);
-      if (json.content && Array.isArray(json.content)) {
-        for (const block of json.content) {
-          const text = extractTextFromNode(block);
-          if (text && text.trim().length > 0) {
-            return text.trim().slice(0, 50);
-          }
-        }
-      }
-    } catch {
-      // Invalid JSON - return default name
-    }
-
-    return 'new page';
-  };
-
   const updateNodeContent = useCallback(
     async (id: string, content: string) => {
-      const newName = extractNameFromContent(content);      
       try {
-        await db.updateNodeContent(id, content, newName);
+        await db.updateNodeContent(id, content);
         
         // Update local state optimistically (will be synced on reload)
         setSpaces((prev) =>
@@ -347,7 +314,41 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
             const updateNodesInPlace = (nodes: Node[]): Node[] => {
               return nodes.map((node) => {
                 if (node.id === id) {
-                  return { ...node, content, name: newName };
+                  return { ...node, content };
+                }
+                if (node.nodes) {
+                  return { ...node, nodes: updateNodesInPlace(node.nodes) };
+                }
+                return node;
+              });
+            };
+            
+            return { ...space, fileTree: updateNodesInPlace(space.fileTree) };
+          })
+        );
+      } catch (error) {
+        console.error('Failed to update node content:', error);
+        throw error;
+      }
+    },
+    [activeSpaceId]
+  );
+
+  const renameNode = useCallback(
+    async (id: string, name: string) => {
+      const trimmedName = name.trim() || 'new page';
+      try {
+        await db.updateNode(id, { name: trimmedName });
+        
+        // Update local state optimistically
+        setSpaces((prev) =>
+          prev.map((space) => {
+            if (space.id !== activeSpaceId) return space;
+            
+            const updateNodesInPlace = (nodes: Node[]): Node[] => {
+              return nodes.map((node) => {
+                if (node.id === id) {
+                  return { ...node, name: trimmedName };
                 }
                 if (node.nodes) {
                   return { ...node, nodes: updateNodesInPlace(node.nodes) };
@@ -367,11 +368,25 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
               );
             };
             
-            return { ...space, fileTree: recursiveSort(updateNodesInPlace(space.fileTree)) };
+            // Also update pinned nodes if necessary
+            const updatePinnedNodes = (pinnedNodes: Node[]): Node[] => {
+              return pinnedNodes.map((node) => {
+                if (node.id === id) {
+                  return { ...node, name: trimmedName };
+                }
+                return node;
+              });
+            };
+            
+            return {
+              ...space,
+              fileTree: recursiveSort(updateNodesInPlace(space.fileTree)),
+              pinnedNodes: updatePinnedNodes(space.pinnedNodes),
+            };
           })
         );
       } catch (error) {
-        console.error('Failed to update node content:', error);
+        console.error('Failed to rename node:', error);
         throw error;
       }
     },
@@ -525,6 +540,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       deleteSpace,
       addNode,
       updateNodeContent,
+      renameNode,
       getNode,
       toggleFolder,
       togglePinNode,
@@ -546,6 +562,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       deleteSpace,
       addNode,
       updateNodeContent,
+      renameNode,
       getNode,
       toggleFolder,
       togglePinNode,

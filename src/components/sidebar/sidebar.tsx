@@ -209,7 +209,7 @@ const Sidebar = memo(function Sidebar() {
 
          <SidebarContent className="px-4 overflow-y-auto">
         {!isLoading && pinnedNodes.length > 0 && (
-          <div className="mb-3">
+          <div className="mb-1">
             <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
               <span className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase">
                 pinned
@@ -538,7 +538,7 @@ const PinnedNodeItem = memo(({
           }}
         >
           <div className="flex-1 min-w-0">
-            <span className="block truncate select-none">{node.name}</span>
+            <span className="block truncate select-none">{node.name || "New page"}</span>
           </div>
           <div
             className={cn(
@@ -740,7 +740,7 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name}</span>
+              <span className="block truncate select-none">{node.name || "New page"}</span>
             </div>
             <div
               className={cn(
@@ -833,7 +833,7 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name}</span>
+              <span className="block truncate select-none">{node.name || "New page"}</span>
             </div>
 
             <div

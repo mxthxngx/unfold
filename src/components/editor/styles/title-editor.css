@@ -1,0 +1,31 @@
+/* Title Editor Styles */
+.title-editor {
+  width: 100%;
+}
+
+.title-editor .ProseMirror {
+  min-height: auto;
+}
+
+.title-editor .ProseMirror h1 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Placeholder styling */
+.title-editor .ProseMirror.is-editor-empty h1::before,
+.title-editor .ProseMirror h1.is-empty::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+.title-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

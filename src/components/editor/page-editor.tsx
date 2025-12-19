@@ -10,13 +10,13 @@ import "./styles/search-and-replace.css";
 import { starterKit } from "./extensions/starterkit";
 import CustomKeymap from "./extensions/custom-keymap";
 import { DocumentExtension } from "./extensions/document";
-import { DocumentTitle } from "./extensions/document-title";
 import { DragHandle } from "./extensions/drag-handle";
 import { DragHandleButton } from "./components/drag-handle-button";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
 import { findFirstFileId } from "@/lib/file-tree";
+import TitleEditor from "./title-editor";
 import {
   Table,
   TableRow,
@@ -57,7 +57,7 @@ const addDropHighlight = (editorView: HTMLElement | null) => {
   selectedNodes.forEach((el) => el.classList.add("drop-highlight"));
 };
 
-function Editor() {
+function PageEditor() {
   const { fileId } = useParams({ from: "/files/$fileId" });
   const navigate = useNavigate();
   const { getNode, updateNodeContent, fileTree, activeSpaceId, isLoading } =
@@ -68,10 +68,13 @@ function Editor() {
   const hasInitialContent = Boolean(
     file?.content && file.content.trim() !== "",
   );
+  // Check if it's a new page (empty name) - if so, don't autofocus page editor
+  const isNewPage = !file?.name || file.name.trim() === "";
   const lastSavedContentRef = useRef<string>("");
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const dropHighlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isContentLoadedRef = useRef<boolean>(false);
+  const focusTitleEditorRef = useRef<(() => void) | null>(null);
 
   const handleDropEnd = useCallback(() => {
     if (dropHighlightTimeoutRef.current) {
@@ -153,7 +156,6 @@ function Editor() {
   const editor = useEditor({
     extensions: [
       starterKit,
-      DocumentTitle,
       HeadingExtension,
       DocumentExtension,
       TextStyle,
@@ -227,7 +229,7 @@ function Editor() {
         },
       }),
     ],
-    autofocus: hasInitialContent ? false : "start",
+    autofocus: hasInitialContent || isNewPage ? false : "start",
     content: file?.content || "",
     onUpdate: ({ editor }) => {
       if (fileId) {
@@ -244,7 +246,48 @@ function Editor() {
     editorProps: {
       attributes: {
         class:
-          "w-full outline-none bg-transparent border-none p-6 pt-7 py-0 text-foreground min-h-full",
+          "w-full outline-none bg-transparent border-none px-6 pb-6 text-foreground min-h-full",
+      },
+      handleDOMEvents: {
+        keydown: (view, event) => {
+          // Prevent focus shift when IME composition is active
+          if (event.isComposing || event.keyCode === 229) return false;
+
+          const { $head, $anchor } = view.state.selection;
+          // Check if cursor is at the very start of the document
+          // Position 1 is right after the document node, which is the start of content
+          // Also check if we're at the start of the first block (depth 1, offset 0, no node before)
+          const doc = view.state.doc;
+          const isAtDocumentStart = $head.pos <= 1;
+          const isAtFirstBlockStart = $head.depth === 1 && 
+            $head.parentOffset === 0 && 
+            !$head.nodeBefore &&
+            $head.pos === ($head.start($head.depth) + 1);
+          const isAtStart = isAtDocumentStart || isAtFirstBlockStart;
+
+          // Arrow Up at start of page editor should move to title editor
+          if (event.key === "ArrowUp" && isAtStart) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (focusTitleEditorRef.current) {
+              focusTitleEditorRef.current();
+            }
+            return true;
+          }
+
+          // Backspace at start of page editor should move to title editor
+          // Only if there's no selection and we're at the start
+          if (event.key === "Backspace" && isAtStart && !event.shiftKey && $head.pos === $anchor.pos) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (focusTitleEditorRef.current) {
+              focusTitleEditorRef.current();
+            }
+            return true;
+          }
+
+          return false;
+        },
       },
       handlePaste: (view, event) => {
         if (fileId) return handlePaste(view, event, fileId);
@@ -282,19 +325,59 @@ function Editor() {
           }
         }
 
+        // Disable updates during content replacement to prevent cursor jumps
+        isContentLoadedRef.current = false;
         editor.commands.setContent(content);
         lastSavedContentRef.current = rawContent;
-      }
-
-      isContentLoadedRef.current = true;
-
-      if (!rawContent || rawContent.trim() === "") {
-        editor.commands.focus("start");
+        // Re-enable updates after content is set
+        setTimeout(() => {
+          isContentLoadedRef.current = true;
+        }, 50);
+      } else if (!isContentLoadedRef.current) {
+        // Initial load completed
+        isContentLoadedRef.current = true;
       }
     } else if (editor && !file && !isLoading) {
       isContentLoadedRef.current = true;
     }
-  }, [fileId, editor, isLoading]);
+  }, [fileId, editor, file, isLoading]);
+
+  const handleTitleEnterPress = useCallback(() => {
+    if (!editor) return;
+    
+    // Use a small delay to ensure the title editor has released focus
+    setTimeout(() => {
+      // Check if the editor is empty or only has empty content
+      const { doc } = editor.state;
+      const isEmpty = doc.textContent.trim() === "" || 
+        (doc.childCount === 1 && doc.firstChild?.textContent === "");
+      
+      // If empty, insert a paragraph at the start
+      if (isEmpty) {
+        editor.commands.clearContent();
+        editor.commands.insertContent({
+          type: "paragraph",
+        });
+        editor.commands.focus("start");
+      } else {
+        // If not empty, just focus at the start
+        editor.commands.focus("start");
+      }
+    }, 10);
+  }, [editor]);
+
+  const handleTitleArrowKeyPress = useCallback(() => {
+    if (!editor) return;
+    
+    // Use a small delay to ensure the title editor has released focus
+    setTimeout(() => {
+      editor.commands.focus("start");
+    }, 10);
+  }, [editor]);
+
+  const handleTitleFocusRequest = useCallback((focusTitleEditor: () => void) => {
+    focusTitleEditorRef.current = focusTitleEditor;
+  }, []);
 
   if (!editor) {
     return null;
@@ -302,6 +385,12 @@ function Editor() {
 
   return (
     <div ref={editorContainerRef} className="relative w-full">
+      <TitleEditor 
+        onEnterPress={handleTitleEnterPress}
+        onArrowKeyPress={handleTitleArrowKeyPress}
+        onFocusRequest={handleTitleFocusRequest}
+      />
+      
       <DragHandle
         editor={editor}
         onElementDragEnd={handleDropEnd}
@@ -330,4 +419,4 @@ function Editor() {
   );
 }
 
-export default Editor;
+export default PageEditor;
