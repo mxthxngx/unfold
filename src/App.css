@@ -100,6 +100,8 @@ html, body { background: transparent !important;
   --table-row-bg: rgba(24, 24, 27, 0.5);
   --table-row-hover: rgba(34, 34, 38, 0.65);
   --table-ring: var(--ring);
+  --editor-bubble-menu-surface: rgba(18, 18, 21, 0.988);
+  --editor-bubble-menu-surface-border: rgba(255, 255, 255, 0.06);
 }
 
 /* Button theme utilities */
@@ -182,6 +184,8 @@ html, body { background: transparent !important;
   --table-row-bg: rgba(244, 244, 245, 0.8);
   --table-row-hover: rgba(228, 228, 231, 0.9);
   --table-ring: var(--ring);
+  --editor-bubble-menu-surface: rgba(229, 229, 232, 0.95);
+  --editor-bubble-menu-surface-border: rgba(0, 0, 0, 0.15);
 }
 
 @theme inline {
@@ -195,6 +199,7 @@ html, body { background: transparent !important;
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-highlight: var(--primary-highlight);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -259,6 +264,8 @@ html, body { background: transparent !important;
   --color-table-row-bg: var(--table-row-bg);
   --color-table-row-hover: var(--table-row-hover);
   --color-table-ring: var(--table-ring);
+  --color-editor-bubble-menu-surface: var(--editor-bubble-menu-surface);
+  --color-editor-bubble-menu-surface-border: var(--editor-bubble-menu-surface-border);
   --space-xs: var(--space-xs);
   --space-sm: var(--space-sm);
   --space-md: var(--space-md);
@@ -285,6 +292,15 @@ html, body { background: transparent !important;
 
 .ProseMirror {
   line-height: 1.2 !important;
+}
+
+/* Nested bullet list styling */
+.ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.ProseMirror ul ul ul {
+  list-style-type: square;
 }
 
 /* Table column resize handles (Tiptap resizable tables) */

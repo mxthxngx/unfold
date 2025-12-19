@@ -6,7 +6,6 @@ const SETTINGS_STORE_PATH = 'settings.json';
 
 // Create a lazy-loaded store instance
 const settingsStore = new LazyStore(SETTINGS_STORE_PATH);
-console.log('Settings store initialized at', SETTINGS_STORE_PATH);
 
 // Default settings values
 export const DEFAULT_SETTINGS = {
@@ -40,7 +39,6 @@ export interface AppSettings {
 export async function getLayoutSettings(): Promise<Layout> {
   try {
     const layout = await settingsStore.get<Layout>(SETTINGS_KEYS.LAYOUT);
-    console.log('Retrieved layout settings:', layout);
     return layout ?? DEFAULT_SETTINGS.layout;
   } catch (error) {
     console.error('Failed to get layout settings:', error);

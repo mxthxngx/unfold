@@ -227,9 +227,6 @@ export const DragHandlePlugin = ({
               const newPos = tr.mapping.map(currentNodePos)
 
               if (newPos !== currentNodePos) {
-                // TODO: Remove
-                // console.log('Position has changed …', { old: currentNodePos, new: newPos }, tr);
-
                 // Set the new position for our current node.
                 currentNodePos = newPos
 

@@ -22,25 +22,79 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { editorClasses } from "./styles/extension-styles";
 import TableView from "./components/table-view";
 import { TableEdgeHandles } from "./extensions/table-edge-handles-extension";
-import { useDebouncedCallback } from "@/hooks/use-debounce";
+
 import { TiptapImage } from "./extensions/image";
 import { ImageNodeView } from "./components/image-node-view";
 import { handlePaste, handleDrop } from "./extensions/paste-handler";
 import NodeRange from "@tiptap/extension-node-range";
 import { SearchAndReplace } from "./extensions/search-and-replace";
+import { EditorBubbleMenu } from "./components/bubble-menu/bubble-menu";
+import TextAlign from "@tiptap/extension-text-align";
+import Highlight from "@tiptap/extension-highlight";
+import { TextStyle } from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
 
-// Debounce delay for auto-saving content (ms)
-const SAVE_DEBOUNCE_DELAY = 500;
+const DROP_HIGHLIGHT_DURATION = 1800;
+
+const clearDropHighlight = (editorView: HTMLElement | null) => {
+  if (!editorView) return;
+  const highlighted = editorView.querySelectorAll('.drop-highlight');
+  highlighted.forEach(el => el.classList.remove('drop-highlight'));
+};
+
+const addDropHighlight = (editorView: HTMLElement | null) => {
+  if (!editorView) return;
+  const selectedNodes = editorView.querySelectorAll('.ProseMirror-selectednode');
+  selectedNodes.forEach(el => el.classList.add('drop-highlight'));
+};
 
 function Editor() {
     const { fileId } = useParams({ from: '/files/$fileId' });
     const navigate = useNavigate();
-    const { getNode, updateNodeContent, fileTree, activeSpaceId } = useFileSystem();
+    const { getNode, updateNodeContent, fileTree, activeSpaceId, isLoading } = useFileSystem();
     const file = fileId ? getNode(fileId) : null;
     const { settings } = useSettings();
     const { setEditor } = useEditorContext();
     const hasInitialContent = Boolean(file?.content && file.content.trim() !== '');
     const lastSavedContentRef = useRef<string>('');
+    const editorContainerRef = useRef<HTMLDivElement>(null);
+    const dropHighlightTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isContentLoadedRef = useRef<boolean>(false);
+
+    const handleDropEnd = useCallback(() => {
+        if (dropHighlightTimeoutRef.current) {
+            clearTimeout(dropHighlightTimeoutRef.current);
+        }
+
+        requestAnimationFrame(() => {
+            addDropHighlight(editorContainerRef.current);
+
+            dropHighlightTimeoutRef.current = setTimeout(() => {
+                clearDropHighlight(editorContainerRef.current);
+            }, DROP_HIGHLIGHT_DURATION);
+        });
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            // If clicking outside the highlighted element, clear it immediately
+            if (!target.closest('.drop-highlight')) {
+                if (dropHighlightTimeoutRef.current) {
+                    clearTimeout(dropHighlightTimeoutRef.current);
+                }
+                clearDropHighlight(editorContainerRef.current);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            if (dropHighlightTimeoutRef.current) {
+                clearTimeout(dropHighlightTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Save current fileId to localStorage when it changes
     useEffect(() => {
@@ -61,28 +115,27 @@ function Editor() {
         }
     }, [fileId, file, fileTree, navigate]);
 
-    // Debounced save function for content updates
+    // Reset content loaded flag when file changes
+    useEffect(() => {
+        isContentLoadedRef.current = false;
+    }, [fileId]);
+
     const saveContent = useCallback(
         (id: string, content: string) => {
-            // Skip if content hasn't actually changed
-            if (content === lastSavedContentRef.current) return;
+            // Don't save until initial content has been loaded
+            if (!isContentLoadedRef.current) {
+                return;
+            }
+            if (content === lastSavedContentRef.current) {
+                return;
+            }
             lastSavedContentRef.current = content;
             updateNodeContent(id, content);
         },
         [updateNodeContent]
     );
 
-    const { debouncedCallback: debouncedSave, flush: flushSave } = useDebouncedCallback<typeof saveContent>(
-        saveContent,
-        SAVE_DEBOUNCE_DELAY
-    );
 
-    // Flush pending saves when switching files or unmounting
-    useEffect(() => {
-        return () => {
-            flushSave();
-        };
-    }, [fileId, flushSave]);
 
     const editor = useEditor({
         extensions:[
@@ -90,7 +143,17 @@ function Editor() {
           DocumentTitle,
           HeadingExtension,
           DocumentExtension,
-          NodeRange,
+          TextStyle,
+          Color,
+          Highlight.configure({ multicolor: true }),
+          TextAlign.configure({
+            types: ['heading', 'paragraph'],
+            alignments: ['left', 'center', 'right', 'justify'],
+            defaultAlignment: 'left',
+          }),
+          NodeRange.configure({
+            key: null,
+          }),
           SearchAndReplace.configure({
             searchResultClass: 'search-result',
             searchResultCurrentClass: 'search-result-current',
@@ -146,7 +209,7 @@ function Editor() {
           if (fileId) {
             // Store as JSON string for SQLite persistence
             const jsonContent = JSON.stringify(editor.getJSON());
-            debouncedSave(fileId, jsonContent);
+            saveContent(fileId, jsonContent);
           }
         },
         coreExtensionOptions: {
@@ -177,48 +240,55 @@ function Editor() {
 
     // Update content when file changes
     useEffect(() => {
-        if (editor && file) {
-            // Parse JSON content (TipTap JSON format)
-            const rawContent = file.content || '';
-            let content: object | string = '';
+        if (isLoading) {
+            return;
+        }
 
-            if (rawContent) {
-                try {
-                    content = JSON.parse(rawContent);
-                } catch {
-                    // If not valid JSON, start fresh
-                    content = '';
+        if (editor && file) {
+            const rawContent = file.content || '';
+
+            if (rawContent !== lastSavedContentRef.current) {
+                let content: object | string = '';
+
+                if (rawContent) {
+                    try {
+                        content = JSON.parse(rawContent);
+                    } catch {
+                      content=""
+                    }
                 }
+
+                editor.commands.setContent(content);
+                lastSavedContentRef.current = rawContent;
             }
 
-            editor.commands.setContent(content);
-            lastSavedContentRef.current = rawContent;
+            isContentLoadedRef.current = true;
 
             if (!rawContent || rawContent.trim() === '') {
                 editor.commands.focus('start');
             }
+        } else if (editor && !file && !isLoading) {
+            isContentLoadedRef.current = true;
         }
-    }, [fileId, editor]); // Only trigger when fileId changes (or editor instance)
+    }, [fileId, editor, isLoading]);
 
     if (!editor) {
         return null;
     }
 
     return (
-        <div className="relative w-full">
+        <div ref={editorContainerRef} className="relative w-full">
           <DragHandle
             editor={editor}
+            onElementDragEnd={handleDropEnd}
             shouldShow={(_node, pos) => {
-              // Don't show for first position
               if (pos <= 0) return false;
 
               const { doc } = editor.state;
               const docText = doc.textContent.trim();
 
-              // Don't show if document is empty or only whitespace
               if (!docText || docText.length === 0) return false;
 
-              // Don't show if document has only one empty paragraph (default state)
               if (doc.childCount === 1 && doc.firstChild?.textContent === '') return false;
 
               return true;
@@ -228,7 +298,10 @@ function Editor() {
           </DragHandle>
 
           <div className="">
-            <EditorContent editor={editor} />
+            <EditorBubbleMenu editor={editor} />
+            {
+              editor && <EditorContent editor={editor} />
+            }
           </div>
         </div>
     );

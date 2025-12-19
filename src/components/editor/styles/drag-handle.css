@@ -19,6 +19,20 @@
   padding: 0.5rem;
 }
 
+/* NodeRangeSelection styling - for shift+click block selection */
+.ProseMirror .ProseMirror-selectednoderange {
+  background: rgba(193, 123, 255, 0.15);
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+
+
+/* Hide default text selection when NodeRange is active */
+.ProseMirror-noderangeselection ::selection {
+  background: transparent;
+}
+
 /* Drop cursor line - Notion style */
 .ProseMirror-dropcursor {
   position: absolute !important;

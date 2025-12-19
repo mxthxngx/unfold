@@ -71,4 +71,7 @@ export const editorClasses = {
 
   tableCell:
     "relative px-4 py-3 text-table-text-muted border-b border-table-border border-r last:border-r-0 [&_p]:mb-0 [&_p]:pb-0 edge-cell",
+
+  bubbleMenu:
+    "bg-editor-bubble-menu-surface border border-editor-bubble-menu-surface-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
 };

@@ -311,8 +311,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
 
   const updateNodeContent = useCallback(
     async (id: string, content: string) => {
-      const newName = extractNameFromContent(content);
-      
+      const newName = extractNameFromContent(content);      
       try {
         await db.updateNodeContent(id, content, newName);
         
