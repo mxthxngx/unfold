@@ -22,7 +22,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
-import { ChevronDown, ChevronRight, Plus, Trash2, Pencil, Pin } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -41,8 +41,6 @@ const Sidebar = memo(function Sidebar() {
     setActiveSpace,
     getNodePath,
     toggleFolder,
-    togglePinNode,
-    isNodePinned,
   } = useFileSystem();
   const { fileId } = useParams({ strict: false });
   const navigate = useNavigate();
@@ -538,7 +536,7 @@ const PinnedNodeItem = memo(({
           }}
         >
           <div className="flex-1 min-w-0">
-            <span className="block truncate select-none">{node.name || "New page"}</span>
+            <span className="block truncate select-none">{node.name || "new Page"}</span>
           </div>
           <div
             className={cn(
@@ -740,7 +738,7 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name || "New page"}</span>
+              <span className="block truncate select-none">{node.name || "new Page"}</span>
             </div>
             <div
               className={cn(
@@ -833,7 +831,7 @@ export const SidebarNodes = memo(({
             }}
           >
             <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name || "New page"}</span>
+              <span className="block truncate select-none">{node.name || "new Page"}</span>
             </div>
 
             <div

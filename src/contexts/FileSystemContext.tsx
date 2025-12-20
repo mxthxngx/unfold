@@ -336,7 +336,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
 
   const renameNode = useCallback(
     async (id: string, name: string) => {
-      const trimmedName = name.trim() || 'new page';
+      const trimmedName = name.trim() || 'new Page';
       try {
         await db.updateNode(id, { name: trimmedName });
         

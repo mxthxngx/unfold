@@ -1,0 +1,99 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Unfold",
+  "identifier": "com.yourname.unfold.dev",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ]
+  },
+  "app": {
+    "enableGTKAppId": false,
+    "macOSPrivateApi": true,
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$APPLOCALDATA/**"]
+      },
+      "capabilities": [
+        {
+          "identifier": "draggable-window",
+          "windows": ["*"],
+          "permissions": [
+            "sql:default",
+            "sql:allow-load",
+            "sql:allow-execute",
+            "sql:allow-select",
+            "store:default",
+            "core:window:allow-start-dragging",
+            "core:menu:default",
+            "core:menu:allow-new",
+            "core:menu:allow-append",
+            "core:menu:allow-prepend",
+            "core:menu:allow-insert",
+            "core:menu:allow-remove",
+            "core:menu:allow-remove-at",
+            "core:menu:allow-items",
+            "core:menu:allow-get",
+            "core:menu:allow-popup",
+            "core:menu:allow-create-default",
+            "core:menu:allow-set-as-app-menu",
+            "core:menu:allow-set-as-window-menu",
+            "core:menu:allow-text",
+            "core:menu:allow-set-text",
+            "core:menu:allow-is-enabled",
+            "core:menu:allow-set-enabled",
+            "core:menu:allow-set-accelerator",
+            "core:menu:allow-set-as-windows-menu-for-nsapp",
+            "core:menu:allow-set-as-help-menu-for-nsapp",
+            "core:menu:allow-is-checked",
+            "core:menu:allow-set-checked",
+            "core:menu:allow-set-icon",
+            "core:path:default",
+            "fs:default",
+            "fs:allow-app-write-recursive",
+            "fs:allow-app-read-recursive",
+            "fs:scope-applocaldata-recursive"
+          ]
+        }
+      ],
+      "dangerousDisableAssetCspModification": false,
+      "freezePrototype": false,
+      "pattern": {
+        "use": "brownfield"
+      }
+    },
+    "windows": [
+      {
+        "maximizable": true,
+        "minHeight": 800,
+        "minWidth": 200,
+        "minimizable": true,
+        "decorations": true,
+        "label": "main",
+        "maximized": true,
+        "transparent": true,
+        "dragDropEnabled": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "title": "Unfold",
+        "trafficLightPosition": {
+          "x": 20,
+          "y": 23
+        },
+        "shadow": false
+      }
+    ],
+    "withGlobalTauri": false
+  }
+}

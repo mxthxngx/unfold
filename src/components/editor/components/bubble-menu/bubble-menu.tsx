@@ -1,14 +1,12 @@
 import { FC, useEffect, useRef, useState } from "react";
 import {
   isNodeSelection,
-  isTextSelection,
   useEditor,
   useEditorState,
 } from "@tiptap/react";
 
 import { BubbleMenu, BubbleMenuProps } from '@tiptap/react/menus'
 import { BoldIcon, CodeIcon, ItalicIcon, StrikethroughIcon, UnderlineIcon } from "lucide-react";
-import { isTextSelected } from "../../utils/editor-extended";
 import { editorClasses } from "../../styles/extension-styles";
 import { Button } from "@/components/ui/button";
 import { NodeSelector } from "./node-selector";
@@ -56,10 +54,6 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
         }
             });
 
-
-    useEffect(()=>{
-      isTextSelection(props.editor)
-    },[])
 
     const handleNodeSelect = () => {
       setShowBubbleMenu(false);

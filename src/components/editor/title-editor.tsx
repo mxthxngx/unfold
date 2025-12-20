@@ -38,7 +38,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
       TitleDocument,
       TitleHeading,
       Placeholder.configure({
-        placeholder: "new page",
+        placeholder: "new Page",
         showOnlyWhenEditable: false,
       }),
       Text,

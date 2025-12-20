@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import * as db from '@/services/database';
 import type { SearchResult } from '@/types/database';
 
 export type SearchScope = 'global' | 'space' | 'node';
@@ -56,13 +55,6 @@ export function useNoteSearch(_options: UseNoteSearchOptions = {}): UseNoteSearc
 
       try {
         let searchResults: SearchResult[];
-
-        // FTS5 query syntax: wrap in quotes for phrase search, use * for prefix
-        // For simple searches, we'll do a prefix search on each word
-        const ftsQuery = trimmedQuery
-          .split(/\s+/)
-          .map((word) => `${word}*`)
-          .join(' ');
 
         switch (scope) {
           case 'space':

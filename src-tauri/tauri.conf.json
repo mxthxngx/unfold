@@ -1,13 +1,23 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "identifier": "com.mathangik.unfold",
+  "productName": "Unfold",
+  "identifier": "com.yourname.unfold",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
-"app": {
+  "bundle": {
+    "active": true,
+    "targets": ["dmg"],
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ]
+  },
+  "app": {
   "enableGTKAppId": false,
   "macOSPrivateApi": true,
   "security": {
@@ -85,5 +95,5 @@
     }
   ],
   "withGlobalTauri": false
-}
+  }
 }

@@ -45,7 +45,7 @@ export const handleImageDrop = (
   return false;
 };
 
-async function uploadImageFromFile(
+export async function uploadImageFromFile(
   file: File,
   view: EditorView,
   pos: number,

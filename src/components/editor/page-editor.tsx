@@ -194,7 +194,7 @@ function PageEditor({ fileId }: PageEditorProps) {
     <div ref={editorContainerRef} className="relative w-full">
       <DragHandle
         editor={editor}
-        shouldShow={(_node, pos) => {
+        shouldShow={(_node, _pos) => {
 
           const { doc } = editor.state;
           const docText = doc.textContent.trim();

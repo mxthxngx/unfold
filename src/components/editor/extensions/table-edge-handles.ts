@@ -1,6 +1,5 @@
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { EditorView } from '@tiptap/pm/view';
-import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 
 interface EdgeHandleState {
   selectedRow: number | null;
@@ -21,13 +20,13 @@ export function createTableEdgeHandlesPlugin() {
           isDragging: false,
         };
       },
-      apply(tr, value) {
+      apply(_tr, value) {
         return value;
       },
     },
     props: {
       handleDOMEvents: {
-        mousedown(view: EditorView, event: MouseEvent) {
+        mousedown(_view: EditorView, event: MouseEvent) {
           const target = event.target as HTMLElement;
           
           // Check if clicking on edge grip
@@ -41,7 +40,7 @@ export function createTableEdgeHandlesPlugin() {
               event.stopPropagation();
               
               // Find the table cell
-              const cell = grip.closest('th, td') as HTMLElement;
+              const cell = grip.closest('th, td') as HTMLTableCellElement | null;
               if (!cell) return false;
               
               // Find row and column indices
@@ -74,7 +73,7 @@ export function createTableEdgeHandlesPlugin() {
       }, 0);
       
       return {
-        update(view: EditorView, prevState) {
+        update(view: EditorView, _prevState) {
           // Add edge grips to table cells after updates
           setTimeout(() => {
             addEdgeGripsToTables(view);

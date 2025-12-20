@@ -7,6 +7,7 @@ export interface UploadImageRequest {
     base64Data: string;
     mimeType: string;
     size: number;
+    [key: string]: unknown;
 }
 
 export interface UploadImageResponse {
