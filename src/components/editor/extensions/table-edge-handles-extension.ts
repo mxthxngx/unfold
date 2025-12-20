@@ -9,3 +9,4 @@ export const TableEdgeHandles = Extension.create({
   },
 });
 
+

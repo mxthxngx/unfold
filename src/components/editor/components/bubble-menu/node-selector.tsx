@@ -1,7 +1,7 @@
 import React, { Dispatch, FC, SetStateAction } from "react";
 import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
-import { CheckIcon, ChevronDown, CodeIcon, Heading1Icon, Heading2Icon, Heading3Icon, ListIcon, ListOrdered, ListTodo, TextQuote, TypeIcon } from "lucide-react";
+import { BracesIcon, CheckIcon, ChevronDown, CodeIcon, Heading1Icon, Heading2Icon, Heading3Icon, ListIcon, ListOrdered, ListTodo, TextQuote, TypeIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -117,7 +117,7 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
     },
     {
       name: "Code",
-      icon: CodeIcon,
+      icon: BracesIcon,
       command: () => editor?.chain().focus().toggleCodeBlock().run(),
       isActive: () => editorState?.isCodeBlock ?? false,
     },
@@ -145,8 +145,8 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
         </TooltipTrigger>
         <AppTooltipContent label="Turn into" />
 
-      <DropdownMenuContent 
-        align="start" 
+      <DropdownMenuContent
+        align="start"
         className="w-48"
         container={container}
         onCloseAutoFocus={(e) => e.preventDefault()}

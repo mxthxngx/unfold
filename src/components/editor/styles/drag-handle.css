@@ -1,11 +1,8 @@
 .ProseMirror:not(.dragging) .ProseMirror-selectednode {
   outline: none !important;
-  color: rgb(193, 123, 255);
   background: rgba(193, 123, 255, 0.25);
   transition: background-color 0.2s;
   box-shadow: none;
-  border: 1px solid rgb(193, 123, 255);
-  border-radius: 5px;
 }
 
 /* Highlight dragged block when dragging starts */
@@ -15,14 +12,12 @@
   background: rgba(193, 123, 255, 0.4);
   transition: background-color 0.2s;
   box-shadow: 0 0 0 2px rgba(193, 123, 255, 0.3);
-  border-radius: 0.375rem;
   padding: 0.5rem;
 }
 
 /* NodeRangeSelection styling - for shift+click block selection */
 .ProseMirror .ProseMirror-selectednoderange {
   background: rgba(193, 123, 255, 0.15);
-  border-radius: 3px;
   transition: background-color 0.2s;
 }
 
@@ -62,12 +57,30 @@
 }
 
 .ProseMirror {
+  --pm-padding-inline: 4rem;
   padding-inline: 4rem;
   min-height: 200px;
 
   > * + * {
     margin-top: 0.75em;
   }
+}
+
+/* Full-width post-drop highlight (added by PageEditor via `.drop-highlight`)
+   Important: must override `.ProseMirror-selectednode` styles (higher specificity). */
+.ProseMirror .ProseMirror-selectednode.drop-highlight,
+.ProseMirror .ProseMirror-selectednoderange.drop-highlight,
+.ProseMirror > .drop-highlight {
+  display: block;
+  margin-left: calc(-1 * var(--pm-padding-inline));
+  margin-right: calc(-1 * var(--pm-padding-inline));
+  padding-left: var(--pm-padding-inline);
+  padding-right: var(--pm-padding-inline);
+  border-radius: 10px;
+  background: rgba(193, 123, 255, 0.16) !important;
+  border: 1px solid rgba(193, 123, 255, 0.45) !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .drag-handle {

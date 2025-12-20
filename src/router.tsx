@@ -1,6 +1,6 @@
 import { createRouter, createRoute, createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
 import { useEffect, useMemo } from 'react';
-import PageEditor from './components/editor/page-editor';
+import FullPageEditor from './components/editor/full-page-editor';
 import EditorLayout from './layout/editor-layout';
 import { useFileSystem } from './contexts/FileSystemContext';
 import { findFirstFileId } from './lib/file-tree';
@@ -96,7 +96,7 @@ const indexRoute = createRoute({
 const fileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'files/$fileId',
-  component: PageEditor,
+  component: FullPageEditor,
 });
 
 const routeTree = rootRoute.addChildren([indexRoute, fileRoute]);

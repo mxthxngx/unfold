@@ -105,6 +105,44 @@ export function dragHandler(event: DragEvent, editor: Editor) {
 
   view.dispatch(tr)
 
+  const getTopLevelDomNode = (domNode: Node | null): HTMLElement | null => {
+    if (!domNode) return null
+    let el: Node | null = domNode
+    while (el && (el as HTMLElement).parentNode) {
+      if ((el as HTMLElement).parentNode === view.dom) {
+        break
+      }
+      el = (el as HTMLElement).parentNode
+    }
+    return el as HTMLElement | null
+  }
+
+  const addDropHighlightAtCoords = (dropEvent: DragEvent) => {
+    // After drop, selection classes are often gone, so we highlight the actual DOM blocks at the drop location.
+    const coords = { left: dropEvent.clientX, top: dropEvent.clientY }
+    const posAtCoords = view.posAtCoords(coords)
+    if (!posAtCoords) return
+
+    // Wait one frame so ProseMirror applies the drop transaction and DOM is updated.
+    requestAnimationFrame(() => {
+      const domAt = view.domAtPos(posAtCoords.pos)
+      const topLevel = getTopLevelDomNode(domAt.node as Node)
+      if (!topLevel) return
+
+      const nodesToHighlight = Math.max(1, slice.content.childCount || 1)
+      let current: Element | null = topLevel
+      for (let i = 0; i < nodesToHighlight && current; i++) {
+        ;(current as HTMLElement).classList.add("drop-highlight")
+        current = current.nextElementSibling
+      }
+
+      window.setTimeout(() => {
+        const highlighted = view.dom.querySelectorAll(".drop-highlight")
+        highlighted.forEach((el) => el.classList.remove("drop-highlight"))
+      }, 1800)
+    })
+  }
+
   // Helper to remove drop cursor
   const removeDropCursor = () => {
     const el = document.querySelector(".ProseMirror-dropcursor") as HTMLElement;
@@ -120,12 +158,15 @@ export function dragHandler(event: DragEvent, editor: Editor) {
   }
 
   // Clean up dragging class and wrapper on drop
-  const cleanup = () => {
+  const cleanup = (e?: DragEvent) => {
     view.dom.classList.remove('dragging')
     removeDropCursor()
     removeNode(wrapper)
+    if (e?.type === "drop") {
+      addDropHighlightAtCoords(e)
+    }
   }
   
-  document.addEventListener('drop', cleanup, { once: true })
-  document.addEventListener('dragend', cleanup, { once: true })
+  document.addEventListener('drop', cleanup as EventListener, { once: true })
+  document.addEventListener('dragend', cleanup as EventListener, { once: true })
 }

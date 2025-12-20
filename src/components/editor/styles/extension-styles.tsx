@@ -57,7 +57,7 @@ export const editorClasses = {
   "list-none not-prose pl-2 space-y-2",
 
   taskItem:
-  "flex items-start gap-2 [&_.task-item-content]:flex-1 [&_.task-item-content_p]:mb-0",
+  "flex items-start gap-2 [&>label]:flex [&>label]:items-start [&>label]:gap-2 [&>label]:shrink-0 [&>label>input]:mt-[0.2em] [&_.task-item-content]:flex-1 [&_.task-item-content_p]:mb-0",
 
   // Minimalistic table styling matching code block aesthetic
   table:

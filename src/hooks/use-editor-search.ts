@@ -20,9 +20,9 @@ export function useEditorSearch() {
   const [query, setQuery] = useState("");
   const [caseSensitive, setCaseSensitive] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { editorRef } = useEditorContext();
+  const { pageEditorRef } = useEditorContext();
 
-  const editor = editorRef.current;
+  const editor = pageEditorRef.current;
   const searchStorage = getSearchStorage(editor);
 
   // Get current results from editor storage

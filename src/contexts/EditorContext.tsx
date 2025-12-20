@@ -2,34 +2,45 @@ import React, { createContext, useContext, useRef, useCallback } from 'react';
 import { Editor } from '@tiptap/react';
 
 interface EditorContextType {
-  editorRef: React.MutableRefObject<Editor | null>;
-  setEditor: (editor: Editor | null) => void;
-  focusEditor: () => void;
+  pageEditorRef: React.MutableRefObject<Editor | null>;
+  titleEditorRef: React.MutableRefObject<Editor | null>;
+  setPageEditor: (editor: Editor | null) => void;
+  setTitleEditor: (editor: Editor | null) => void;
+  focusPageEditor: (position?: 'start' | 'end') => void;
+  focusTitleEditor: (position?: 'start' | 'end') => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 export function EditorProvider({ children }: { children: React.ReactNode }) {
-  const editorRef = useRef<Editor | null>(null);
+  const pageEditorRef = useRef<Editor | null>(null);
+  const titleEditorRef = useRef<Editor | null>(null);
 
-  const setEditor = useCallback((editor: Editor | null) => {
-    editorRef.current = editor;
+  const setPageEditor = useCallback((editor: Editor | null) => {
+    pageEditorRef.current = editor;
   }, []);
 
-  const focusEditor = useCallback(() => {
-    if (editorRef.current) {
-      const { doc } = editorRef.current.state;
-      const docText = doc.textContent.trim();
-      const isEmpty = !docText && doc.childCount === 1 && doc.firstChild?.textContent === '';
-      
-      if (isEmpty) {
-        editorRef.current.commands.focus('start');
-      }
-    }
+  const setTitleEditor = useCallback((editor: Editor | null) => {
+    titleEditorRef.current = editor;
+  }, []);
+
+  const focusPageEditor = useCallback((position: 'start' | 'end' = 'start') => {
+    pageEditorRef.current?.commands.focus(position);
+  }, []);
+
+  const focusTitleEditor = useCallback((position: 'start' | 'end' = 'end') => {
+    titleEditorRef.current?.commands.focus(position);
   }, []);
 
   return (
-    <EditorContext.Provider value={{ editorRef, setEditor, focusEditor }}>
+    <EditorContext.Provider value={{ 
+      pageEditorRef, 
+      titleEditorRef, 
+      setPageEditor, 
+      setTitleEditor,
+      focusPageEditor,
+      focusTitleEditor
+    }}>
       {children}
     </EditorContext.Provider>
   );
@@ -38,7 +49,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 export function useEditorContext() {
   const context = useContext(EditorContext);
   if (context === undefined) {
-    throw new Error('useEditorContext must be used within a EditorProvider');
+    throw new Error('useEditorContext must be used within an EditorProvider');
   }
   return context;
 }

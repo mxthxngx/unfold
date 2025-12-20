@@ -10,8 +10,8 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   ref
 ) {
   const shortcut = getShortcutDisplay(KEYBOARD_SHORTCUTS.FIND_IN_PAGE);
-  const { editorRef } = useEditorContext();
-  const editor = editorRef.current;
+  const { pageEditorRef } = useEditorContext();
+  const editor = pageEditorRef.current;
 
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');

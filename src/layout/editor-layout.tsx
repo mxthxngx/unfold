@@ -13,7 +13,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
     const { settings } = useSettings();
     const { setOpen, open } = useSidebar();
-    const { focusEditor } = useEditorContext();
+    const { focusPageEditor } = useEditorContext();
 
 
     
@@ -56,7 +56,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 
     return (
         <div
-            className="flex flex-col relative bg-background h-screen w-screen backdrop-blur-xl"
+            className="flex flex-col relative bg-background h-screen w-screen"
             data-tauri-drag-region
         >
             {/* Top Toolbar */}
@@ -71,7 +71,16 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                     className="flex-1 relative"
                 >
                     <div
-                        onClick={focusEditor}
+                        onClick={(e) => {
+                            const target = e.target as HTMLElement | null;
+                            if (!target) return;
+
+                            // Don't steal focus from interactive elements or editors (title/page).
+                            if (target.closest('[contenteditable="true"]')) return;
+                            if (target.closest('button, a, input, textarea, select, [role="button"]')) return;
+
+                            focusPageEditor();
+                        }}
                         className="flex-1 overflow-y-auto"
                     >
                         <div className="w-full max-w-4xl min-h-full px-6 py-8 mx-auto">

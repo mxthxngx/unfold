@@ -1,21 +1,19 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import Heading from "@tiptap/extension-heading";
 import Text from "@tiptap/extension-text";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useParams } from "@tanstack/react-router";
-import { useFileSystem } from "@/contexts/FileSystemContext";
-import "./styles/title-editor.css";
 import Document from "@tiptap/extension-document";
-import { editorClasses } from "./styles/extension-styles";
 import { mergeAttributes } from "@tiptap/core";
+import { useEditorContext } from "@/contexts/EditorContext";
+import { useFileSystem } from "@/contexts/FileSystemContext";
+import { editorClasses } from "./styles/extension-styles";
+import "./styles/title-editor.css";
 
-// Document that only accepts a single heading
 const TitleDocument = Document.extend({
   content: "heading",
 });
 
-// Custom heading with title styling
 const TitleHeading = Heading.extend({
   renderHTML({ HTMLAttributes }) {
     return ["h1", mergeAttributes(HTMLAttributes, { class: editorClasses.documentTitle }), 0];
@@ -25,47 +23,22 @@ const TitleHeading = Heading.extend({
 });
 
 interface TitleEditorProps {
-  onEnterPress?: () => void;
-  onArrowKeyPress?: () => void;
-  onFocusRequest?: (focusTitleEditor: () => void) => void;
+  fileId: string;
 }
 
-function TitleEditor({ onEnterPress, onArrowKeyPress, onFocusRequest }: TitleEditorProps) {
-  const { fileId } = useParams({ from: "/files/$fileId" });
-  const { getNode, renameNode, isLoading } = useFileSystem();
-  const file = fileId ? getNode(fileId) : null;
-  const lastSavedNameRef = useRef<string>("");
-  const isContentLoadedRef = useRef<boolean>(false);
-  const currentFileIdRef = useRef<string | undefined>(undefined);
-
-  const saveName = useCallback(
-    (id: string, name: string) => {
-      if (!isContentLoadedRef.current) return;
-      
-      const trimmedName = name.trim();
-      // If the name is empty, don't save "new page", just save empty string
-      if (!trimmedName) {
-        if (lastSavedNameRef.current !== "") {
-          lastSavedNameRef.current = "";
-          renameNode(id, "");
-        }
-        return;
-      }
-      
-      if (trimmedName === lastSavedNameRef.current) return;
-      
-      lastSavedNameRef.current = trimmedName;
-      renameNode(id, trimmedName);
-    },
-    [renameNode]
-  );
+function TitleEditor({ fileId }: TitleEditorProps) {
+  const { setTitleEditor, focusPageEditor } = useEditorContext();
+  const { getNode, renameNode } = useFileSystem();
+  const file = getNode(fileId);
+  const lastSavedRef = useRef<string>(file?.name || "");
+  const currentFileIdRef = useRef<string>(fileId);
 
   const editor = useEditor({
     extensions: [
       TitleDocument,
       TitleHeading,
       Placeholder.configure({
-        placeholder: "New page",
+        placeholder: "new page",
         showOnlyWhenEditable: false,
       }),
       Text,
@@ -74,9 +47,10 @@ function TitleEditor({ onEnterPress, onArrowKeyPress, onFocusRequest }: TitleEdi
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
     onUpdate: ({ editor }) => {
-      if (fileId) {
-        const textContent = editor.getText();
-        saveName(fileId, textContent);
+      const text = editor.getText().trim();
+      if (text !== lastSavedRef.current) {
+        lastSavedRef.current = text;
+        renameNode(fileId, text);
       }
     },
     editorProps: {
@@ -85,44 +59,21 @@ function TitleEditor({ onEnterPress, onArrowKeyPress, onFocusRequest }: TitleEdi
       },
       handleDOMEvents: {
         keydown: (view, event) => {
-          // Prevent focus shift when IME composition is active
           if (event.isComposing || event.keyCode === 229) return false;
 
-          if (event.key === "Enter" && !event.shiftKey) {
-            const { $head } = view.state.selection;
-            // Check if we're at the end of the title
-            const isAtEnd = !$head.nodeAfter || $head.nodeAfter.nodeSize === 0;
-            if (isAtEnd) {
-              event.preventDefault();
-              event.stopPropagation();
-              onEnterPress?.();
-              return true;
-            }
+          const { $head } = view.state.selection;
+          const isAtEnd = !$head.nodeAfter;
+
+          if (event.key === "Enter" && !event.shiftKey && isAtEnd) {
+            event.preventDefault();
+            focusPageEditor("start");
+            return true;
           }
 
-          if (event.key === "ArrowDown") {
-            const { $head } = view.state.selection;
-            // Only move down if we're at the end or on last line
-            const isAtEnd = !$head.nodeAfter || $head.nodeAfter.nodeSize === 0;
-            if (isAtEnd) {
-              event.preventDefault();
-              event.stopPropagation();
-              // For arrow keys, just focus without inserting paragraph
-              onArrowKeyPress?.();
-              return true;
-            }
-          }
-
-          // ArrowRight at end of title should move to content
-          if (event.key === "ArrowRight") {
-            const { $head } = view.state.selection;
-            if (!$head.nodeAfter) {
-              event.preventDefault();
-              event.stopPropagation();
-              // For arrow keys, just focus without inserting paragraph
-              onArrowKeyPress?.();
-              return true;
-            }
+          if ((event.key === "ArrowDown" || event.key === "ArrowRight") && isAtEnd) {
+            event.preventDefault();
+            focusPageEditor("start");
+            return true;
           }
 
           return false;
@@ -131,63 +82,32 @@ function TitleEditor({ onEnterPress, onArrowKeyPress, onFocusRequest }: TitleEdi
     },
   });
 
-  // Reset content loaded flag when file changes
   useEffect(() => {
-    if (fileId !== currentFileIdRef.current) {
-      isContentLoadedRef.current = false;
-      currentFileIdRef.current = fileId;
+    if (editor) {
+      setTitleEditor(editor);
     }
-  }, [fileId]);
+    return () => setTitleEditor(null);
+  }, [editor, setTitleEditor]);
 
-  // Expose focus method to parent component
   useEffect(() => {
-    if (editor && onFocusRequest) {
-      const focusTitleEditor = () => {
-        if (editor) {
-          editor.commands.focus("end");
-        }
-      };
-      onFocusRequest(focusTitleEditor);
-    }
-  }, [editor, onFocusRequest]);
+    if (!editor || fileId === currentFileIdRef.current) return;
+    
+    currentFileIdRef.current = fileId;
+    const currentFile = getNode(fileId);
+    const name = currentFile?.name || "";
+    
+    editor.commands.setContent(name);
+    lastSavedRef.current = name;
 
-  // Update content only when switching files (not on every file change)
-  useEffect(() => {
-    if (isLoading || !editor) return;
-
-    // Only update content when we switch to a different file
-    if (fileId !== currentFileIdRef.current || !isContentLoadedRef.current) {
-      currentFileIdRef.current = fileId;
-      
-      // Get fresh file reference inside effect
-      const currentFile = fileId ? getNode(fileId) : null;
-      if (currentFile) {
-        const currentName = currentFile.name || "";
-        
-        // Set content without triggering updates
-        editor.commands.setContent(currentName);
-        lastSavedNameRef.current = currentName;
-        
-        // Mark as loaded after setting content
-        isContentLoadedRef.current = true;
-        
-        // Focus title editor if it's a new page (empty name)
-        if (!currentName.trim()) {
-          // Use setTimeout to ensure the editor is fully rendered
-          setTimeout(() => {
-            editor.commands.focus("start");
-          }, 50);
-        }
-      } else {
-        isContentLoadedRef.current = true;
-      }
+    if (!name.trim()) {
+      editor.commands.focus("start");
     }
-  }, [fileId, editor, isLoading, getNode]);
+  }, [fileId, editor, getNode]);
 
   if (!editor) return null;
 
   return (
-    <div className="w-full title-editor">
+    <div className="w-full title-editor mb-5">
       <EditorContent editor={editor} />
     </div>
   );
