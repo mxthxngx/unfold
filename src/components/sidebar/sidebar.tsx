@@ -4,11 +4,11 @@ import { useParams, useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
 import { DialogRoot, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Modal } from '@/components/ui/modal';
+import { DeleteConfirmationModal } from '@/components/common/delete-confirmation-modal';
 import { Node as SidebarNode } from '../../types/sidebar';
 import { cn } from '@/lib/tiptap-utils';
 import { findFirstFileId } from '@/lib/file-tree';
 import { useFileSystem } from '@/contexts/FileSystemContext';
-import { useSidebarContextMenu } from '@/hooks/use-sidebar-context-menu';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
@@ -22,9 +22,18 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+} from "@/components/ui/context-menu"
 import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '../ui/button';
 
 const Sidebar = memo(function Sidebar() {
   const {
@@ -271,12 +280,12 @@ const Sidebar = memo(function Sidebar() {
             <DialogContent
               isOpen={isSpaceMenuOpen}
               menuRef={menuRef}
-              className="max-h-[60vh] bg-sidebar/95 backdrop-blur-xl px-3 py-2.5 space-y-2"
+              className="max-h-[60vh]"
             >
-              <div className="text-xs uppercase tracking-[0.08em] text-sidebar-foreground/60 px-1">
-                Spaces
+              <div className="text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-1 mb-1">
+                spaces
               </div>
-              <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-2 pr-1">
+              <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-1 pr-1">
                 {sortedSpaces.map((space) => {
                   const isActive = space.id === activeSpaceId;
                   const isEditing = editingSpaceId === space.id;
@@ -287,10 +296,10 @@ const Sidebar = memo(function Sidebar() {
                       ref={isActive ? activeSpaceItemRef : undefined}
                       layout
                       className={cn(
-                        'group/space flex items-center gap-.5 rounded-lg px-2.5 py-1.5 transition-colors',
+                        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ease-out',
                         isActive
-                          ? 'bg-sidebar-selected-bg text-white border border-sidebar-border/60'
-                          : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg/80'
+                          ? 'bg-[#1c1c1f] text-[#e0e0e5]'
+                          : 'text-[#a0a0a5] hover:bg-[#18181a] hover:text-[#d1d1d6]'
                       )}
                     >
                       {isEditing ? (
@@ -306,7 +315,7 @@ const Sidebar = memo(function Sidebar() {
                               setDraftName('');
                             }
                           }}
-                          className="w-full rounded-md bg-sidebar-accent text-sidebar-foreground px-2 py-1 text-sm outline-none border border-sidebar-border focus:border-sidebar-ring"
+                          className="w-full rounded-md bg-[#18181a] text-[#e0e0e5] px-2 py-1 text-sm outline-none border border-[#252527] focus:border-[#353538] transition-all duration-200"
                         />
                       ) : (
                         <button
@@ -318,14 +327,14 @@ const Sidebar = memo(function Sidebar() {
                       )}
 
                       {!isEditing && (
-                        <div className="flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity duration-200">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setEditingSpaceId(space.id);
                               setDraftName(space.name);
                             }}
-                            className="rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80"
+                            className="rounded-md p-1 hover:bg-[#252527] text-[#75757a] hover:text-[#a5a5aa] transition-colors duration-200"
                           >
                             <Pencil size={14} />
                           </button>
@@ -336,7 +345,7 @@ const Sidebar = memo(function Sidebar() {
                             }}
                             disabled={sortedSpaces.length <= 1}
                             className={cn(
-                              'rounded-md p-1 hover:bg-sidebar-icon-hover-bg text-sidebar-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed'
+                              'rounded-md p-1 hover:bg-[#252527] text-[#75757a] hover:text-[#a5a5aa] disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200'
                             )}
                           >
                             <Trash2 size={14} />
@@ -350,10 +359,10 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-1 px-3 py-3 rounded-xl border-2 border-dashed border-sidebar-border/40 bg-sidebar/25 text-sidebar-foreground/70 hover:text-sidebar-foreground/80 hover:bg-sidebar-item-hover-bg/35 hover:border-sidebar-border/50 transition-colors flex items-center gap-2 justify-center text-sm font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#18181a] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#1a1a1c] hover:border-[#282829] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
               >
-                <Plus size={14} strokeWidth={2.5} />
-                Add new space
+                <Plus size={14} strokeWidth={2} />
+                <span>add new space</span>
               </button>
             </DialogContent>
           </DialogRoot>
@@ -384,16 +393,16 @@ const Sidebar = memo(function Sidebar() {
       >
         <form
           onSubmit={handleCreateSpace}
-          className="flex flex-col gap-(--space-md) p-(--space-lg)"
+          className="flex flex-col gap-6 p-6"
         >
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold text-sidebar-foreground">Create space</h3>
-            <p className="text-sm text-sidebar-foreground/80">Name your new space.</p>
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-[#e0e0e5]">create space</h3>
+            <p className="text-sm text-[#85858a]">name your new space to organize your documents.</p>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <label className="text-xs uppercase tracking-[0.08em] text-sidebar-foreground/70">
-              Space name
+          <div className="flex flex-col gap-2.5">
+            <label className="text-[11px] uppercase tracking-[0.08em] text-[#75757a] font-medium  pointer-events-auto">
+              space name
             </label>
             <input
               autoFocus
@@ -403,64 +412,38 @@ const Sidebar = memo(function Sidebar() {
                 if (createSpaceError) setCreateSpaceError('');
               }}
               aria-invalid={!!createSpaceError}
-              className="w-full rounded-lg border border-sidebar-border bg-sidebar-accent text-sidebar-foreground px-3 py-2 text-sm outline-none focus:border-sidebar-ring focus:ring-0"
-              placeholder="Enter a space name"
+              className="w-full rounded-lg bg-[#18181a] border border-[#252527] text-[#e0e0e5] px-3.5 py-2.5 text-sm outline-none placeholder:text-[#404045] focus:border-[#353538] focus:bg-[#1a1a1c] transition-all duration-200 pointer-events-auto"
+              placeholder="enter a space name"
             />
-            <p className="min-h-[1.1rem] text-xs text-red-400">
+            <p className="min-h-[1.1rem] text-xs text-red-400/90">
               {createSpaceError ? createSpaceError : ''}
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-(--space-sm)">
+          <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={handleCloseCreateSpace}
-              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#18181a] transition-all duration-200 pointer-events-auto"
             >
-              Cancel
+              cancel
             </button>
-            <button
+            <Button
+            variant={"outline"}
               type="submit"
-              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-white text-modal-primary-foreground px-3 py-2 text-sm font-medium hover:bg-[rgba(255,255,255,0.9)] transition-colors"
+              className="pointer-events-auto"
             >
-              Create space
-            </button>
+              create space
+            </Button>
           </div>
         </form>
       </Modal>
-      <Modal
-        open={!!spaceToDelete}
-        onClose={handleCancelDeleteSpace}
+      <DeleteConfirmationModal
+        isOpen={!!spaceToDelete}
+        itemName={spaceToDelete?.name || 'space'}
         onCancel={handleCancelDeleteSpace}
         onConfirm={handleConfirmDeleteSpace}
-      >
-        <div className="flex flex-col gap-(--space-md) p-5">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-sidebar-foreground">
-              {spaceToDelete ? `Delete "${spaceToDelete.name}"?` : 'Delete space?'}
-            </h3>
-            <p className="text-sm text-sidebar-foreground/80">
-              This will move all the content to trash for 15 days. You can restore it from Trash during that window.
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-(--space-sm)">
-            <button
-              type="button"
-              onClick={handleCancelDeleteSpace}
-              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmDeleteSpace}
-              className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
-            >
-              Move to trash
-            </button>
-          </div>
-        </div>
-      </Modal>
+      />
     </ShadcnSidebar>
   );
 });
@@ -480,7 +463,9 @@ const PinnedNodeItem = memo(({
 
   const isSelected = selectedItem === node.id;
 
-  const handleOpenDeleteModal = useCallback(() => setIsDeleteModalOpen(true), []);
+  const handleOpenDeleteModal = useCallback(() => {
+    setIsDeleteModalOpen(true);
+  }, []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
   const handleConfirmDeleteNode = async () => {
     if (selectedItem === node.id) {
@@ -495,18 +480,14 @@ const PinnedNodeItem = memo(({
     setIsDeleteModalOpen(false);
   };
 
-  const { handleContextMenu } = useSidebarContextMenu({
-    nodeId: node.id,
-    isPinned: true,
-    onCreateChild: async (nodeId) => {
-      const newId = await addNode(nodeId);
-      navigate({ to: '/files/$fileId', params: { fileId: newId } });
-    },
-    onDelete: handleOpenDeleteModal,
-    onTogglePin: async (nodeId) => {
-      await togglePinNode(nodeId);
-    },
-  });
+  const handleCreateChild = async () => {
+    const newId = await addNode(node.id);
+    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+  };
+
+  const handleTogglePin = async () => {
+    await togglePinNode(node.id);
+  };
 
   const handleAddChild = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -517,88 +498,79 @@ const PinnedNodeItem = memo(({
   return (
     <>
       <SidebarMenuItem className="px-0">
-        <div
-          className={cn(
-            'group/pinned-item flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
-            isSelected
-              ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
-              : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
-          )}
-          onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
-          onContextMenu={handleContextMenu}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-            }
-          }}
-        >
-          <div className="flex-1 min-w-0">
-            <span className="block truncate select-none">{node.name || "new Page"}</span>
-          </div>
-          <div
-            className={cn(
-              "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
-              "opacity-0 max-w-0 pointer-events-none",
-              "group-hover/pinned-item:opacity-100 group-hover/pinned-item:max-w-22 group-hover/pinned-item:pointer-events-auto"
-            )}
-          >
-            <Tooltip delayDuration={120}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddChild(e);
-                  }}
-                  className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
-                >
-                  <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                    <Plus size={14} strokeWidth={3}/>
-                  </AnimatedIcon>
-                  <Ripple />
-                </button>
-              </TooltipTrigger>
-              <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
-            </Tooltip>
-          </div>
-        </div>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <div
+              className={cn(
+                'group/pinned-item flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                isSelected
+                  ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                  : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
+              )}
+              onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                }
+              }}
+            >
+              <div className="flex-1 min-w-0">
+                <span className="block truncate select-none">{node.name || "new page"}</span>
+              </div>
+              <div
+                className={cn(
+                  "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+                  "opacity-0 max-w-0 pointer-events-none",
+                  "group-hover/pinned-item:opacity-100 group-hover/pinned-item:max-w-22 group-hover/pinned-item:pointer-events-auto"
+                )}
+              >
+                <Tooltip delayDuration={120}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddChild(e);
+                      }}
+                      className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                    >
+                      <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                        <Plus size={14} strokeWidth={3}/>
+                      </AnimatedIcon>
+                      <Ripple />
+                    </button>
+                  </TooltipTrigger>
+                  <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+                </Tooltip>
+              </div>
+            </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onSelect={handleCreateChild}>
+              Add child
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_FILE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={handleTogglePin}>
+              Unpin
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.PIN_NOTE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => handleOpenDeleteModal()} variant="destructive">
+              Delete
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.DELETE_NOTE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       </SidebarMenuItem>
 
-      <Modal
-        open={isDeleteModalOpen}
-        onClose={handleCancelDeleteNode}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        itemName={node.name || 'note'}
         onCancel={handleCancelDeleteNode}
         onConfirm={handleConfirmDeleteNode}
-      >
-        <div className="flex flex-col gap-(--space-md) p-5">
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-sidebar-foreground">
-              Delete "{node.name}"?
-            </h3>
-            <p className="text-sm text-sidebar-foreground/80">
-              This will move all the content to trash for 15 days. You can restore it from Trash during that window.
-            </p>
-          </div>
-          <div className="flex items-center justify-end gap-(--space-sm)">
-            <button
-              type="button"
-              onClick={handleCancelDeleteNode}
-              className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmDeleteNode}
-              className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
-            >
-              Move to trash
-            </button>
-          </div>
-        </div>
-      </Modal>
+      />
     </>
   );
 });
@@ -624,7 +596,9 @@ export const SidebarNodes = memo(({
   const isSelected = selectedItem === node.id;
   const isPinned = isNodePinned(node.id);
 
-  const handleOpenDeleteModal = useCallback((_nodeId?: string) => setIsDeleteModalOpen(true), []);
+  const handleOpenDeleteModal = useCallback((_nodeId?: string) => {
+    setIsDeleteModalOpen(true);
+  }, []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
   const handleConfirmDeleteNode = async () => {
     if (selectedItem === node.id) {
@@ -639,19 +613,14 @@ export const SidebarNodes = memo(({
     setIsDeleteModalOpen(false);
   };
 
-  // Context menu handler
-  const { handleContextMenu } = useSidebarContextMenu({
-    nodeId: node.id,
-    isPinned,
-    onCreateChild: async (nodeId) => {
-      const newId = await addNode(nodeId);
-      navigate({ to: '/files/$fileId', params: { fileId: newId } });
-    },
-    onDelete: handleOpenDeleteModal,
-    onTogglePin: async (nodeId) => {
-      await togglePinNode(nodeId);
-    },
-  });
+  const handleCreateChild = async () => {
+    const newId = await addNode(node.id);
+    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+  };
+
+  const handleTogglePin = async () => {
+    await togglePinNode(node.id);
+  };
 
   const handleAddChild = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -679,39 +648,12 @@ export const SidebarNodes = memo(({
   }, [node.id]);
 
   const deleteModal = (
-    <Modal
-      open={isDeleteModalOpen}
-      onClose={handleCancelDeleteNode}
+    <DeleteConfirmationModal
+      isOpen={isDeleteModalOpen}
+      itemName={node.name || 'note'}
       onCancel={handleCancelDeleteNode}
       onConfirm={handleConfirmDeleteNode}
-    >
-      <div className="flex flex-col gap-(--space-md) p-5">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-sidebar-foreground">
-            Delete "{node.name}"?
-          </h3>
-          <p className="text-sm text-sidebar-foreground/80">
-            This will move all the content to trash for 15 days. You can restore it from Trash during that window.
-          </p>
-        </div>
-        <div className="flex items-center justify-end gap-(--space-sm)">
-          <button
-            type="button"
-            onClick={handleCancelDeleteNode}
-            className="inline-flex items-center gap-1.5 rounded-md border border-modal-action-border bg-modal-action-bg px-3 py-2 text-sm font-medium text-modal-action-text hover:bg-modal-action-bg-hover transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirmDeleteNode}
-            className="inline-flex items-center gap-1.5 rounded-md border border-transparent bg-red-500/70 px-3 py-2 text-sm font-medium text-white/95 shadow-sm hover:bg-red-500/85 transition-colors"
-          >
-            Move to trash
-          </button>
-        </div>
-      </div>
-    </Modal>
+    />
   );
 
   // Root level items
@@ -719,66 +661,84 @@ export const SidebarNodes = memo(({
     return (
       <>
         <SidebarMenuItem className="px-0">
-          <div
-            className={cn(
-              'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
-              isSelected
-                ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
-                : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
-            )}
-            onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
-            onContextMenu={handleContextMenu}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-              }
-            }}
-          >
-            <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name || "new Page"}</span>
-            </div>
-            <div
-              className={cn(
-                "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
-                "opacity-0 max-w-0 pointer-events-none",
-                "group-hover/item-row:opacity-100 group-hover/item-row:max-w-22 group-hover/item-row:pointer-events-auto"
-              )}
-            >
-              <Tooltip delayDuration={120}>
-                <TooltipTrigger asChild>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <div
+                className={cn(
+                  'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                  isSelected
+                    ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                    : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
+                )}
+                onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                  }
+                }}
+              >
+                <div className="flex-1 min-w-0">
+                  <span className="block truncate select-none">{node.name || "new page"}</span>
+                </div>
+                <div
+                  className={cn(
+                    "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+                    "opacity-0 max-w-0 pointer-events-none",
+                    "group-hover/item-row:opacity-100 group-hover/item-row:max-w-22 group-hover/item-row:pointer-events-auto"
+                  )}
+                >
+                  <Tooltip delayDuration={120}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddChild(e);
+                        }}
+                        className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                      >
+                        <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                          <Plus size={14} strokeWidth={3}/>
+                        </AnimatedIcon>
+                        <Ripple />
+                      </button>
+                    </TooltipTrigger>
+                    <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+                  </Tooltip>
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleAddChild(e);
+                      handleToggle(e);
                     }}
                     className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                   >
                     <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                      <Plus size={14} strokeWidth={3}/>
+                      {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
                     </AnimatedIcon>
                     <Ripple />
                   </button>
-                </TooltipTrigger>
-                <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
-              </Tooltip>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle(e);
-                }}
-                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
-              >
-                <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                  {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
-                </AnimatedIcon>
-                <Ripple />
-              </button>
-            </div>
-          </div>
+                </div>
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onSelect={handleCreateChild}>
+                Add child
+                <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_FILE)}</ContextMenuShortcut>
+              </ContextMenuItem>
+              <ContextMenuItem onSelect={handleTogglePin}>
+                {isPinned ? "Unpin" : "Pin"}
+                <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.PIN_NOTE)}</ContextMenuShortcut>
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem onSelect={() => handleOpenDeleteModal()} variant="destructive">
+                Delete
+                <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.DELETE_NOTE)}</ContextMenuShortcut>
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
 
           {node.isOpen && (
             <SidebarMenuSub 
@@ -811,68 +771,85 @@ export const SidebarNodes = memo(({
   return (
     <>
       <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1', 'px-0')}>
-        <>
-          <div 
-            className={cn(
-              'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
-              isSelected
-                ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
-                : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
-            )}
-            onContextMenu={handleContextMenu}
-            onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-              }
-            }}
-          >
-            <div className="flex-1 min-w-0">
-              <span className="block truncate select-none">{node.name || "new Page"}</span>
-            </div>
-
-            <div
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            <div 
               className={cn(
-                "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
-                "opacity-0 max-w-0 pointer-events-none",
-                "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-22 group-hover/sub-item-row:pointer-events-auto"
+                'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                isSelected
+                  ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                  : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
+              onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                }
+              }}
             >
-              <Tooltip delayDuration={120}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddChild(e);
-                    }}
-                    className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
-                  >
-                    <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                      <Plus size={14} strokeWidth={3} />
-                    </AnimatedIcon>
-                    <Ripple />
-                  </button>
-                </TooltipTrigger>
-                <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
-              </Tooltip>
+              <div className="flex-1 min-w-0">
+                <span className="block truncate select-none">{node.name || "new page"}</span>
+              </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggle(e);
-                }}
-                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+              <div
+                className={cn(
+                  "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
+                  "opacity-0 max-w-0 pointer-events-none",
+                  "group-hover/sub-item-row:opacity-100 group-hover/sub-item-row:max-w-22 group-hover/sub-item-row:pointer-events-auto"
+                )}
               >
-                <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                  {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
-                </AnimatedIcon>
-                <Ripple />
-              </button>
+                <Tooltip delayDuration={120}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddChild(e);
+                      }}
+                      className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                    >
+                      <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                        <Plus size={14} strokeWidth={3} />
+                      </AnimatedIcon>
+                      <Ripple />
+                    </button>
+                  </TooltipTrigger>
+                  <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
+                </Tooltip>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggle(e);
+                  }}
+                  className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                >
+                  <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                    {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+                  </AnimatedIcon>
+                  <Ripple />
+                </button>
+              </div>
             </div>
-          </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onSelect={handleCreateChild}>
+              Add child
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.CREATE_FILE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={handleTogglePin}>
+              {isPinned ? "Unpin" : "Pin"}
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.PIN_NOTE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => handleOpenDeleteModal()} variant="destructive">
+              Delete
+              <ContextMenuShortcut>{getShortcutDisplay(KEYBOARD_SHORTCUTS.DELETE_NOTE)}</ContextMenuShortcut>
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
           {node.isOpen && (
             <SidebarMenuSub 
               key={`sub-${node.id}`}
@@ -894,7 +871,6 @@ export const SidebarNodes = memo(({
               )}
             </SidebarMenuSub>
           )}
-        </>
       </SidebarMenuSubItem>
     {deleteModal}
     </>

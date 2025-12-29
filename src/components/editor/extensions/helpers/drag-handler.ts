@@ -114,7 +114,7 @@ export function dragHandler(event: DragEvent, editor: Editor) {
       }
       el = (el as HTMLElement).parentNode
     }
-    return el as HTMLElement | null
+    return (el && el.nodeType === 1) ? (el as HTMLElement) : null
   }
 
   const addDropHighlightAtCoords = (dropEvent: DragEvent) => {

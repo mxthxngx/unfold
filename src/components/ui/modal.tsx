@@ -86,7 +86,7 @@ export function Modal({
         <motion.div
           key="modal-overlay"
           className={cn(
-            'fixed inset-0 z-90 flex items-center justify-center px-4 sm:px-6',
+            'fixed inset-0 z-900 flex items-center justify-center px-4 sm:px-6 ',
             containerClassName
           )}
           initial={{ opacity: 0 }}
@@ -140,7 +140,7 @@ export function Modal({
                   onCancel?.();
                   onClose?.();
                 }}
-                className="absolute top-4 right-4 rounded-md p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg transition-colors z-10"
+                className="absolute top-4 right-4 rounded-md p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg transition-colors pointer-events-auto"
               >
                 <X size={16} />
               </button>

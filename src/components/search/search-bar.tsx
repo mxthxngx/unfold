@@ -168,8 +168,8 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     >
       <div
         className={cn(
-          'pointer-events-auto flex flex-col gap-2 rounded-xl border border-border/70',
-          'bg-card/95 backdrop-blur-xl p-3 shadow-[0_18px_60px_rgba(0,0,0,0.45)]'
+          'pointer-events-auto flex flex-col gap-1.5 rounded-lg border border-border',
+          'bg-card/95 backdrop-blur-xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.45)]'
         )}
       >
         {/* Search Row */}
@@ -255,7 +255,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
               className={cn(
                 'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
                 caseSensitive
-                  ? 'bg-[rgba(193,123,255,0.2)] border-[rgba(193,123,255,0.5)] text-[rgb(193,123,255)]'
+                  ? 'bg-[rgba(167,139,250,0.2)] border-[rgba(167,139,250,0.5)] text-[rgb(167,139,250)]'
                   : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
               )}
               aria-label="Toggle case sensitive"
@@ -270,7 +270,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
               className={cn(
                 'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
                 showReplace
-                  ? 'bg-[rgba(193,123,255,0.2)] border-[rgba(193,123,255,0.5)] text-[rgb(193,123,255)]'
+                  ? 'bg-[rgba(167,139,250,0.2)] border-[rgba(167,139,250,0.5)] text-[rgb(167,139,250)]'
                   : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
               )}
               aria-label="Toggle replace"
@@ -295,7 +295,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
 
         {/* Replace Row */}
         {showReplace && (
-          <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+          <div className="flex items-center gap-2 pt-1 border-t border-border/70">
             <div className="flex items-center gap-2 flex-1">
               <Replace size={14} className="text-muted-foreground/70" />
               <input

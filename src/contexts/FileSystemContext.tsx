@@ -60,67 +60,49 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
         
         if (!mounted) return;
         
-        if (spaceRows.length === 0) {
-          const defaultSpaceId = uuidv4();
-          await db.createSpace({
-            id: defaultSpaceId,
-            name: 'mine',
-            sort_order: 0,
-          });
-          
-          if (!mounted) return;
-          
-          setSpaces([{ id: defaultSpaceId, name: 'mine', fileTree: [], pinnedNodes: [] }]);
-          setActiveSpaceId(defaultSpaceId);
-          localStorage.setItem('activeSpaceId', defaultSpaceId);
-          setHasInitialized(true);
-        } else {
-          // Load all spaces with their nodes
-          const loadedSpaces = await Promise.all(
-            spaceRows.map(async (spaceRow) => {
-              const nodeRows = await db.getNodesBySpace(spaceRow.id);
-              const fileTree = db.buildNodeTree(nodeRows);
-              // Extract pinned nodes from all nodes (flattened)
-              const pinnedNodes = nodeRows
-                .filter(row => row.is_pinned === 1)
-                .map(row => ({
-                  id: row.id,
-                  name: row.name,
-                  content: row.content || undefined,
-                  isPinned: true,
-                }));
-              return {
-                id: spaceRow.id,
-                name: spaceRow.name,
-                fileTree,
-                pinnedNodes,
-              };
-            })
-          );
-          
-          if (!mounted) return;
-          
-          setSpaces(loadedSpaces);
-          
-          // Try to restore last active space from localStorage
-          const savedSpaceId = localStorage.getItem('activeSpaceId');
-          const savedSpaceExists = savedSpaceId && loadedSpaces.some(s => s.id === savedSpaceId);
-          
-          // Priority: saved space > "mine" space > first space
-          const mineSpace = loadedSpaces.find(s => s.name === 'mine');
-          const activeId = savedSpaceExists ? savedSpaceId : (mineSpace?.id ?? loadedSpaces[0]?.id ?? '');
-          
-          // Clear invalid saved space ID
-          if (!savedSpaceExists && savedSpaceId) {
-            localStorage.removeItem('activeSpaceId');
-          }
-          
-          setActiveSpaceId(activeId);
-          if (activeId) {
-            localStorage.setItem('activeSpaceId', activeId);
-          }
-          setHasInitialized(true);
+        const loadedSpaces = await Promise.all(
+          spaceRows.map(async (spaceRow) => {
+            const nodeRows = await db.getNodesBySpace(spaceRow.id);
+            const fileTree = db.buildNodeTree(nodeRows);
+            // Extract pinned nodes from all nodes (flattened)
+            const pinnedNodes = nodeRows
+              .filter(row => row.is_pinned === 1)
+              .map(row => ({
+                id: row.id,
+                name: row.name,
+                content: row.content || undefined,
+                isPinned: true,
+              }));
+            return {
+              id: spaceRow.id,
+              name: spaceRow.name,
+              fileTree,
+              pinnedNodes,
+            };
+          })
+        );
+        
+        if (!mounted) return;
+        setSpaces(loadedSpaces);
+        
+        // Try to restore last active space from localStorage
+        const savedSpaceId = localStorage.getItem('activeSpaceId');
+        const savedSpaceExists = savedSpaceId && loadedSpaces.some(s => s.id === savedSpaceId);
+        
+        // Priority: saved space > "mine" space > first space
+        const mineSpace = loadedSpaces.find(s => s.name === 'mine');
+        const activeId = savedSpaceExists ? savedSpaceId : (mineSpace?.id ?? loadedSpaces[0]?.id ?? '');
+                
+        // Clear invalid saved space ID
+        if (!savedSpaceExists && savedSpaceId) {
+          localStorage.removeItem('activeSpaceId');
         }
+        
+        setActiveSpaceId(activeId);
+        if (activeId) {
+          localStorage.setItem('activeSpaceId', activeId);
+        }
+        setHasInitialized(true);
       } catch (error) {
         if (!mounted) return;
         console.error('[FileSystemContext] Failed to load data from database:', error);
@@ -145,7 +127,8 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
 
   const fileTree = activeSpace?.fileTree ?? [];
   const pinnedNodes = activeSpace?.pinnedNodes ?? [];
-  const spaceName = activeSpace?.name ??  'Loading...' ;
+  const spaceName = activeSpace?.name ?? '';
+  
   
   // Helper to find a node in the tree
   const findNode = useCallback((nodes: Node[], id: string): Node | null => {
@@ -336,7 +319,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
 
   const renameNode = useCallback(
     async (id: string, name: string) => {
-      const trimmedName = name.trim() || 'new Page';
+      const trimmedName = name.trim();
       try {
         await db.updateNode(id, { name: trimmedName });
         

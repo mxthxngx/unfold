@@ -116,7 +116,29 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
 
 
 return (props.editor && showBubbleMenu) ?  (
-    <BubbleMenu editor={props.editor} options={{placement:'top',offset:8,flip:true}}>
+    <BubbleMenu 
+      editor={props.editor} 
+      options={{placement:'top',offset:8,flip:true}}
+      shouldShow={({ state }) => {
+        const { selection } = state;
+        const { empty } = selection;
+        
+
+        if (empty) {
+          return false;
+        }
+        
+        // Don't show bubble menu if an image node is selected
+        if (isNodeSelection(selection)) {
+          const node = selection.node;
+          if (node?.type.name === 'image') {
+            return false;
+          }
+        }
+        
+        return true;
+      }}
+    >
         <div ref={menuRef} className={editorClasses.bubbleMenu}>
             <NodeSelector
                 editor={props.editor}

@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Unfold",
-  "identifier": "com.yourname.unfold.dev",
+  "identifier": "com.mathangik.unfold.dev",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",

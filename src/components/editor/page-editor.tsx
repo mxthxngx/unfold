@@ -14,7 +14,6 @@ import { DragHandleButton } from "./components/drag-handle-button";
 import { Table, TableRow, TableHeader, TableCell } from "@tiptap/extension-table";
 import { editorClasses } from "./styles/extension-styles";
 import TableView from "./components/table-view";
-import { TableEdgeHandles } from "./extensions/table-edge-handles-extension";
 import { TiptapImage } from "./extensions/image";
 import { ImageNodeView } from "./components/image-node-view";
 import { handlePaste, handleDrop } from "./extensions/paste-handler";
@@ -30,6 +29,7 @@ import "./styles/drag-handle.css";
 import "./styles/block-spacing.css";
 import "./styles/image-node.css";
 import "./styles/search-and-replace.css";
+import "./styles/table.css";
 
 interface PageEditorProps {
   fileId: string;
@@ -96,12 +96,13 @@ function PageEditor({ fileId }: PageEditorProps) {
         },
       }).configure({
         resizable: true,
+        lastColumnResizable: true,
+        allowTableNodeSelection: true,
         HTMLAttributes: { class: editorClasses.table },
       }),
       TableRow.configure({ HTMLAttributes: { class: editorClasses.tableRow } }),
       TableHeader.configure({ HTMLAttributes: { class: editorClasses.tableHeader } }),
       TableCell.configure({ HTMLAttributes: { class: editorClasses.tableCell } }),
-      TableEdgeHandles,
       CustomKeymap.configure({ selectAllKey: settings.keybindings.selectAll }),
       TrailingNode.configure({ node: "paragraph", notAfter: ["paragraph"] }),
       TaskList.configure({ HTMLAttributes: { class: editorClasses.taskList } }),

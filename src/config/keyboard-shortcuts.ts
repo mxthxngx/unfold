@@ -11,7 +11,7 @@ export const KEYBOARD_SHORTCUTS = {
   
   // Navigation / search
   FIND_IN_PAGE: "CmdOrCtrl+F",
-  TOGGLE_SIDEBAR: "CmdOrCtrl+B",
+  TOGGLE_SIDEBAR: "CmdOrCtrl+K",
   
   // Add more shortcuts as needed
   // SAVE: "CmdOrCtrl+S",
@@ -29,5 +29,6 @@ export const getShortcutDisplay = (shortcut: string): string => {
     .replace(/Ctrl/g, 'Ctrl')
     .replace(/Alt/g, isMac ? '⌥' : 'Alt')
     .replace(/Shift/g, isMac ? '⇧' : 'Shift')
+    .replace(/Backspace/g, '⌫')
     .replace(/\+/g, isMac ? '' : '+');
 };

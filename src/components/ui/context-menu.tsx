@@ -64,7 +64,7 @@ function ContextMenuSubTrigger({
       data-slot="context-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground flex cursor-default items-center rounded-sm px-2 py-1.5 text-xs outline-hidden select-none data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "focus:bg-white/5 focus:text-white focus:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] data-[state=open]:bg-white/5 data-[state=open]:text-white data-[state=open]:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] [&_svg:not([class*='text-'])]:text-white/50 flex cursor-default items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium outline-hidden select-none data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-all duration-150",
         className
       )}
       {...props}
@@ -83,8 +83,8 @@ function ContextMenuSubContent({
     <ContextMenuPrimitive.SubContent
       data-slot="context-menu-sub-content"
       className={cn(
-        "text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[14rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-lg py-1.5 px-1 shadow-xl backdrop-blur-xl",
-        "bg-[oklab(0.999998_-0.00000980496_0.0000234246_/_0.045)] border border-[lab(15.204_0_-0.00000596046)]",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-3 data-[side=left]:slide-in-from-right-3 data-[side=right]:slide-in-from-left-3 data-[side=top]:slide-in-from-bottom-3 z-50 min-w-40 origin-auto overflow-hidden rounded-xl p-1.5 shadow-lg backdrop-blur-2xl backdrop-saturate-150 flex flex-col gap-.5",
+        "bg-sidebar-item-hover-bg/70 border border-white/10 shadow-[0_0_12px_rgba(255,255,255,0.04)] ring-1 ring-white/3",
         className
       )}
       {...props}
@@ -101,8 +101,8 @@ function ContextMenuContent({
       <ContextMenuPrimitive.Content
         data-slot="context-menu-content"
         className={cn(
-          "text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-context-menu-content-available-height) min-w-[14rem] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg py-1.5 px-1 shadow-xl backdrop-blur-xl",
-          "bg-[oklab(0.999998_-0.00000980496_0.0000234246_/_0.045)] border border-[lab(15.204_0_-0.00000596046)]",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-3 data-[side=left]:slide-in-from-right-3 data-[side=right]:slide-in-from-left-3 data-[side=top]:slide-in-from-bottom-3 z-50 max-h-96 min-w-40 origin-top overflow-x-hidden overflow-y-auto rounded-xl p-1.5 shadow-lg backdrop-blur-2xl backdrop-saturate-150 flex flex-col gap-.5",
+          "bg-sidebar-item-hover-bg/70 border border-white/10 shadow-[0_0_12px_rgba(255,255,255,0.04)] ring-1 ring-white/3",
           className
         )}
         {...props}
@@ -126,7 +126,7 @@ function ContextMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "text-sidebar-foreground hover:bg-sidebar-item-hover-bg hover:text-sidebar-foreground-active focus:bg-sidebar-item-hover-bg focus:text-sidebar-foreground-active data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-md -mx-1 px-3 py-1.5 text-xs outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-colors",
+        "text-white/85 hover:bg-white/5 hover:text-white hover:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] focus:bg-white/5 focus:text-white focus:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] data-[variant=destructive]:text-red-400/90 data-[variant=destructive]:hover:bg-red-500/10 data-[variant=destructive]:hover:text-red-300 data-[variant=destructive]:hover:shadow-[inset_0_0_8px_rgba(239,68,68,0.1)] data-[variant=destructive]:focus:bg-red-500/10 data-[variant=destructive]:focus:text-red-300 [&_svg:not([class*='text-'])]:text-white/50 relative flex cursor-default items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-40 data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-all duration-150",
         className
       )}
       {...props}
@@ -144,13 +144,13 @@ function ContextMenuCheckboxItem({
     <ContextMenuPrimitive.CheckboxItem
       data-slot="context-menu-checkbox-item"
       className={cn(
-        "text-sidebar-foreground focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-xs outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "text-white/85 focus:bg-white/5 focus:text-white focus:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-2.5 pl-8 text-xs font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-all duration-150",
         className
       )}
       checked={checked}
       {...props}
     >
-      <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+      <span className="pointer-events-none absolute left-3 flex size-4 items-center justify-center">
         <ContextMenuPrimitive.ItemIndicator>
           <CheckIcon className="size-4" />
         </ContextMenuPrimitive.ItemIndicator>
@@ -169,12 +169,12 @@ function ContextMenuRadioItem({
     <ContextMenuPrimitive.RadioItem
       data-slot="context-menu-radio-item"
       className={cn(
-        "text-sidebar-foreground focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-xs outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "text-white/85 focus:bg-white/5 focus:text-white focus:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)] relative flex cursor-default items-center gap-2 rounded-lg py-1.5 pr-2.5 pl-8 text-xs font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 transition-all duration-150",
         className
       )}
       {...props}
     >
-      <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
+      <span className="pointer-events-none absolute left-3 flex size-3.5 items-center justify-center">
         <ContextMenuPrimitive.ItemIndicator>
           <CircleIcon className="size-2 fill-current" />
         </ContextMenuPrimitive.ItemIndicator>
@@ -196,7 +196,7 @@ function ContextMenuLabel({
       data-slot="context-menu-label"
       data-inset={inset}
       className={cn(
-        "text-foreground px-2 py-1.5 text-sm font-medium data-[inset]:pl-8",
+        "text-white/50 px-2.5 py-1.5 text-xs font-medium tracking-widest uppercase data-inset:pl-8",
         className
       )}
       {...props}
@@ -211,7 +211,7 @@ function ContextMenuSeparator({
   return (
     <ContextMenuPrimitive.Separator
       data-slot="context-menu-separator"
-      className={cn("bg-border -mx-1 my-1 h-px", className)}
+      className={cn("bg-white/8 -mx-1.5 my-1 h-px", className)}
       {...props}
     />
   )
@@ -225,7 +225,7 @@ function ContextMenuShortcut({
     <span
       data-slot="context-menu-shortcut"
       className={cn(
-        "text-muted-foreground ml-auto text-xs tracking-widest",
+        "text-white/45 ml-auto text-xs font-medium tracking-widest",
         className
       )}
       {...props}

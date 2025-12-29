@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Manager, command};
 use std::fs;
+use tauri::{AppHandle, Manager, command};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -47,8 +47,7 @@ pub async fn upload_image(
     let file_path = images_dir.join(&unique_filename);
 
     // Write image data to file
-    fs::write(&file_path, &image_data)
-        .map_err(|e| format!("Failed to write image file: {}", e))?;
+    fs::write(&file_path, &image_data).map_err(|e| format!("Failed to write image file: {}", e))?;
 
     let attachment_id = Uuid::new_v4().to_string();
     let file_path_str = file_path
@@ -76,10 +75,7 @@ pub async fn upload_image(
 }
 
 #[command]
-pub async fn get_image(
-    app: AppHandle,
-    attachment_id: String,
-) -> Result<String, String> {
+pub async fn get_image(app: AppHandle, attachment_id: String) -> Result<String, String> {
     let db_path = app
         .path()
         .app_local_data_dir()
@@ -101,10 +97,7 @@ pub async fn get_image(
 }
 
 #[command]
-pub async fn delete_image(
-    app: AppHandle,
-    attachment_id: String,
-) -> Result<(), String> {
+pub async fn delete_image(app: AppHandle, attachment_id: String) -> Result<(), String> {
     let db_path = app
         .path()
         .app_local_data_dir()
@@ -128,8 +121,7 @@ pub async fn delete_image(
         .map_err(|e| format!("Failed to delete from database: {}", e))?;
 
     // Delete physical file
-    fs::remove_file(&path)
-        .map_err(|e| format!("Failed to delete file: {}", e))?;
+    fs::remove_file(&path).map_err(|e| format!("Failed to delete file: {}", e))?;
 
     Ok(())
 }
@@ -155,7 +147,14 @@ async fn store_image_metadata(
     conn.execute(
         "INSERT INTO images (id, note_id, filename, file_path, size, mime_type, created_at) 
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, datetime('now'))",
-        rusqlite::params![id, note_id, filename, file_path, size.to_string(), mime_type],
+        rusqlite::params![
+            id,
+            note_id,
+            filename,
+            file_path,
+            size.to_string(),
+            mime_type
+        ],
     )
     .map_err(|e| format!("Failed to insert image metadata: {}", e))?;
 
@@ -174,21 +173,24 @@ pub async fn check_database_schema(app: AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to open database: {}", e))?;
 
     // Check if images table exists and get its schema
-    let table_info: Result<Vec<String>, _> = conn
-        .prepare("PRAGMA table_info(images)")
-        .and_then(|mut stmt| {
-            let rows = stmt.query_map([], |row| {
-                let name: String = row.get(1)?;
-                Ok(name)
-            })?;
-            rows.collect()
-        });
+    let table_info: Result<Vec<String>, _> =
+        conn.prepare("PRAGMA table_info(images)")
+            .and_then(|mut stmt| {
+                let rows = stmt.query_map([], |row| {
+                    let name: String = row.get(1)?;
+                    Ok(name)
+                })?;
+                rows.collect()
+            });
 
     match table_info {
         Ok(columns) => {
             let has_file_path = columns.iter().any(|col| col == "file_path");
             if has_file_path {
-                Ok(format!("✓ Database schema is correct. DB at: {}", db_path.display()))
+                Ok(format!(
+                    "✓ Database schema is correct. DB at: {}",
+                    db_path.display()
+                ))
             } else {
                 Ok(format!(
                     "✗ Images table exists but missing 'file_path' column.\nColumns: {:?}\nDB at: {}\n\nTo fix: Delete this database file and restart the app.",
@@ -197,12 +199,10 @@ pub async fn check_database_schema(app: AppHandle) -> Result<String, String> {
                 ))
             }
         }
-        Err(_) => {
-            Ok(format!(
-                "✗ Images table does not exist.\nDB at: {}\n\nTo fix: Delete this database file and restart the app.",
-                db_path.display()
-            ))
-        }
+        Err(_) => Ok(format!(
+            "✗ Images table does not exist.\nDB at: {}\n\nTo fix: Delete this database file and restart the app.",
+            db_path.display()
+        )),
     }
 }
 
@@ -231,21 +231,28 @@ pub async fn check_nodes_schema(app: AppHandle) -> Result<String, String> {
     let conn = rusqlite::Connection::open(&db_path)
         .map_err(|e| format!("Failed to open database: {}", e))?;
 
-    let mut stmt = conn.prepare("PRAGMA table_info(nodes)")
+    let mut stmt = conn
+        .prepare("PRAGMA table_info(nodes)")
         .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
-    let cols = stmt.query_map([], |row| {
-        let name: String = row.get(1)?;
-        Ok(name)
-    }).map_err(|e| format!("Failed to query schema: {}", e))?;
+    let cols = stmt
+        .query_map([], |row| {
+            let name: String = row.get(1)?;
+            Ok(name)
+        })
+        .map_err(|e| format!("Failed to query schema: {}", e))?;
 
     let mut col_names: Vec<String> = Vec::new();
-    for c in cols { col_names.push(c.map_err(|e| format!("Row error: {}", e))?); }
+    for c in cols {
+        col_names.push(c.map_err(|e| format!("Row error: {}", e))?);
+    }
 
     let has_type = col_names.iter().any(|c| c == "type");
     Ok(format!(
         "nodes columns: {:?}\ncontains 'type': {}\nDB: {}",
-        col_names, has_type, db_path.display()
+        col_names,
+        has_type,
+        db_path.display()
     ))
 }
 
@@ -261,16 +268,26 @@ pub async fn repair_nodes_schema(app: AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to open database: {}", e))?;
 
     // Check if 'type' column exists
-    let mut stmt = conn.prepare("PRAGMA table_info(nodes)")
+    let mut stmt = conn
+        .prepare("PRAGMA table_info(nodes)")
         .map_err(|e| format!("Failed to prepare statement: {}", e))?;
-    let cols = stmt.query_map([], |row| {
-        let name: String = row.get(1)?;
-        Ok(name)
-    }).map_err(|e| format!("Failed to query schema: {}", e))?;
+    let cols = stmt
+        .query_map([], |row| {
+            let name: String = row.get(1)?;
+            Ok(name)
+        })
+        .map_err(|e| format!("Failed to query schema: {}", e))?;
     let mut has_type = false;
-    for c in cols { if c.map_err(|e| format!("Row error: {}", e))? == "type" { has_type = true; break; } }
+    for c in cols {
+        if c.map_err(|e| format!("Row error: {}", e))? == "type" {
+            has_type = true;
+            break;
+        }
+    }
 
-    if !has_type { return Ok("nodes schema OK (no 'type' column)".into()); }
+    if !has_type {
+        return Ok("nodes schema OK (no 'type' column)".into());
+    }
 
     // Rebuild table without 'type' column
     let sql = r#"

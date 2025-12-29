@@ -1,4 +1,4 @@
-import React, { useMemo, memo, useCallback } from 'react';
+import React, { useMemo, memo } from 'react';
 import { useParams, useNavigate, Link } from '@tanstack/react-router';
 import {
   Breadcrumb,
@@ -9,9 +9,13 @@ import {
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
 } from '@/components/ui/breadcrumb';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useFileSystem } from '@/contexts/FileSystemContext';
-import { Menu, MenuItem } from "@tauri-apps/api/menu";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { cn } from '@/lib/tiptap-utils';
 
 const MAX_VISIBLE_ITEMS = 3; 
@@ -26,43 +30,10 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
     return getNodePath(fileId);
   }, [fileId, getNodePath]);
 
-  const handleEllipsisClick = useCallback(async (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    try {
-      
-      // Create menu items for collapsed paths
-      const collapsedItems = path.slice(1, path.length - 1);
-      const menuItems = await Promise.all(
-        collapsedItems.map(async (node) => {
-          return MenuItem.new({
-            id: `breadcrumb_${node.id}`,
-            text: node.name,
-            action: () => {
-              navigate({ to: '/files/$fileId', params: { fileId: node.id } });
-            }
-          });
-        })
-      );
-
-      // Create and show menu
-      const menu = await Menu.new({
-        items: menuItems
-      });
-      
-      const window = getCurrentWindow();
-      await menu.popup(undefined, window);
-      
-    } catch (error) {
-      console.error("Error showing breadcrumb menu:", error);
-    }
-  }, [path, navigate]);
-
   if (!fileId || path.length === 0) {
     return (
       <Breadcrumb className="w-full" data-tauri-drag-region>
-        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground  border border-[#202020] ">
           <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
             <BreadcrumbItem>
               <BreadcrumbPage className="text-white/75 font-normal tracking-tight">
@@ -79,8 +50,8 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
 
   return (
     <Breadcrumb className="w-full" data-tauri-drag-region>
-      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/70 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground">
-        <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
+      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-[0_8px_30px_-20px_rgba(0,0,0,0.75)] backdrop-blur-lg text-sidebar-foreground   border border-[#1f1f1f] ">
+        <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap ">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <span
@@ -104,7 +75,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                     className="text-sidebar-foreground/65 hover:text-white/85 transition-colors text-[12px] font-normal"
                     data-tauri-drag-region="false"
                     >
-                      {path[0].name}
+                      {path[0].name || "new page"}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -112,26 +83,36 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
               
               <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
               <BreadcrumbItem>
-                <button
-                  onClick={handleEllipsisClick}
-                  className={cn(
-                    'inline-flex items-center justify-center gap-1 rounded-md px-1 py-0 transition-colors text-[12px] leading-tight',
-                    'bg-transparent hover:bg-sidebar-item-hover-bg/40',
-                    'text-sidebar-foreground/70 hover:text-white',
-                    'outline-none focus-visible:outline-[1px] focus-visible:outline-white/15'
-                  )}
-                  data-tauri-drag-region="false"
-                >
-                  <BreadcrumbEllipsis className="size-3.5! shrink-0" />
-                  <span className="sr-only">Toggle menu</span>
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={cn(
+                        'inline-flex items-center justify-center gap-1 rounded-md px-1 py-0 transition-colors text-[12px] leading-tight',
+                        'bg-transparent hover:bg-sidebar-item-hover-bg/40',
+                        'text-sidebar-foreground/70 hover:text-white',
+                        'outline-none focus-visible:outline-[1px] focus-visible:outline-white/15'
+                      )}
+                      data-tauri-drag-region="false"
+                    >
+                      <BreadcrumbEllipsis className="size-3.5! shrink-0" />
+                      <span className="sr-only">Toggle menu</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {path.slice(1, path.length - 1).map((node) => (
+                      <DropdownMenuItem key={node.id} onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}>
+                        {node.name || "new page"}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </BreadcrumbItem>
               
               <React.Fragment key={path[path.length - 1].id}>
                 <BreadcrumbSeparator className="text-sidebar-foreground/40 [&>svg]:size-3" />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="text-white/80 text-[12px] font-normal tracking-tight">
-                    {path[path.length - 1].name}
+                    {path[path.length - 1].name || "new page"}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </React.Fragment>
@@ -147,7 +128,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                       {isLast ? (
                         <BreadcrumbItem>
                           <BreadcrumbPage className="text-white/90 text-[12px] font-normal tracking-tight">
-                            {node.name}
+                            {node.name || "new page"}
                           </BreadcrumbPage>
                         </BreadcrumbItem>
                       ) : (
@@ -159,7 +140,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                             className="text-sidebar-foreground/65 hover:text-white/90 transition-colors text-[12px] font-normal"
                             data-tauri-drag-region="false"
                           >
-                            {node.name}
+                            {node.name || "new page"}
                           </Link>
                         </BreadcrumbLink>
                       </BreadcrumbItem>

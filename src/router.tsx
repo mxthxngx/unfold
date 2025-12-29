@@ -66,8 +66,8 @@ function IndexRedirect() {
         </div>
       ) : (
           <div className="space-y-1 flex flex-col gap-4 text-left max-w-md w-full">
-            <div className="text-xl font-semibold text-foreground">start shaping your space</div>
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <div className="text-xl font-semibold text-foreground select-none">start shaping your space</div>
+            <p className="text-sm leading-relaxed text-muted-foreground select-none">
             add your first note, idea, or wandering thought. <br/>there&apos;s no wrong way to begin
             </p>
             <Button

@@ -28,7 +28,6 @@
   background: transparent;
 }
 
-/* Drop cursor line - Notion style */
 .ProseMirror-dropcursor {
   position: absolute !important;
   pointer-events: none !important;
@@ -38,7 +37,7 @@
   border: none !important;
   border-radius: 1px;
   box-shadow: 0 0 4px rgba(193, 123, 255, 0.5);
-  z-index: 100;
+  z-index: 20;
   transition: opacity 0.2s;
   margin: 0 !important;
   padding: 0 !important;

@@ -1,11 +1,16 @@
 import Database from "@tauri-apps/plugin-sql";
+import { appDataDir, join } from "@tauri-apps/api/path";
 import { Node } from "../types/sidebar";
 
 let db: Database | null = null;
 
 async function getDb(): Promise<Database> {
   if (!db) {
-    db = await Database.load("sqlite:unfold.db");
+    const dbName = import.meta.env.DEV ? "unfold-dev.db" : "unfold.db";
+    const dataDir = await appDataDir();
+    const dbPath = await join(dataDir, dbName);
+    const dbUrl = `sqlite:${dbPath}`;
+    db = await Database.load(dbUrl);
   }
   return db;
 }
@@ -184,6 +189,21 @@ export async function deleteNodeAndChildren(id: string): Promise<void> {
   await database.execute("DELETE FROM nodes WHERE id = $1 OR parent_id = $1", [id]);
 }
 
+// Sort nodes alphabetically by name
+function sortNodesByName(nodes: Node[]): Node[] {
+  return [...nodes].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+// Recursively sort all nodes in the tree
+function sortTreeRecursively(nodes: Node[]): Node[] {
+  return sortNodesByName(nodes).map(node => {
+    if (node.nodes && node.nodes.length > 0) {
+      return { ...node, nodes: sortTreeRecursively(node.nodes) };
+    }
+    return node;
+  });
+}
+
 export function buildNodeTree(rows: NodeRow[]): Node[] {
   const nodeMap = new Map<string, Node>();
   const rootNodes: Node[] = [];
@@ -216,5 +236,6 @@ export function buildNodeTree(rows: NodeRow[]): Node[] {
     }
   }
 
-  return rootNodes;
+  // Always sort the tree alphabetically by name to ensure consistent ordering
+  return sortTreeRecursively(rootNodes);
 }

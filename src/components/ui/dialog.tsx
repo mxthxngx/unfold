@@ -1,5 +1,5 @@
 import React, { forwardRef, useRef } from 'react';
-import { AnimatePresence, motion, type HTMLMotionProps } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/tiptap-utils';
@@ -33,20 +33,25 @@ export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          'group w-full rounded-lg text-sidebar-foreground transition-colors px-3 py-2 flex items-center justify-between gap-2',
-          isOpen ? 'bg-sidebar-item-hover-bg' : 'hover:bg-sidebar-item-hover-bg/85',
+          'group w-full rounded-lg px-3 py-2 flex items-center justify-between gap-2',
+          'bg-[#141415] border border-[#1f1f21]',
+          'transition-all duration-300 ease-out',
+          isOpen 
+            ? 'bg-[#18181a] border-[#252527]' 
+            : 'hover:bg-[#161617] hover:border-[#232325]',
           className
         )}
         {...props}
       >
-        <span className="truncate text-sm font-medium">{label}</span>
-        <span className="flex items-center justify-center size-5 transition-colors">
-          <ChevronDown
-            size={14}
-            strokeWidth={3}
-            className="text-sidebar-foreground/80 group-hover:text-sidebar-foreground"
-          />
-        </span>
+        <span className="truncate text-sm font-medium text-[#c0c0c5]">{label}</span>
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
+          className={cn(
+            'text-[#75757a] transition-transform duration-300 ease-out',
+            isOpen && 'rotate-180'
+          )}
+        />
       </button>
     );
   }
@@ -73,24 +78,26 @@ export function DialogContent({
       {isOpen && (
         <motion.div
           key="dialog-menu"
-          layout
-          initial={{ opacity: 0, y: 8, scaleY: 0.96, scaleX: 0.94 }}
-          animate={{ opacity: 1, y: 0, scaleY: 1, scaleX: 1.02 }}
-          exit={{ opacity: 0, y: 8, scaleY: 0.96, scaleX: 0.94 }}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
           transition={{
-            type: 'spring',
-            visualDuration: 0.2,
-            bounce: 0.14,
+            duration: 0.2,
+            ease: [0.16, 1, 0.3, 1],
           }}
           className={cn(
-            'absolute left-0 bottom-full mb-2 z-20 w-full max-w-88 min-w-[16rem] rounded-lg border border-sidebar-border bg-linear-to-b from-sidebar-container-bg to-sidebar-container-bg/96 shadow-2xl px-2.5 py-1.75 space-y-1 ring-1 ring-sidebar-ring/30 will-change-transform backdrop-blur-md supports-backdrop-filter:backdrop-blur-md',
-            'max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-sidebar-border/70 scrollbar-track-transparent backdrop-saturate-150',
+            'absolute left-0 bottom-full mb-2 z-20 w-full min-w-[16rem] rounded-xl',
+            'bg-[#141415] border border-[#1f1f21]',
+            'shadow-[0_10px_40px_rgba(0,0,0,0.5)]',
+            'max-h-[60vh] overflow-hidden',
             className
           )}
           style={{ transformOrigin: 'bottom center' }}
           ref={assignMenuRef}
         >
-          {children}
+          <div className="px-3 py-3 space-y-2 max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[#2a2a2d] scrollbar-track-transparent">
+            {children}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -101,7 +108,10 @@ type DialogHeaderProps = React.HTMLAttributes<HTMLDivElement>;
 export function DialogHeader({ className, children, ...props }: DialogHeaderProps) {
   return (
     <div
-      className={cn('text-xs uppercase tracking-[0.08em] text-sidebar-foreground/60 px-1', className)}
+      className={cn(
+        'text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-1 mb-1',
+        className
+      )}
       {...props}
     >
       {children}
@@ -114,19 +124,18 @@ export function DialogList({ className, ...props }: DialogListProps) {
   return <div className={cn('space-y-1', className)} {...props} />;
 }
 
-type DialogItemProps = HTMLMotionProps<'div'> & {
+type DialogItemProps = React.HTMLAttributes<HTMLDivElement> & {
   active?: boolean;
 };
 
 export function DialogItem({ active, className, ...props }: DialogItemProps) {
   return (
-    <motion.div
-      layout
+    <div
       className={cn(
-        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1 transition-colors',
+        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-all duration-200 ease-out',
         active
-          ? 'bg-sidebar-selected-bg text-white border border-sidebar-border/60'
-          : 'text-sidebar-foreground hover:bg-sidebar-item-hover-bg/80',
+          ? 'bg-[#1c1c1f] text-[#e0e0e5]'
+          : 'text-[#a0a0a5] hover:bg-[#18181a] hover:text-[#d1d1d6]',
         className
       )}
       {...props}
@@ -139,7 +148,7 @@ export function DialogActions({ className, ...props }: DialogActionsProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity',
+        'flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity duration-200',
         className
       )}
       {...props}
@@ -152,7 +161,12 @@ export function DialogAddButton({ className, children, ...props }: DialogAddButt
   return (
     <button
       className={cn(
-        'w-full mt-1 rounded-lg border border-dashed border-sidebar-border text-sidebar-foreground/80 hover:text-sidebar-foreground hover:border-sidebar-ring hover:bg-sidebar-item-hover-bg/70 transition-colors px-2.5 py-2.25 flex items-center gap-2 justify-center text-sm font-medium',
+        'w-full mt-2 rounded-lg px-3 py-2.5',
+        'bg-[#18181a] border border-[#232325]',
+        'text-[#85858a] hover:text-[#a5a5aa]',
+        'hover:bg-[#1a1a1c] hover:border-[#282829]',
+        'transition-all duration-200 ease-out',
+        'flex items-center gap-2 justify-center text-xs font-medium',
         className
       )}
       {...props}
@@ -172,4 +186,3 @@ export type {
   DialogActionsProps,
   DialogAddButtonProps,
 };
-

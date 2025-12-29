@@ -21,7 +21,7 @@ html, body {
   --popover-foreground: #f7f2f2;
   --primary: #f7f2f2;
   --primary-foreground: #09090b;
-  --primary-highlight: #c17bff;
+  --primary-highlight: #a78bfa;
   --secondary: #18181b;
   --secondary-foreground: #8e8d8d;
   --muted: #343434;
@@ -88,20 +88,17 @@ html, body {
   --font-mono: "Google Sans Code", monospace;
   --font-sans-serif: "Bricolage Grotesque", sans-serif;
 
-  /* Table theme - minimalistic code block aesthetic
-   * Using existing global theme colors mapped to table-* variables
-   * Matching the code block styling for consistent minimalistic UI
-   */
-  --table-surface: rgba(24, 24, 27, 0.5);
-  --table-surface-muted: rgba(15, 14, 17, 0.5);
-  --table-border: rgba(255, 255, 255, 0.16);
-  --table-header-bg: var(--secondary);
+  /* Table theme - minimalist design matching UI components */
+  --table-surface: transparent;
+  --table-surface-muted: rgba(15, 14, 17, 0.3);
+  --table-border: rgba(255, 255, 255, 0.08);
+  --table-header-bg: rgba(24, 24, 27, 0.4);
   --table-header-foreground: var(--foreground);
   --table-text: var(--foreground);
   --table-text-muted: var(--foreground-muted);
-  --table-row-alt: var(--table-surface);
-  --table-row-bg: rgba(24, 24, 27, 0.5);
-  --table-row-hover: rgba(34, 34, 38, 0.65);
+  --table-row-alt: transparent;
+  --table-row-bg: transparent;
+  --table-row-hover: rgba(255, 255, 255, 0.03);
   --table-ring: var(--ring);
   --editor-bubble-menu-surface: rgb(18, 18, 21);
   --editor-bubble-menu-surface-border: rgba(255, 255, 255, 0.06);
@@ -176,16 +173,16 @@ html, body {
   --link: #09090b;
   --tooltip: #ffffff;
   /* Table theme - light mode */
-  --table-surface: rgba(244, 244, 245, 0.8);
-  --table-surface-muted: rgba(255, 255, 255, 0.5);
-  --table-border: rgba(0, 0, 0, 0.2);
-  --table-header-bg: var(--secondary);
+  --table-surface: transparent;
+  --table-surface-muted: rgba(244, 244, 245, 0.5);
+  --table-border: rgba(0, 0, 0, 0.08);
+  --table-header-bg: rgba(244, 244, 245, 0.6);
   --table-header-foreground: var(--foreground);
   --table-text: var(--foreground);
   --table-text-muted: var(--muted-foreground);
-  --table-row-alt: var(--table-surface);
-  --table-row-bg: rgba(244, 244, 245, 0.8);
-  --table-row-hover: rgba(228, 228, 231, 0.9);
+  --table-row-alt: transparent;
+  --table-row-bg: transparent;
+  --table-row-hover: rgba(0, 0, 0, 0.02);
   --table-ring: var(--ring);
   --editor-bubble-menu-surface: rgb(229, 229, 232);
   --editor-bubble-menu-surface-border: rgba(0, 0, 0, 0.15);
@@ -326,33 +323,7 @@ ul[data-type="taskList"] li > div p {
   caret-color: inherit !important;
 }
 
-.ProseMirror .column-resize-handle {
-  position: absolute;
-  right: -2px;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--table-border);
-  opacity: 0;
-  cursor: col-resize;
-  z-index: 20;
-  transition: opacity 0.2s ease;
-}
-
-.ProseMirror td:hover .column-resize-handle,
-.ProseMirror th:hover .column-resize-handle {
-  opacity: 1;
-  background: var(--primary-highlight);
-}
-
-.ProseMirror.resize-cursor {
-  cursor: col-resize;
-}
-
-.ProseMirror.resize-cursor .column-resize-handle {
-  background: var(--primary-highlight);
-  opacity: 1;
-}
+/* Column resize handles are now styled in table.css */
 
 /* Table edge handles (top row / first column) */
 .edge-cell {
@@ -451,55 +422,15 @@ ul[data-type="taskList"] li > div p {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
 }
 
-.ProseMirror.resize-cursor .column-resize-handle {
-  background: var(--primary-highlight);
-  opacity: 1;
-}
-
-/* Table wrapper for add buttons and overflow */
-.table-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.table-wrapper > div {
-  display: flex;
-  position: relative;
-  width: 100%;
-}
-
-.table-wrapper > div > div:first-child {
-  overflow-x: auto;
-  width: 100%;
-  min-width: 0;
-}
-
-.table-wrapper > div > div:first-child > table {
-  min-width: 100%;
-}
-
-.table-wrapper button[aria-label="Add column"] {
-  position: sticky;
-  right: 0;
-  flex-shrink: 0;
-  min-width: 24px;
-  background: var(--table-surface);
-  border-color: var(--table-border);
-}
-
-.table-wrapper button[aria-label="Add row"] {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: calc(100% - 30px);
-  z-index: 10;
-}
+/* Table-related styling lives in `src/components/editor/styles/table.css` */
 
 ::selection {
-  color: inherit;
-  background: rgba(193, 123, 255, 0.25);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(167, 139, 250, 0.25);
+  border-bottom: 2px solid rgba(167, 139, 250, 0.65);
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: 4px;
+  -webkit-text-stroke: 0;
 }
 
 .dark { --sidebar: hsl(240 5.9% 10%); --sidebar-foreground: hsl(240 4.8% 95.9%); --sidebar-primary: hsl(224.3 76.3% 48%); --sidebar-primary-foreground: hsl(0 0% 100%); --sidebar-accent: hsl(240 3.7% 15.9%); --sidebar-accent-foreground: hsl(240 4.8% 95.9%); --sidebar-border: hsl(240 3.7% 15.9%); --sidebar-ring: hsl(217.2 91.2% 59.8%);
@@ -514,7 +445,7 @@ ul[data-type="taskList"] li > div p {
  }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - matching theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -525,28 +456,29 @@ ul[data-type="taskList"] li > div p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a; /* zinc-800 */
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
+  transition: background 0.15s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46; /* zinc-700 */
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Search highlight styling (high contrast, clearly visible) */
 ::highlight(search) {
-  background: rgba(193, 123, 255, 0.25); /* purple highlight */
+  background: rgba(167, 139, 250, 0.35); /* lilac highlight */
   color: inherit;
   text-decoration: none;
   border-radius: 0.28rem;
 }
 
 ::highlight(search-active) {
-  background: rgba(193, 123, 255, 0.4); /* deeper purple for active */
+  background: rgba(167, 139, 250, 0.5); /* brighter lilac for active */
   color: inherit;
   text-decoration: none;
   border-radius: 0.32rem;
-  box-shadow: 0 0 0 2px rgba(193, 123, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.4);
 }
 
 /* Resize handles for images and resizable elements */

@@ -7,7 +7,18 @@ import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sideb
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
 import { useEditorContext } from '@/contexts/EditorContext';
 import { SearchBar } from '@/components/search/search-bar';
+import { useFileSystem } from '@/contexts/FileSystemContext';
 
+function LoadingScreen() {
+    return (
+        <div className="flex items-center justify-center h-screen w-screen bg-background">
+            <div className="text-center">
+                <div className="text-lg font-semibold mb-2">Loading</div>
+                <div className="text-sm text-muted-foreground">Preparing your workspace...</div>
+            </div>
+        </div>
+    );
+}
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
@@ -99,6 +110,12 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 }
 
 function EditorLayout({children}: {children?: React.ReactNode}) {
+    const { isLoading } = useFileSystem();
+
+    if (isLoading) {
+        return <LoadingScreen />;
+    }
+
     return (
         <SidebarProvider defaultOpen={true}>
             <EditorLayoutContent>
@@ -109,4 +126,3 @@ function EditorLayout({children}: {children?: React.ReactNode}) {
 }
 
 export default EditorLayout;
-

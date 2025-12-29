@@ -27,7 +27,7 @@ interface TitleEditorProps {
 }
 
 function TitleEditor({ fileId }: TitleEditorProps) {
-  const { setTitleEditor, focusPageEditor } = useEditorContext();
+  const { setTitleEditor, focusPageEditor, pageEditorRef } = useEditorContext();
   const { getNode, renameNode } = useFileSystem();
   const file = getNode(fileId);
   const lastSavedRef = useRef<string>(file?.name || "");
@@ -38,12 +38,13 @@ function TitleEditor({ fileId }: TitleEditorProps) {
       TitleDocument,
       TitleHeading,
       Placeholder.configure({
-        placeholder: "new Page",
+        placeholder: "new page",
         showOnlyWhenEditable: false,
       }),
       Text,
     ],
     content: file?.name || "",
+    autofocus: !file?.name ? 'start' : false,
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
     onUpdate: ({ editor }) => {
@@ -66,7 +67,14 @@ function TitleEditor({ fileId }: TitleEditorProps) {
 
           if (event.key === "Enter" && !event.shiftKey && isAtEnd) {
             event.preventDefault();
-            focusPageEditor("start");
+            const pageEditor = pageEditorRef.current;
+            if (pageEditor) {
+              const isPageEmpty = pageEditor.isEmpty;
+              if (!isPageEmpty) {
+                 pageEditor.commands.insertContentAt(0, { type: 'paragraph' });
+              }
+              pageEditor.commands.focus("start");
+            }
             return true;
           }
 

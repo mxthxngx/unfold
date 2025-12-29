@@ -21,13 +21,13 @@ export const editorClasses = {
   italic: "italic",
 
   heading1:
-    "text-[1.75em] font-bold mt-[1.4em] mb-[0.5em] tracking-tight pe-2",
+    "text-[1.75em] font-bold  m-y-[3px] tracking-tight pe-2",
 
   heading2:
-    "text-[1.5em] font-semibold mt-8 mb-3 tracking-tight",
+    "text-[1.5em] font-semibold m-y-[3px] tracking-tight",
 
   heading3:
-    "text-[1.25em] font-semibold mt-7 mb-2.5 tracking-tight",
+    "text-[1.25em] font-semibold m-y-[3px] tracking-tight",
 
   horizontalRule:
     "border-t border-zinc-700/60 my-6",
@@ -42,7 +42,7 @@ export const editorClasses = {
     "text-zinc-400 underline decoration-zinc-600 decoration-[0.025em] decoration-solid hover:text-zinc-200 hover:decoration-zinc-400 transition-colors",
 
   paragraph:
-    "text-base mb-3",
+    "text-base m-y-[3px]",
 
   listItem:
     "mb-2",
@@ -59,18 +59,19 @@ export const editorClasses = {
   taskItem:
   "flex items-start gap-2 [&>label]:flex [&>label]:items-start [&>label]:gap-2 [&>label]:shrink-0 [&>label>input]:mt-[0.2em] [&_.task-item-content]:flex-1 [&_.task-item-content_p]:mb-0",
 
-  // Minimalistic table styling matching code block aesthetic
+  // Beautiful table styling matching code block aesthetic
   table:
-    "w-full border-collapse text-sm text-table-text bg-table-surface border border-table-border rounded-lg overflow-hidden shadow-sm my-4",
+    /* Let `styles/table.css` control sizing/collapse for TipTap colgroup resizing */
+    "text-sm my-4",
 
   tableRow:
-    "bg-table-row-bg hover:bg-table-row-hover transition-colors duration-150 last:[&>td]:border-b-0 last:[&>th]:border-b-0 [&>td]:border-r [&>td]:border-table-border [&>td]:last:border-r-0 [&>th]:border-r [&>th]:border-table-border [&>th]:last:border-r-0",
+    "transition-colors duration-150",
 
   tableHeader:
-    "relative px-4 py-3 pb-0 text-left font-medium text-table-header-foreground bg-table-header-bg border-b border-table-border border-r last:border-r-0 edge-cell",
+    "relative text-left font-semibold edge-cell",
 
   tableCell:
-    "relative px-4 py-3 text-table-text-muted border-b border-table-border border-r last:border-r-0 [&_p]:mb-0 [&_p]:pb-0 edge-cell",
+    "relative edge-cell [&_p]:mb-0 [&_p]:pb-0 [&_p]:leading-relaxed",
 
   bubbleMenu:
     "bg-editor-bubble-menu-surface border border-editor-bubble-menu-surface-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",

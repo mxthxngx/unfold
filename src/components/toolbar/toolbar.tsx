@@ -59,7 +59,7 @@ export const Toolbar = memo(function Toolbar() {
       </div>
 
       <div className="flex items-center text-sidebar-foreground/50 text-xs relative z-10 font-light"  data-tauri-drag-region>
-        Last Edited on
+        last edited on
       </div>
     </div>
   );
