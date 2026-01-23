@@ -33,7 +33,7 @@ export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          'group w-full rounded-xl px-3 py-2 flex items-center justify-between gap-2',
+          'group w-full rounded-2xl px-3 py-2 flex items-center justify-between gap-2',
           'bg-sidebar-item-hover-bg/50 border border-[#1f1f21]',
           'transition-all duration-300 ease-out',
           isOpen 
