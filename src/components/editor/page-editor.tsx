@@ -108,9 +108,8 @@ function PageEditor({ fileId }: PageEditorProps) {
       CustomKeymap.configure({ selectAllKey: settings.keybindings.selectAll }),
       TrailingNode.configure({ node: "paragraph", notAfter: ["paragraph"] }),
       Placeholder.configure({
-        placeholder: ({  }) => {
-          
-           return "Write, press 'space' for AI, '/' for commands...";;
+        placeholder: () => {
+          return "Start typing...";
         },
         showOnlyWhenEditable: true,
         showOnlyCurrent: true,
@@ -137,11 +136,6 @@ function PageEditor({ fileId }: PageEditorProps) {
       handleDOMEvents: {
         keydown: (view, event) => {
           if (event.isComposing || event.keyCode === 229) return false;
-
-          // if (event.key !== "ArrowUp" && event.key !== "Backspace") {
-          //   return false;
-          // }
-
           const { $head, $anchor } = view.state.selection;
           const isAtDocumentStart = $head.pos <= 1;
           const isAtFirstBlockStart = $head.depth === 1 && 
@@ -201,7 +195,8 @@ function PageEditor({ fileId }: PageEditorProps) {
 
     editor.commands.setContent(content);
     lastSavedRef.current = rawContent;
-  }, [fileId, editor, getNode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileId, editor]);
 
   if (!editor) return null;
 

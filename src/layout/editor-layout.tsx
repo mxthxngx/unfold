@@ -2,10 +2,8 @@ import React, { useEffect, useCallback } from 'react';
 import Sidebar from "../components/sidebar/sidebar";
 import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
-import { useSettings } from '@/hooks/use-settings';
 import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
-import { useEditorContext } from '@/contexts/EditorContext';
 import { SearchBar } from '@/components/search/search-bar';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 
@@ -13,7 +11,6 @@ function LoadingScreen() {
     return (
         <div className="flex items-center justify-center h-screen w-screen bg-background">
             <div className="text-center">
-                <div className="text-lg font-semibold mb-2">Loading</div>
                 <div className="text-sm text-muted-foreground">Preparing your workspace...</div>
             </div>
         </div>
@@ -22,29 +19,10 @@ function LoadingScreen() {
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
-    const { settings } = useSettings();
-    const { setOpen, open } = useSidebar();
-    const { focusPageEditor, focusPageEditorAtEnd, pageEditorRef } = useEditorContext();
 
     useGlobalSidebarShortcuts();
     
     const sidebarPosition = layout.sidebar_position || 'left';
-
-    useEffect(() => {
-        const handler = (e: KeyboardEvent) => {
-            const binding = settings.keybindings.toggleSidebar.toLowerCase();
-            const parts = binding.split('-');
-            const requiresMod = parts.includes('mod');
-            const key = parts[parts.length - 1];
-
-            if (requiresMod && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === key) {
-                e.preventDefault();
-                setOpen(!open);
-            }
-        };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [open, setOpen, settings.keybindings.toggleSidebar]);
 
     const handleKeydown = useCallback((e: KeyboardEvent) => {
         const isFindShortcut = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f';
@@ -77,32 +55,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                 <SidebarInset 
                     className="flex-1 relative"
                 >
-                    <div
-                        onClick={(e) => {
-                            const target = e.target as HTMLElement | null;
-                            if (!target) return;
-
-                            if (target.closest('[contenteditable="true"]')) return;
-                            if (target.closest('button, a, input, textarea, select, [role="button"]')) return;
-
-                            const editor = pageEditorRef.current;
-                            if (editor) {
-                                const { doc } = editor.state;
-                                if (doc.childCount > 1) {
-                                    focusPageEditorAtEnd();
-                                } else {
-                                    focusPageEditor();
-                                }
-                            } else {
-                                focusPageEditor();
-                            }
-                        }}
-                        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10"
-                        style={{
-                            scrollbarWidth: 'thin',
-                            scrollbarColor: 'transparent transparent',
-                        }}
-                    >
+                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10">
                         <div className="w-full max-w-4xl min-h-full px-6 py-8 mx-auto">
                             {children}
                         </div>

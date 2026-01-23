@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
 import { useFileSystem } from '@/contexts/FileSystemContext';
+import { useEditorContext } from '@/contexts/EditorContext';
 import { KEYBOARD_SHORTCUTS } from '@/config/keyboard-shortcuts';
 
 /**
@@ -20,26 +21,34 @@ const parseAccelerator = (accelerator: string) => {
 };
 
 /**
- * Check if user is currently editing/focused on an input element
- * Returns true only if actively typing in an input/textarea, not just focused on contentEditable
- */
-const isEditingContent = (): boolean => {
-  const activeElement = document.activeElement as HTMLElement;
-  if (!activeElement) return false;
-  
-  const tagName = activeElement.tagName.toLowerCase();
-  const isEditableInput = tagName === 'input' || tagName === 'textarea';
-  
-  return isEditableInput;
-};
-
-/**
  * Global keyboard shortcuts for sidebar operations
  */
-export function useGlobalSidebarShortcuts() {
+export function  useGlobalSidebarShortcuts() {
   const { fileId } = useParams({ strict: false });
   const { addNode, deleteNode, togglePinNode } = useFileSystem();
+  const { pageEditorRef, titleEditorRef } = useEditorContext();
   const navigate = useNavigate();
+
+  /**
+   * Check if user is currently editing/focused on an input element or editor
+   * Returns true if actively typing in an input/textarea or if TipTap editors are focused
+   */
+  const isEditingContent = (): boolean => {
+    const activeElement = document.activeElement as HTMLElement;
+    if (!activeElement) return false;
+    
+    const tagName = activeElement.tagName.toLowerCase();
+    const isEditableInput = tagName === 'input' || tagName === 'textarea';
+    
+    // Check if active element is contentEditable
+    const isContentEditable = activeElement.isContentEditable;
+    
+    // Check if TipTap editors are focused
+    const isPageEditorFocused = pageEditorRef.current?.isFocused ?? false;
+    const isTitleEditorFocused = titleEditorRef.current?.isFocused ?? false;
+    
+    return isEditableInput || isContentEditable || isPageEditorFocused || isTitleEditorFocused;
+  };
 
   useEffect(() => {
     const createFileShortcut = parseAccelerator(KEYBOARD_SHORTCUTS.CREATE_FILE);
@@ -97,5 +106,5 @@ export function useGlobalSidebarShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId, addNode, deleteNode, togglePinNode, navigate]);
+  }, [fileId, addNode, deleteNode, togglePinNode, navigate, pageEditorRef, titleEditorRef]);
 }

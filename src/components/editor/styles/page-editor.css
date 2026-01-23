@@ -40,9 +40,15 @@
   padding: 0;
 }
 
-/* Placeholder styling - appears where cursor is */
-.ProseMirror p.is-editor-empty:first-child::before,
-.ProseMirror p.is-empty::before {
+
+.page-editor-container:not(:focus-within) .ProseMirror p.is-editor-empty:first-child::before,
+.page-editor-container:not(:focus-within) .ProseMirror p.is-empty::before,
+.page-editor-container:not(:focus-within) .ProseMirror .is-editor-empty::before {
+  content: none !important;
+}
+
+.page-editor-container:focus-within .ProseMirror p.is-editor-empty:first-child::before,
+.page-editor-container:focus-within .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);
   color: rgba(255, 255, 255, 0.4);
   pointer-events: none;
@@ -50,7 +56,7 @@
   height: 0;
 }
 
-.ProseMirror .is-editor-empty::before {
+.page-editor-container:focus-within .ProseMirror .is-editor-empty::before {
   content: attr(data-placeholder);
   color: rgba(255, 255, 255, 0.4);
   pointer-events: none;

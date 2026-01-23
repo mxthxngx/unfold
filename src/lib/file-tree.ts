@@ -25,9 +25,19 @@ export function findFirstFileId(nodes: Node[]): string | null {
   return null;
 }
 
-
-
-
+/**
+ * Checks if a node with the given ID exists in the tree
+ * @param nodes The tree of nodes to search
+ * @param id The ID to search for
+ * @returns true if the node exists, false otherwise
+ */
+export function findNodeById(nodes: Node[], id: string): boolean {
+  for (const node of nodes) {
+    if (node.id === id) return true;
+    if (node.nodes && findNodeById(node.nodes, id)) return true;
+  }
+  return false;
+}
 
 
 

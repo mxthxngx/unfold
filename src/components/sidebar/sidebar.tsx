@@ -268,7 +268,7 @@ const Sidebar = memo(function Sidebar() {
               menuRef={menuRef}
               className="max-h-[60vh]"
             >
-              <div className="text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-1 mb-1">
+              <div className="text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-2.5 mb-1">
                 spaces
               </div>
               <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-0.5 pr-1">
@@ -282,10 +282,10 @@ const Sidebar = memo(function Sidebar() {
                       onClick={() => handleSwitchSpace(space.id)}
                       ref={isActive ? activeSpaceItemRef : undefined}
                       className={cn(
-                        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
+                        'group/space flex items-center gap-2 rounded-xl px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border',
                         isActive
-                          ? 'bg-white/4 text-white'
-                          : 'text-white/85 hover:bg-white/4 hover:text-white hover:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)]'
+                          ? 'bg-sidebar-item-hover-bg/80 text-white border-[#1f1f1f]'
+                          : 'text-white/85 hover:bg-white/2 hover:text-white border-transparent'
                       )}
                     >
                       {isEditing ? (
@@ -301,12 +301,12 @@ const Sidebar = memo(function Sidebar() {
                               setDraftName('');
                             }
                           }}
-                          className="w-full rounded-md bg-[#18181a] text-[#e0e0e5] px-2 py-1 text-sm outline-none border border-[#252527] focus:border-[#353538] transition-all duration-200"
+                          className="w-full rounded-md bg-[#18181a] text-[#e0e0e5] px-2 py-1 text-xs outline-none border border-[#252527] focus:border-[#353538] transition-all duration-200"
                         />
                       ) : (
                         <button
                           onClick={() => handleSwitchSpace(space.id)}
-                          className="flex-1 text-left truncate text-sm font-medium text-inherit"
+                          className="flex-1 text-left truncate text-xs font-medium text-inherit"
                         >
                           {space.name}
                         </button>
@@ -345,7 +345,7 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#171718] hover:border-[#282829] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-white/2 hover:border-[#2a2a2b] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-[11px] font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -488,9 +488,9 @@ const PinnedNodeItem = memo(({
           <ContextMenuTrigger asChild>
             <div
               className={cn(
-                'group/pinned-item flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                'group/pinned-item flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                  ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
                   : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -650,9 +650,9 @@ export const SidebarNodes = memo(({
             <ContextMenuTrigger asChild>
               <div
                 className={cn(
-                  'group/item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                  'group/item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                   isSelected
-                    ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                    ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
                     : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
                 )}
                 onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -759,9 +759,9 @@ export const SidebarNodes = memo(({
           <ContextMenuTrigger asChild>
             <div 
               className={cn(
-                'group/sub-item-row flex items-center w-full rounded-lg border transition-all text-[13px] font-[450] px-2 py-1',
+                'group/sub-item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-sidebar-selected-bg text-white/90 font-[450] border-sidebar-border/70 ring-1 ring-sidebar-ring/30'
+                  ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
                   : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}

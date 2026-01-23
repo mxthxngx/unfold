@@ -33,12 +33,12 @@ export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
       <button
         ref={ref}
         className={cn(
-          'group w-full rounded-lg px-3 py-2 flex items-center justify-between gap-2',
-          'bg-[#141415] border border-[#1f1f21]',
+          'group w-full rounded-xl px-3 py-2 flex items-center justify-between gap-2',
+          'bg-sidebar-item-hover-bg/50 border border-[#1f1f21]',
           'transition-all duration-300 ease-out',
           isOpen 
-            ? 'bg-[#18181a] border-[#252527]' 
-            : 'hover:bg-[#161617] hover:border-[#232325]',
+            ? 'bg-sidebar-item-hover-bg/80 border-[#1f1f21]' 
+            : 'hover:bg-sidebar-item-hover-bg/80 hover:border-[#232325]',
           className
         )}
         {...props}
@@ -87,7 +87,7 @@ export function DialogContent({
           }}
           className={cn(
             'absolute left-0 bottom-full mb-2 z-20 w-full min-w-[16rem] rounded-xl',
-            'bg-[#141415] border border-[#1f1f21]',
+            'bg-[#111111] border border-[#1f1f21]',
             'shadow-lg backdrop-blur-2xl backdrop-saturate-150',
             'max-h-[60vh] overflow-hidden p-1.5',
             className
