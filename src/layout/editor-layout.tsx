@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 import Sidebar from "../components/sidebar/sidebar";
 import { Toolbar } from "../components/toolbar/toolbar";
 import { useLayout } from '@/contexts/LayoutContext';
-import { SidebarProvider, SidebarInset, useSidebar } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
 import { SearchBar } from '@/components/search/search-bar';
 import { useFileSystem } from '@/contexts/FileSystemContext';
