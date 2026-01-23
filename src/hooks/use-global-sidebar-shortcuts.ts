@@ -21,6 +21,7 @@ const parseAccelerator = (accelerator: string) => {
 
 /**
  * Check if user is currently editing/focused on an input element
+ * Returns true only if actively typing in an input/textarea, not just focused on contentEditable
  */
 const isEditingContent = (): boolean => {
   const activeElement = document.activeElement as HTMLElement;
@@ -28,9 +29,8 @@ const isEditingContent = (): boolean => {
   
   const tagName = activeElement.tagName.toLowerCase();
   const isEditableInput = tagName === 'input' || tagName === 'textarea';
-  const isContentEditable = activeElement.contentEditable === 'true';
   
-  return isEditableInput || isContentEditable;
+  return isEditableInput;
 };
 
 /**
@@ -52,14 +52,15 @@ export function useGlobalSidebarShortcuts() {
       const isShift = event.shiftKey;
 
       // Create child note shortcut
+      // Allow this shortcut even when editor is focused (but not when typing in input/textarea)
       if (
         event.key.toLowerCase() === createFileShortcut.key &&
         (!createFileShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
         (!createFileShortcut.requiresAlt || isAlt) &&
-        (!createFileShortcut.requiresShift || isShift)
+        (!createFileShortcut.requiresShift || isShift) &&
+        !isEditingContent()
       ) {
         event.preventDefault();
-        // If there's a current file, add as child; otherwise add to root
         const newId = await addNode(fileId || null);
         navigate({ to: '/files/$fileId', params: { fileId: newId } });
         return;
@@ -81,7 +82,6 @@ export function useGlobalSidebarShortcuts() {
         return;
       }
 
-      // Pin/unpin note shortcut
       if (
         fileId &&
         event.key.toLowerCase() === pinShortcut.key.toLowerCase() &&

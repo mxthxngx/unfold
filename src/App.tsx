@@ -5,6 +5,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { router } from "./router";
 import { FileSystemProvider } from "./contexts/FileSystemContext";
 import { EditorProvider } from "./contexts/EditorContext";
+import { GlobalSelectionHighlighter } from "./components/common/global-selection-highlighter";
 
 function AppContent() {
   return <AppRouter />;
@@ -46,6 +47,7 @@ function LayoutInitializer() {
 
   return (
     <FileSystemProvider>
+      <GlobalSelectionHighlighter />
       <EditorProvider>
         <LayoutProvider
           initialLayout={initialLayout}

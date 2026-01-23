@@ -328,10 +328,6 @@ export const DragHandlePlugin = ({
               return false
             }
             
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:keydown',message:'drag handle keydown',data:{key:event.key,hasFocus:view.hasFocus(),locked,elementExists:!!element},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-            // #endregion
-            
             if (!element || locked) {
               return false
             }
@@ -365,40 +361,24 @@ export const DragHandlePlugin = ({
           },
 
           mousedown(_view, e) {
-            // Only handle mousedown if clicking on the drag handle element itself
             const target = e.target as HTMLElement
             if (element && (target === element || element.contains(target))) {
               isMouseDown = true
-              // Cancel any pending RAF callbacks to prevent interference with click selection
-              const hadRafId = !!rafId
               if (rafId) {
                 cancelAnimationFrame(rafId)
                 rafId = null
                 pendingMouseCoords = null
               }
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:mousedown',message:'drag handle mousedown',data:{isMouseDown,cancelledRaf:hadRafId,clickedOnHandle:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-              // #endregion
               return false
             }
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:mousedown',message:'drag handle mousedown',data:{clickedOnHandle:false},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-            // #endregion
             return false
           },
           mouseup(_view, e) {
-            // Only handle mouseup if clicking on the drag handle element itself
             const target = e.target as HTMLElement
             if (element && (target === element || element.contains(target))) {
               isMouseDown = false
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:mouseup',message:'drag handle mouseup',data:{isMouseDown,clickedOnHandle:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-              // #endregion
               return false
             }
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:mouseup',message:'drag handle mouseup',data:{clickedOnHandle:false},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-            // #endregion
             return false
           },
           mousemove(view, e) {
@@ -406,14 +386,9 @@ export const DragHandlePlugin = ({
               return false
             }
 
-            // Ignore mousemove during click (mousedown to mouseup) to avoid interfering with selection
             if (isMouseDown) {
               return false
             }
-
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:mousemove',message:'drag handle mousemove',data:{clientX:e.clientX,clientY:e.clientY,locked,hasRafId:!!rafId,isMouseDown,selectionFrom:view.state.selection.from,selectionTo:view.state.selection.to},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
 
             pendingMouseCoords = { x: e.clientX, y: e.clientY }
 
@@ -430,10 +405,6 @@ export const DragHandlePlugin = ({
 
               const { x, y } = pendingMouseCoords
               pendingMouseCoords = null
-
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'drag-handle-plugin.ts:raf-callback',message:'drag handle RAF callback',data:{x,y,selectionFrom:view.state.selection.from,selectionTo:view.state.selection.to,currentNodePos},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-              // #endregion
 
               const nodeData = findElementNextToCoords({
                 x,

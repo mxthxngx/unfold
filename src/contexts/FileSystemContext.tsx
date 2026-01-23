@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useEf
 import { Node } from '../types/sidebar';
 import { v4 as uuidv4 } from 'uuid';
 import * as db from '../services/database';
+import { removeLastOpenedFile } from '../utils/last-opened';
 
 type Space = {
   id: string;
@@ -45,9 +46,7 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const [isLoading, setIsLoading] = useState(true);
   const [hasInitialized, setHasInitialized] = useState(false);
 
-  // Load initial data from database
   useEffect(() => {
-    // Prevent multiple initializations
     if (hasInitialized) {
       return;
     }
@@ -64,7 +63,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
           spaceRows.map(async (spaceRow) => {
             const nodeRows = await db.getNodesBySpace(spaceRow.id);
             const fileTree = db.buildNodeTree(nodeRows);
-            // Extract pinned nodes from all nodes (flattened)
             const pinnedNodes = nodeRows
               .filter(row => row.is_pinned === 1)
               .map(row => ({
@@ -85,15 +83,12 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
         if (!mounted) return;
         setSpaces(loadedSpaces);
         
-        // Try to restore last active space from localStorage
         const savedSpaceId = localStorage.getItem('activeSpaceId');
         const savedSpaceExists = savedSpaceId && loadedSpaces.some(s => s.id === savedSpaceId);
         
-        // Priority: saved space > "mine" space > first space
         const mineSpace = loadedSpaces.find(s => s.name === 'mine');
         const activeId = savedSpaceExists ? savedSpaceId : (mineSpace?.id ?? loadedSpaces[0]?.id ?? '');
                 
-        // Clear invalid saved space ID
         if (!savedSpaceExists && savedSpaceId) {
           localStorage.removeItem('activeSpaceId');
         }
@@ -129,8 +124,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
   const pinnedNodes = activeSpace?.pinnedNodes ?? [];
   const spaceName = activeSpace?.name ?? '';
   
-  
-  // Helper to find a node in the tree
   const findNode = useCallback((nodes: Node[], id: string): Node | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
@@ -158,7 +151,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
     try {
       const nodeRows = await db.getNodesBySpace(currentSpaceId);
       const fileTree = db.buildNodeTree(nodeRows);
-      // Extract pinned nodes
       const pinnedNodes = nodeRows
         .filter(row => row.is_pinned === 1)
         .map(row => ({
@@ -240,6 +232,8 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.deleteSpace(id);
         
+        removeLastOpenedFile(id);
+        
         setSpaces((prev) => {
           const filtered = prev.filter((space) => space.id !== id);
           if (activeSpaceId === id) {
@@ -272,7 +266,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
           is_open: 0,
         });
         
-        // Reload tree from database
         await reloadActiveSpaceTree();
         
         return newNodeId;
@@ -289,7 +282,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.updateNodeContent(id, content);
         
-        // Update local state optimistically (will be synced on reload)
         setSpaces((prev) =>
           prev.map((space) => {
             if (space.id !== activeSpaceId) return space;
@@ -323,7 +315,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.updateNode(id, { name: trimmedName });
         
-        // Update local state optimistically
         setSpaces((prev) =>
           prev.map((space) => {
             if (space.id !== activeSpaceId) return space;
@@ -386,7 +377,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.toggleNodeOpen(id, newOpenState);
         
-        // Update local state immediately for responsiveness
         setSpaces((prev) =>
           prev.map((space) => {
             if (space.id !== activeSpaceId) return space;
@@ -424,7 +414,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.toggleNodePinned(id, newPinnedState);
         
-        // Reload tree from database to get updated pinned state
         await reloadActiveSpaceTree();
       } catch (error) {
         console.error('Failed to toggle pin:', error);
@@ -446,7 +435,6 @@ export function FileSystemProvider({ children }: { children: React.ReactNode }) 
       try {
         await db.deleteNode(id);
         
-        // Reload tree from database (deletion cascades to children)
         await reloadActiveSpaceTree();
       } catch (error) {
         console.error('Failed to delete node:', error);

@@ -25,7 +25,6 @@ export function useEditorSearch() {
   const editor = pageEditorRef.current;
   const searchStorage = getSearchStorage(editor);
 
-  // Get current results from editor storage
   const matchesCount = searchStorage?.results?.length || 0;
   const activeIndex = searchStorage?.resultIndex ?? -1;
 
@@ -39,7 +38,6 @@ export function useEditorSearch() {
       
       if (selectedText && selectedText.trim()) {
         setQuery(selectedText);
-        // Trigger search with selected text
         setTimeout(() => {
           editor.commands.setSearchTerm(selectedText);
           editor.commands.resetIndex();
@@ -55,7 +53,6 @@ export function useEditorSearch() {
     setIsOpen(false);
     setQuery("");
     
-    // Clear search in editor
     if (editor) {
       editor.commands.setSearchTerm("");
     }
@@ -103,9 +100,8 @@ export function useEditorSearch() {
   }, [editor, caseSensitive, query]);
 
   const scrollToCurrentResult = useCallback(() => {
-    // Scroll to the current search result
     setTimeout(() => {
-      const element = document.querySelector(".search-result-current");
+      const element = document.querySelector(".search-result-current, .search-result-first");
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -125,7 +121,6 @@ export function useEditorSearch() {
     };
   }, [openSearch]);
 
-  // Scroll to result when active index changes
   useEffect(() => {
     if (isOpen && activeIndex >= 0 && matchesCount > 0) {
       scrollToCurrentResult();

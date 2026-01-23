@@ -4,9 +4,9 @@ import FullPageEditor from './components/editor/full-page-editor';
 import EditorLayout from './layout/editor-layout';
 import { useFileSystem } from './contexts/FileSystemContext';
 import { findFirstFileId } from './lib/file-tree';
+import { getLastOpenedFile } from './utils/last-opened';
 import { Button } from './components/ui/button';
 
-// Root route
 const rootRoute = createRootRoute({
   component: () => (
     <EditorLayout>
@@ -22,13 +22,10 @@ function IndexRedirect() {
   const firstFileId = useMemo(() => findFirstFileId(fileTree), [fileTree]);
   
   useEffect(() => {
-    // Don't navigate until data is loaded
     if (isLoading) return;
     
-    // Try to restore last opened file from localStorage
-    const savedFileId = localStorage.getItem(`lastOpenedFile_${activeSpaceId}`);
+    const savedFileId = getLastOpenedFile(activeSpaceId);
     
-    // Check if saved file still exists in current file tree
     const findNodeById = (nodes: any[], id: string): boolean => {
       for (const node of nodes) {
         if (node.id === id) return true;
@@ -52,7 +49,6 @@ function IndexRedirect() {
 
   const hasFiles = fileTree.length > 0;
 
-  // Show nothing while loading to prevent flash
   if (isLoading) {
     return null;
   }
@@ -74,7 +70,7 @@ function IndexRedirect() {
             onClick={handleCreateFile}
             variant="outline"
             size="lg"
-            className="justify-start gap-2 px-3 py-2 text-sm font-semibold text-sidebar-foreground bg-sidebar-item-hover-bg/60 border border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 w-fit"
+            className="justify-start gap-2 px-3 py-2 text-sm font-semibold text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 w-fit"
           >
             add a file
           </Button>
@@ -85,14 +81,12 @@ function IndexRedirect() {
   );
 }
 
-// Index route
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: IndexRedirect,
 });
 
-// File route
 const fileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'files/$fileId',

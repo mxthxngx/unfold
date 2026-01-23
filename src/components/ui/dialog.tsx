@@ -88,14 +88,14 @@ export function DialogContent({
           className={cn(
             'absolute left-0 bottom-full mb-2 z-20 w-full min-w-[16rem] rounded-xl',
             'bg-[#141415] border border-[#1f1f21]',
-            'shadow-[0_10px_40px_rgba(0,0,0,0.5)]',
-            'max-h-[60vh] overflow-hidden',
+            'shadow-lg backdrop-blur-2xl backdrop-saturate-150',
+            'max-h-[60vh] overflow-hidden p-1.5',
             className
           )}
           style={{ transformOrigin: 'bottom center' }}
           ref={assignMenuRef}
         >
-          <div className="px-3 py-3 space-y-2 max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[#2a2a2d] scrollbar-track-transparent">
+          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[#2a2a2d] scrollbar-track-transparent">
             {children}
           </div>
         </motion.div>
@@ -132,10 +132,10 @@ export function DialogItem({ active, className, ...props }: DialogItemProps) {
   return (
     <div
       className={cn(
-        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 transition-all duration-200 ease-out',
+        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
         active
-          ? 'bg-[#1c1c1f] text-[#e0e0e5]'
-          : 'text-[#a0a0a5] hover:bg-[#18181a] hover:text-[#d1d1d6]',
+          ? 'bg-white/4 text-white'
+          : 'text-white/85 hover:bg-white/4 hover:text-white hover:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)]',
         className
       )}
       {...props}

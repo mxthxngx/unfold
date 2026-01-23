@@ -1,24 +1,24 @@
 .ProseMirror:not(.dragging) .ProseMirror-selectednode {
   outline: none !important;
-  background: rgba(193, 123, 255, 0.25);
-  transition: background-color 0.2s;
+  background: var(--highlight-color);
+  transition: none;
   box-shadow: none;
 }
 
 /* Highlight dragged block when dragging starts */
 .ProseMirror.dragging .ProseMirror-selectednode {
   outline: none !important;
-  color: rgb(193, 123, 255);
-  background: rgba(193, 123, 255, 0.4);
-  transition: background-color 0.2s;
-  box-shadow: 0 0 0 2px rgba(193, 123, 255, 0.3);
+  color: var(--highlight-color);
+  background: var(--highlight-color);
+  transition: none;
+  box-shadow: 0 0 0 2px var(--highlight-contrast);
   padding: 0.5rem;
 }
 
 /* NodeRangeSelection styling - for shift+click block selection */
 .ProseMirror .ProseMirror-selectednoderange {
-  background: rgba(193, 123, 255, 0.15);
-  transition: background-color 0.2s;
+  background: var(--highlight-color);
+  transition: none;
 }
 
 
@@ -33,10 +33,10 @@
   pointer-events: none !important;
   height: 2px !important;
   width: 80% !important;
-  background: var(--primary-highlight) !important;
+  background: var(--highlight-color) !important;
   border: none !important;
   border-radius: 1px;
-  box-shadow: 0 0 4px rgba(193, 123, 255, 0.5);
+  box-shadow: 0 0 4px var(--highlight-contrast);
   z-index: 20;
   transition: opacity 0.2s;
   margin: 0 !important;
@@ -50,9 +50,9 @@
   top: -4px;
   width: 8px;
   height: 8px;
-  background: var(--primary-highlight);
+  background: var(--highlight-color);
   border-radius: 50%;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--primary-highlight) 60%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--highlight-color) 60%, transparent);
 }
 
 .ProseMirror {
@@ -76,8 +76,8 @@
   padding-left: var(--pm-padding-inline);
   padding-right: var(--pm-padding-inline);
   border-radius: 10px;
-  background: rgba(193, 123, 255, 0.16) !important;
-  border: 1px solid rgba(193, 123, 255, 0.45) !important;
+  background: var(--highlight-color) !important;
+  border: 1px solid var(--highlight-contrast) !important;
   box-shadow: none !important;
   outline: none !important;
 }

@@ -1,25 +1,32 @@
 /* Search and Replace Styles */
 
 .search-result {
-  background-color: rgba(167, 139, 250, 0.25);
-  padding: 2px 0;
-  transition: background-color 0.2s ease;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: var(--highlight-color) !important;
   border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-first {
+  color: rgba(255, 255, 255, 0.95);
+  background-color: var(--highlight-color) !important;
+  border-bottom: 2px solid var(--highlight-contrast);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
 .search-result-current {
-  background-color: rgba(167, 139, 250, 0.25);
-  border-bottom: 2px solid rgba(167, 139, 250, 0.65);
-  padding: 2px 0;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: var(--highlight-color) !important;
   border-radius: 4px;
   animation: pulse-highlight 1s ease-in-out;
 }
 
 @keyframes pulse-highlight {
   0%, 100% {
-    background-color: rgba(167, 139, 250, 0.25);
+    background: var(--highlight-color);
   }
   50% {
-    background-color: rgba(167, 139, 250, 0.35);
+    background: var(--highlight-color);
   }
 }

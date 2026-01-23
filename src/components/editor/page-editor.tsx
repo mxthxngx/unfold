@@ -1,6 +1,6 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useRef, useCallback } from "react";
-import { TrailingNode } from "@tiptap/extensions";
+import { TrailingNode, Placeholder } from "@tiptap/extensions";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { useEditorContext } from "@/contexts/EditorContext";
 import { useFileSystem } from "@/contexts/FileSystemContext";
@@ -30,6 +30,7 @@ import "./styles/block-spacing.css";
 import "./styles/image-node.css";
 import "./styles/search-and-replace.css";
 import "./styles/table.css";
+import "./styles/page-editor.css";
 
 interface PageEditorProps {
   fileId: string;
@@ -82,6 +83,7 @@ function PageEditor({ fileId }: PageEditorProps) {
       SearchAndReplace.configure({
         searchResultClass: "search-result",
         searchResultCurrentClass: "search-result-current",
+        searchResultFirstClass: "search-result-first",
         caseSensitive: false,
         disableRegex: true,
       }),
@@ -105,6 +107,14 @@ function PageEditor({ fileId }: PageEditorProps) {
       TableCell.configure({ HTMLAttributes: { class: editorClasses.tableCell } }),
       CustomKeymap.configure({ selectAllKey: settings.keybindings.selectAll }),
       TrailingNode.configure({ node: "paragraph", notAfter: ["paragraph"] }),
+      Placeholder.configure({
+        placeholder: ({  }) => {
+          
+           return "Write, press 'space' for AI, '/' for commands...";;
+        },
+        showOnlyWhenEditable: true,
+        showOnlyCurrent: true,
+      }),
       TaskList.configure({ HTMLAttributes: { class: editorClasses.taskList } }),
       TaskItem.configure({ nested: true, HTMLAttributes: { class: editorClasses.taskItem } }),
     ],
@@ -127,6 +137,10 @@ function PageEditor({ fileId }: PageEditorProps) {
       handleDOMEvents: {
         keydown: (view, event) => {
           if (event.isComposing || event.keyCode === 229) return false;
+
+          // if (event.key !== "ArrowUp" && event.key !== "Backspace") {
+          //   return false;
+          // }
 
           const { $head, $anchor } = view.state.selection;
           const isAtDocumentStart = $head.pos <= 1;
@@ -192,7 +206,7 @@ function PageEditor({ fileId }: PageEditorProps) {
   if (!editor) return null;
 
   return (
-    <div ref={editorContainerRef} className="relative w-full">
+    <div ref={editorContainerRef} className="relative w-full page-editor-container">
       <DragHandle
         editor={editor}
         shouldShow={(_node, _pos) => {

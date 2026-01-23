@@ -7,6 +7,7 @@ interface EditorContextType {
   setPageEditor: (editor: Editor | null) => void;
   setTitleEditor: (editor: Editor | null) => void;
   focusPageEditor: (position?: 'start' | 'end') => void;
+  focusPageEditorAtEnd: () => void;
   focusTitleEditor: (position?: 'start' | 'end') => void;
 }
 
@@ -28,6 +29,31 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     pageEditorRef.current?.commands.focus(position);
   }, []);
 
+  const focusPageEditorAtEnd = useCallback(() => {
+    const editor = pageEditorRef.current;
+    if (!editor) return;
+    
+    const { state } = editor;
+    const { doc } = state;
+    
+    if (doc.childCount > 0) {
+      const lastNode = doc.lastChild;
+      if (lastNode && lastNode.type.name === 'paragraph' && lastNode.textContent.trim() === '') {
+        const endPos = doc.content.size - 1;
+        editor.commands.setTextSelection(endPos);
+        editor.commands.focus();
+      } else {
+        // Create a new empty paragraph at the end and focus it
+        const endPos = doc.content.size;
+        editor.commands.insertContentAt(endPos, { type: 'paragraph' });
+        editor.commands.setTextSelection(endPos + 1);
+        editor.commands.focus();
+      }
+    } else {
+      editor.commands.focus('start');
+    }
+  }, []);
+
   const focusTitleEditor = useCallback((position: 'start' | 'end' = 'end') => {
     titleEditorRef.current?.commands.focus(position);
   }, []);
@@ -39,6 +65,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       setPageEditor, 
       setTitleEditor,
       focusPageEditor,
+      focusPageEditorAtEnd,
       focusTitleEditor
     }}>
       {children}

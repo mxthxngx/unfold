@@ -11,7 +11,6 @@ import { findFirstFileId } from '@/lib/file-tree';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tooltip';
-import { motion } from 'framer-motion';
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
@@ -105,21 +104,8 @@ const Sidebar = memo(function Sidebar() {
   };
 
   const handleSwitchSpace = (spaceId: string) => {
-    const target = spaces.find((space) => space.id === spaceId);
     setActiveSpace(spaceId);
     setIsSpaceMenuOpen(false);
-
-    if (!target) {
-      navigate({ to: '/' });
-      return;
-    }
-
-    const firstId = findFirstFileId(target.fileTree);
-    if (firstId) {
-      navigate({ to: '/files/$fileId', params: { fileId: firstId } });
-    } else {
-      navigate({ to: '/' });
-    }
   };
 
   const handleOpenCreateSpace = () => {
@@ -285,21 +271,21 @@ const Sidebar = memo(function Sidebar() {
               <div className="text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-1 mb-1">
                 spaces
               </div>
-              <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-1 pr-1">
+              <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-0.5 pr-1">
                 {sortedSpaces.map((space) => {
                   const isActive = space.id === activeSpaceId;
                   const isEditing = editingSpaceId === space.id;
 
                   return (
-                    <motion.div
+                    <div
                       key={space.id}
+                      onClick={() => handleSwitchSpace(space.id)}
                       ref={isActive ? activeSpaceItemRef : undefined}
-                      layout
                       className={cn(
-                        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-200 ease-out',
+                        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
                         isActive
-                          ? 'bg-[#1c1c1f] text-[#e0e0e5]'
-                          : 'text-[#a0a0a5] hover:bg-[#18181a] hover:text-[#d1d1d6]'
+                          ? 'bg-white/4 text-white'
+                          : 'text-white/85 hover:bg-white/4 hover:text-white hover:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)]'
                       )}
                     >
                       {isEditing ? (
@@ -352,14 +338,14 @@ const Sidebar = memo(function Sidebar() {
                           </button>
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#18181a] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#1a1a1c] hover:border-[#282829] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#171718] hover:border-[#282829] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -656,7 +642,6 @@ export const SidebarNodes = memo(({
     />
   );
 
-  // Root level items
   if (level === 0) {
     return (
       <>
@@ -767,7 +752,6 @@ export const SidebarNodes = memo(({
     );
   }
 
-  // Nested items
   return (
     <>
       <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1', 'px-0')}>

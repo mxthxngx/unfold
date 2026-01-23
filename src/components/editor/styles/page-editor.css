@@ -1,0 +1,59 @@
+/* Page Editor Styles */
+
+/* Better scrollbar handling - only show when actually needed */
+.ProseMirror {
+  overflow: visible;
+  min-height: 100%;
+}
+
+/* Fix scrollbar in editor layout - only show when content actually overflows */
+.flex-1.overflow-y-auto {
+  overflow-y: auto;
+}
+
+/* Hide scrollbar when content doesn't overflow the viewport */
+.flex-1.overflow-y-auto:not(:has(.min-h-full:has(+ *))) {
+  /* This is a fallback - the main fix is in the layout component */
+}
+
+/* Fix checkbox alignment in task items */
+.ProseMirror [data-type="taskItem"] label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.ProseMirror [data-type="taskItem"] label input[type="checkbox"] {
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.ProseMirror [data-type="taskItem"] .task-item-content {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.ProseMirror [data-type="taskItem"] .task-item-content p {
+  margin: 0;
+  padding: 0;
+}
+
+/* Placeholder styling - appears where cursor is */
+.ProseMirror p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+.ProseMirror .is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

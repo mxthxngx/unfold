@@ -21,7 +21,9 @@ html, body {
   --popover-foreground: #f7f2f2;
   --primary: #f7f2f2;
   --primary-foreground: #09090b;
-  --primary-highlight: #a78bfa;
+  --primary-highlight: #442986;
+  --highlight-color: #432986;
+  --highlight-contrast: #5a3a9e;
   --secondary: #18181b;
   --secondary-foreground: #8e8d8d;
   --muted: #343434;
@@ -126,7 +128,9 @@ html, body {
   --popover-foreground: #09090b;
   --primary: #09090b;
   --primary-foreground: #efefef;
-  --primary-highlight: #7c3aed;
+  --primary-highlight: #442986;
+  --highlight-color: #442986;
+  --highlight-contrast: #5a3a9e;
   --secondary: #f4f4f5;
   --secondary-foreground: #09090b;
   --muted: #f4f4f5;
@@ -416,33 +420,32 @@ ul[data-type="taskList"] li > div p {
 
 .edge-drop-line {
   position: absolute;
-  background: var(--primary-highlight);
+  background-color: var(--highlight-color);
   z-index: 25;
   pointer-events: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--highlight-color) 20%, transparent);
 }
-
-/* Table-related styling lives in `src/components/editor/styles/table.css` */
-
 ::selection {
   color: rgba(255, 255, 255, 0.95);
-  background: rgba(167, 139, 250, 0.25);
-  border-bottom: 2px solid rgba(167, 139, 250, 0.65);
-  padding: 2px 6px;
-  border-radius: 4px;
-  -webkit-text-stroke: 0;
+  /* Match Cmd+F search highlight (decoration background is solid, native selection should match) */
+  background: var(--highlight-color) !important;
+}
+
+/* When custom selection highlighting is enabled (via CSS Highlights API),
+   hide native ::selection globally so the highlight paint path is consistent across the app. */
+body[data-custom-selection="true"] ::selection {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Keep native selection visible in inputs/textareas (CSS Highlights doesn't map into input values). */
+body[data-custom-selection="true"] input::selection,
+body[data-custom-selection="true"] textarea::selection {
+  background: var(--highlight-color) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 .dark { --sidebar: hsl(240 5.9% 10%); --sidebar-foreground: hsl(240 4.8% 95.9%); --sidebar-primary: hsl(224.3 76.3% 48%); --sidebar-primary-foreground: hsl(0 0% 100%); --sidebar-accent: hsl(240 3.7% 15.9%); --sidebar-accent-foreground: hsl(240 4.8% 95.9%); --sidebar-border: hsl(240 3.7% 15.9%); --sidebar-ring: hsl(217.2 91.2% 59.8%);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
- }
-  body {
-    @apply bg-background text-foreground;
- }
 }
 
 /* Custom Scrollbar - matching theme */
@@ -456,29 +459,49 @@ ul[data-type="taskList"] li > div p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
   border-radius: 3px;
   transition: background 0.15s ease;
 }
 
-::-webkit-scrollbar-thumb:hover {
+/* Only show scrollbar thumb on hover or when scrolling */
+*:hover::-webkit-scrollbar-thumb,
+*:focus::-webkit-scrollbar-thumb,
+*:active::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover,
+*:focus::-webkit-scrollbar-thumb:hover,
+*:active::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* Show scrollbar when content actually overflows */
+.overflow-y-auto:not(:has(.min-h-full:only-child))::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Search highlight styling (high contrast, clearly visible) */
 ::highlight(search) {
-  background: rgba(167, 139, 250, 0.35); /* lilac highlight */
+  background: var(--highlight-color);
   color: inherit;
   text-decoration: none;
   border-radius: 0.28rem;
 }
 
 ::highlight(search-active) {
-  background: rgba(167, 139, 250, 0.5); /* brighter lilac for active */
+  background: var(--highlight-color);
   color: inherit;
   text-decoration: none;
   border-radius: 0.32rem;
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.4);
+  box-shadow: 0 0 0 2px var(--highlight-contrast);
+}
+
+/* Custom editor selection highlight (CSS Highlights API) */
+::highlight(app-selection) {
+  background: var(--highlight-color);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 /* Resize handles for images and resizable elements */

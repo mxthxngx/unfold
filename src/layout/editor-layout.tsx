@@ -24,16 +24,12 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
     const { settings } = useSettings();
     const { setOpen, open } = useSidebar();
-    const { focusPageEditor } = useEditorContext();
+    const { focusPageEditor, focusPageEditorAtEnd, pageEditorRef } = useEditorContext();
 
-
-    
-    // Register global keyboard shortcuts for sidebar operations
     useGlobalSidebarShortcuts();
     
     const sidebarPosition = layout.sidebar_position || 'left';
 
-    // Keyboard shortcut handler for sidebar toggle
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             const binding = settings.keybindings.toggleSidebar.toLowerCase();
@@ -86,13 +82,26 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                             const target = e.target as HTMLElement | null;
                             if (!target) return;
 
-                            // Don't steal focus from interactive elements or editors (title/page).
                             if (target.closest('[contenteditable="true"]')) return;
                             if (target.closest('button, a, input, textarea, select, [role="button"]')) return;
 
-                            focusPageEditor();
+                            const editor = pageEditorRef.current;
+                            if (editor) {
+                                const { doc } = editor.state;
+                                if (doc.childCount > 1) {
+                                    focusPageEditorAtEnd();
+                                } else {
+                                    focusPageEditor();
+                                }
+                            } else {
+                                focusPageEditor();
+                            }
                         }}
-                        className="flex-1 overflow-y-auto"
+                        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10"
+                        style={{
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: 'transparent transparent',
+                        }}
                     >
                         <div className="w-full max-w-4xl min-h-full px-6 py-8 mx-auto">
                             {children}

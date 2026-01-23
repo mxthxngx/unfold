@@ -5,6 +5,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view';
 export interface SearchAndReplaceOptions {
   searchResultClass: string;
   searchResultCurrentClass: string;
+  searchResultFirstClass: string;
   caseSensitive: boolean;
   disableRegex: boolean;
 }
@@ -100,6 +101,7 @@ export const SearchAndReplace = Extension.create<SearchAndReplaceOptions, Search
     return {
       searchResultClass: 'search-result',
       searchResultCurrentClass: 'search-result-current',
+      searchResultFirstClass: 'search-result-first',
       caseSensitive: false,
       disableRegex: true,
     };
@@ -304,7 +306,7 @@ export const SearchAndReplace = Extension.create<SearchAndReplaceOptions, Search
   },
 
   addProseMirrorPlugins() {
-    const { searchResultClass, searchResultCurrentClass } = this.options;
+    const { searchResultClass, searchResultCurrentClass, searchResultFirstClass } = this.options;
     const extension = this;
 
     return [
@@ -317,16 +319,17 @@ export const SearchAndReplace = Extension.create<SearchAndReplaceOptions, Search
           apply(tr) {
             const { searchTerm, results, resultIndex } = extension.storage;
 
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/5d0892d6-28a6-4d1b-8936-0d47d3cc040e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'search-and-replace.ts:apply',message:'SearchAndReplace plugin apply',data:{searchTerm,resultsCount:results.length,resultIndex,docChanged:tr.docChanged,selectionFrom:tr.selection?.from,selectionTo:tr.selection?.to},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
-
             if (!searchTerm || results.length === 0) {
               return DecorationSet.empty;
             }
 
             const decorations = results.map((result, index) => {
-              const className = index === resultIndex ? searchResultCurrentClass : searchResultClass;
+              let className = searchResultClass;
+              if (index === 0) {
+                className = searchResultFirstClass;
+              } else if (index === resultIndex) {
+                className = searchResultCurrentClass;
+              }
               return Decoration.inline(result.from, result.to, {
                 class: className,
               });

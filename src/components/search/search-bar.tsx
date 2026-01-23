@@ -59,7 +59,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
 
     editor.commands.setTextSelection(position);
 
-    const element = document.querySelector('.search-result-current');
+    const element = document.querySelector('.search-result-current, .search-result-first');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -103,7 +103,6 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     }
   };
 
-  // Effect to update search term in editor
   useEffect(() => {
     if (!editor) return;
     editor.commands.setSearchTerm(searchText);
@@ -111,7 +110,6 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     editor.commands.selectCurrentItem();
   }, [searchText, editor]);
 
-  // Effect to update case sensitivity
   useEffect(() => {
     if (!editor) return;
     editor.commands.setCaseSensitive(caseSensitive);
@@ -120,7 +118,6 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     goToSelection();
   }, [caseSensitive, editor]);
 
-  // Handle open event from editor
   const handleOpenEvent = () => {
     setIsOpen(true);
     
@@ -161,7 +158,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     <div
       ref={ref}
       className={cn(
-        'pointer-events-none fixed right-4 z-40 transition-all duration-200',
+        'pointer-events-none fixed right-4 z-40 transition-transform duration-200',
         'top-14',
         isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'
       )}
@@ -169,12 +166,13 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
       <div
         className={cn(
           'pointer-events-auto flex flex-col gap-1.5 rounded-lg border border-border',
-          'bg-card/95 backdrop-blur-xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.45)]'
+          'bg-card/95 backdrop-blur-xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.45)]',
+          'min-w-[320px] w-[520px] max-w-[calc(100vw-2rem)]'
         )}
       >
         {/* Search Row */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             <SearchIcon size={14} className="text-muted-foreground/70" />
             <input
               ref={inputRef}
@@ -206,7 +204,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
               spellCheck={false}
               className={cn(
                 'bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60',
-                'focus:outline-none w-48 sm:w-60'
+                'focus:outline-none w-full'
               )}
             />
           </div>
@@ -296,7 +294,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
         {/* Replace Row */}
         {showReplace && (
           <div className="flex items-center gap-2 pt-1 border-t border-border/70">
-            <div className="flex items-center gap-2 flex-1">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               <Replace size={14} className="text-muted-foreground/70" />
               <input
                 ref={replaceInputRef}
@@ -328,7 +326,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
                 spellCheck={false}
                 className={cn(
                   'bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60',
-                  'focus:outline-none w-48 sm:w-60'
+                  'focus:outline-none w-full'
                 )}
               />
             </div>
