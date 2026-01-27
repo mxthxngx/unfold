@@ -18,15 +18,20 @@ export const LinkEditorPanel = ({
   return (
     <div>
       <form onSubmit={state.handleSubmit}>
-        <InputGroup className="text-nowrap flex items-center gap-2 bg-sidebar-item-hover-bg/50"
->
+        <InputGroup className="text-nowrap flex items-center gap-2 bg-sidebar-item-hover-bg/50">
           <Input
             placeholder={"paste link"}
             value={state.url}
             onChange={state.onChange}
           />
           <Link size={16} />
-          <Button variant={"secondary"} type="submit" disabled={!state.isValidUrl}>
+          <Button
+            variant="outline"
+            size="lg"
+            type="submit"
+            disabled={!state.isValidUrl}
+            className="cursor-pointer justify-start gap-2 px-3 py-2 text-sm font-semibold text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 w-fit"
+          >
             save
           </Button>
         </InputGroup>

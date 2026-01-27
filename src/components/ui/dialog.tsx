@@ -87,7 +87,7 @@ export function DialogContent({
           }}
           className={cn(
             'absolute left-0 bottom-full mb-2 z-20 w-full min-w-[16rem] rounded-xl',
-            'bg-[#111111] border border-[#1f1f21]',
+            'bg-[#0a0a0a] border border-sidebar-container-border/80',
             'shadow-lg backdrop-blur-2xl backdrop-saturate-150',
             'max-h-[60vh] overflow-hidden p-1.5',
             className

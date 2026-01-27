@@ -252,7 +252,7 @@ const Sidebar = memo(function Sidebar() {
           </SidebarMenu>
         </div>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
+      <SidebarFooter className="border-t border-sidebar-container-border/80 px-4 py-3">
         <div className="flex items-center gap-2 w-full">
           <DialogRoot className="relative flex-1">
             <DialogTrigger
@@ -345,7 +345,7 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-white/2 hover:border-[#2a2a2b] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-[11px] font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-white/2 hover:border-[#2a2a2b] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -761,7 +761,7 @@ export const SidebarNodes = memo(({
               className={cn(
                 'group/sub-item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
+                  ? 'bg-zinc-900/50 text-white/90 font-[450] border-[#1f1f1f]'
                   : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}

@@ -11,6 +11,8 @@ export function GlobalSelectionHighlighter() {
   useEffect(() => {
     const w = window as any;
     const highlightName = "app-selection";
+    const highlightNameTop = "app-selection-top";
+    const highlightNameBottom = "app-selection-bottom";
     const canCssHighlight =
       typeof w.CSS !== "undefined" &&
       typeof w.CSS.highlights !== "undefined" &&
@@ -23,6 +25,8 @@ export function GlobalSelectionHighlighter() {
     const clear = () => {
       try {
         w.CSS.highlights.delete(highlightName);
+        w.CSS.highlights.delete(highlightNameTop);
+        w.CSS.highlights.delete(highlightNameBottom);
       } catch {
         // ignore
       }
@@ -43,8 +47,8 @@ export function GlobalSelectionHighlighter() {
         if (key === lastKeyRef.current) return;
         lastKeyRef.current = key;
 
+        // Use single highlight with gradient-like color (average of gradient stops)
         w.CSS.highlights.set(highlightName, new w.Highlight(range));
-        // #endregion agent log
       } catch {
         clear();
       }
@@ -56,7 +60,6 @@ export function GlobalSelectionHighlighter() {
       document.removeEventListener("selectionchange", onSelectionChange);
       clear();
       delete document.body.dataset.customSelection;
-      // #endregion agent log
     };
   }, []);
 

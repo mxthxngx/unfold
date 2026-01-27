@@ -17,8 +17,8 @@ export const Toolbar = memo(function Toolbar() {
   return (
     <div
       className={cn(
-        'h-10 border-b border-border',
-        'bg-background',
+        'h-10 border-b border-sidebar-container-border/80',
+        'bg-sidebar-container-bg/80',
         'flex items-center justify-between',
         'text-xs select-none',
         'pl-24 pr-4',

@@ -21,7 +21,7 @@ export function EmptyState({ onCreateFile }: EmptyStateProps) {
         onClick={onCreateFile}
         variant="outline"
         size="lg"
-        className="justify-start gap-2 px-3 py-2 text-sm font-semibold text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 w-fit"
+        className="cursor-pointer justify-start gap-2 px-3 py-2 text-sm font-semibold text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 w-fit"
       >
         add a file
       </Button>

@@ -11,7 +11,7 @@ html, body {
 }
 :root {
   --background: var(--background-solid);
-  --background-solid: #0f0f0f;
+  --background-solid: #0d0d0d;
   --bright-highlight: rgba(229, 227, 227, 0.9);
   --foreground: #f7f2f2;
   --foreground-muted: #8e8d8d;
@@ -24,6 +24,10 @@ html, body {
   --primary-highlight: #442986;
   --highlight-color: #432986;
   --highlight-contrast: #5a3a9e;
+  /* Text selection colors - subtle and transparent */
+  --selection-gradient-start: rgba(255, 255, 255, 0.12);
+  --selection-gradient-end: rgba(255, 255, 255, 0.08);
+  --selection-solid: rgba(255, 255, 255, 0.10);
   --secondary: #18181b;
   --secondary-foreground: #8e8d8d;
   --muted: #343434;
@@ -51,13 +55,13 @@ html, body {
   --sidebar-border: #232323;
   --sidebar-ring: #6b6b6b;
   --sidebar-tab-accent: rgb(19, 19, 19);
-  --sidebar-container-bg: #0E0E11;
+  --sidebar-container-bg: #0a0a0a;
   --sidebar-container-border: #1A1A1A;
   --sidebar-foreground: #C6C6C6;
   --sidebar-foreground-active: #f7f2f2;
   --sidebar-accent-foreground: #f7f2f2;
-  --sidebar-selected-bg: #18191a;
-  --sidebar-item-hover-bg: #18191a;
+  --sidebar-selected-bg: #141414;
+  --sidebar-item-hover-bg: #141414;
   --sidebar-icon-hover-bg: #18191a;
   --sidebar-selection-indicator: #9d9d9f;
   --icon-hover: rgba(25, 25, 25, 0.585);
@@ -131,6 +135,10 @@ html, body {
   --primary-highlight: #442986;
   --highlight-color: #442986;
   --highlight-contrast: #5a3a9e;
+  /* Text selection colors - subtle and transparent (light mode uses dark colors) */
+  --selection-gradient-start: rgba(0, 0, 0, 0.08);
+  --selection-gradient-end: rgba(0, 0, 0, 0.05);
+  --selection-solid: rgba(0, 0, 0, 0.06);
   --secondary: #f4f4f5;
   --secondary-foreground: #09090b;
   --muted: #f4f4f5;
@@ -420,15 +428,15 @@ ul[data-type="taskList"] li > div p {
 
 .edge-drop-line {
   position: absolute;
-  background-color: var(--highlight-color);
+  background-color: rgba(255, 255, 255, 0.18);
   z-index: 25;
   pointer-events: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--highlight-color) 20%, transparent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
 }
 ::selection {
   color: rgba(255, 255, 255, 0.95);
-  /* Match Cmd+F search highlight (decoration background is solid, native selection should match) */
-  background: var(--highlight-color) !important;
+  /* Use solid color since WebKit doesn't support gradients in ::selection */
+  background: var(--selection-solid) !important;
 }
 
 /* When custom selection highlighting is enabled (via CSS Highlights API),
@@ -441,7 +449,7 @@ body[data-custom-selection="true"] ::selection {
 /* Keep native selection visible in inputs/textareas (CSS Highlights doesn't map into input values). */
 body[data-custom-selection="true"] input::selection,
 body[data-custom-selection="true"] textarea::selection {
-  background: var(--highlight-color) !important;
+  background: var(--selection-solid) !important;
   color: rgba(255, 255, 255, 0.95) !important;
 }
 
@@ -484,23 +492,25 @@ body[data-custom-selection="true"] textarea::selection {
 
 /* Search highlight styling (high contrast, clearly visible) */
 ::highlight(search) {
-  background: var(--highlight-color);
+  background-color: var(--selection-solid);
   color: inherit;
   text-decoration: none;
   border-radius: 0.28rem;
 }
 
 ::highlight(search-active) {
-  background: var(--highlight-color);
+  background-color: var(--selection-solid);
   color: inherit;
   text-decoration: none;
   border-radius: 0.32rem;
-  box-shadow: 0 0 0 2px var(--highlight-contrast);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 
 /* Custom editor selection highlight (CSS Highlights API) */
+/* Note: ::highlight() only supports background-color, not gradients */
+/* Using a color that approximates the gradient effect (average of gradient stops) */
 ::highlight(app-selection) {
-  background: var(--highlight-color);
+  background-color: var(--selection-solid);
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -622,4 +632,12 @@ body[data-custom-selection="true"] textarea::selection {
 .light [data-resize-state='true'] [data-resize-wrapper] {
   outline: 2px solid var(--primary-highlight);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-highlight) 20%, transparent);
+}
+
+/* Ensure BubbleMenu (inline toolbar) is above drag handle */
+/* TipTap's BubbleMenu uses Floating UI which creates wrapper elements */
+/* Target positioned wrapper elements that contain the bubble menu */
+div[style*="position: absolute"]:has([data-bubble-menu="true"]),
+div[style*="position: fixed"]:has([data-bubble-menu="true"]) {
+  z-index: 50 !important;
 }

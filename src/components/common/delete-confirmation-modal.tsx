@@ -1,5 +1,3 @@
-import { Trash2 } from 'lucide-react';
-
 import { Modal } from '@/components/ui/modal';
 import { Button } from '../ui/button';
 
@@ -31,19 +29,15 @@ export function DeleteConfirmationModal({
       <div className="flex flex-col gap-2 p-6 sm:p-8 text-modal-surface-foreground">
         <div className="space-y-5">
 
-          <div className="p-2">
+          <div className="p-1">
             <div className="absolute -top-8 -right-12 size-32 rounded-full bg-modal-primary-foreground/10 blur-2xl" aria-hidden />
-            <div className="relative flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-6">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-modal-primary-foreground/10 text-modal-action-text">
-                <Trash2 className="size-5" />
-              </div>
-              <div className="space-y-3 text-sm leading-relaxed">
+       
+              <div className="flex text-sm leading-relaxed">
                 <h3 className="text-2xl font-semibold leading-snug text-modal-surface-foreground">
                   Move{' '}     {resolvedItemName} {' '} 
                  
                   to trash?
                 </h3>
-              </div>
             </div>
           </div>
         </div>
@@ -59,7 +53,7 @@ export function DeleteConfirmationModal({
               variant="outline"
               size="lg"
               onClick={onCancel}
-              className={`${actionButtonBaseClasses} text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80`}
+              className={`${actionButtonBaseClasses} cursor-pointer text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80`}
             >
               keep it
             </Button>
@@ -68,7 +62,7 @@ export function DeleteConfirmationModal({
               variant="outline"
               size="lg"
               onClick={onConfirm}
-              className={`${actionButtonBaseClasses} text-red-400 border-red-500/30 bg-red-500/15 hover:bg-red-500/20 hover:border-red-500/40 focus-visible:ring-red-500/30`}
+              className={`${actionButtonBaseClasses} cursor-pointer text-red-400 border-red-500/20 bg-red-500/15 hover:bg-red-500/20 hover:border-red-500/40 focus-visible:ring-red-500/30`}
             >
               move to trash
             </Button>

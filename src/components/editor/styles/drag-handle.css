@@ -1,27 +1,16 @@
+/* Selected nodes: only remove outline/box-shadow, preserve original backgrounds */
 .ProseMirror:not(.dragging) .ProseMirror-selectednode {
   outline: none !important;
-  background: var(--highlight-color);
-  transition: none;
-  box-shadow: none;
+  box-shadow: none !important;
 }
 
 /* Highlight dragged block when dragging starts */
 .ProseMirror.dragging .ProseMirror-selectednode {
   outline: none !important;
-  color: var(--highlight-color);
-  background: var(--highlight-color);
-  transition: none;
-  box-shadow: 0 0 0 2px var(--highlight-contrast);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
   padding: 0.5rem;
 }
-
-/* NodeRangeSelection styling - for shift+click block selection */
-.ProseMirror .ProseMirror-selectednoderange {
-  background: var(--highlight-color);
-  transition: none;
-}
-
-
 
 /* Hide default text selection when NodeRange is active */
 .ProseMirror-noderangeselection ::selection {
@@ -76,8 +65,8 @@
   padding-left: var(--pm-padding-inline);
   padding-right: var(--pm-padding-inline);
   border-radius: 10px;
-  background: var(--highlight-color) !important;
-  border: 1px solid var(--highlight-contrast) !important;
+  background: var(--selection-solid) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: none !important;
   outline: none !important;
 }
@@ -87,7 +76,7 @@
   opacity: 1;
   transition: opacity ease-in 0.2s;
   border-radius: 0.25rem;
-  z-index: 50;
+  z-index: 30;
   transform: translateX(-0.75rem); /* Add space between drag handle and text by moving it further left */
   max-height: 1.75em;
   min-height: 1.5rem;
@@ -102,4 +91,13 @@
     display: none;
     pointer-events: none;
   }
+}
+
+/* Ensure BubbleMenu (inline toolbar) is always above drag handle */
+/* TipTap's BubbleMenu creates wrapper elements that need higher z-index */
+div[style*="position: absolute"]:has([data-bubble-menu="true"]),
+div[style*="position: fixed"]:has([data-bubble-menu="true"]),
+[data-bubble-menu="true"] {
+  z-index: 50 !important;
+  position: relative;
 }

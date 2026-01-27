@@ -33,10 +33,10 @@ export const editorClasses = {
     "border-t border-zinc-700/60 my-6",
 
   codeMark:
-    "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-[4px] py-0.5 px-1.5 font-mono text-xs font-medium border border-zinc-700/60",
+    "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-[4px] py-0.5 px-1.5 font-mono text-xs font-medium border border-zinc-800/70",
 
   codeBlock:
-    "bg-zinc-900/50 backdrop-blur-sm text-sm rounded-lg p-5 border border-zinc-700/60 shadow-sm overflow-x-auto my-4",
+    "bg-zinc-950/60 backdrop-blur-sm text-sm rounded-lg p-5 border border-zinc-800/70 shadow-sm overflow-x-auto my-4",
 
   link:
     "text-zinc-400 underline decoration-zinc-600 decoration-[0.025em] decoration-solid hover:text-zinc-200 hover:decoration-zinc-400 transition-colors",
@@ -59,9 +59,7 @@ export const editorClasses = {
   taskItem:
   "flex gap-2",
 
-  // Beautiful table styling matching code block aesthetic
   table:
-    /* Let `styles/table.css` control sizing/collapse for TipTap colgroup resizing */
     "text-sm my-4",
 
   tableRow:
@@ -74,6 +72,6 @@ export const editorClasses = {
     "relative edge-cell [&_p]:mb-0 [&_p]:pb-0 [&_p]:leading-relaxed",
 
   bubbleMenu:
-    "bg-editor-bubble-menu-surface border border-editor-bubble-menu-surface-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
+    "bg-[#0a0a0a] border border-sidebar-container-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
 
 };
