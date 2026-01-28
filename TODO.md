@@ -2,6 +2,7 @@
 
 ## Bugs / Issues
 - **Fix state management**
+- **weird white flash coming in start of app**
 - **Fix tailwind css colors**
 - **Click-to-place cursor (Notion-style):** Clicking anywhere on the page should focus the last empty node when there are multiple lines, not the first line.
 - **Scrollbar:** Scrollbar appears even when content doesn’t reach the end.
