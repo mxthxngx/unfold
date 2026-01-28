@@ -12,13 +12,26 @@ dist
 dist-ssr
 *.local
 
+# npm lockfile (project uses pnpm; keep pnpm-lock.yaml only)
+package-lock.json
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+.cursor
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Rust / Tauri (backup for root; src-tauri has its own)
+src-tauri/target
+src-tauri/gen
