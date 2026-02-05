@@ -55,7 +55,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
                 <SidebarInset 
                     className="flex-1 relative"
                 >
-                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10">
+                    <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10 transition-colors">
                         <div className="w-full max-w-4xl min-h-full px-6 py-8 mx-auto">
                             {children}
                         </div>

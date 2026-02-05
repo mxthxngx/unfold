@@ -5,12 +5,12 @@ export const DragHandleButton = () => {
   return (
     <div className={cn(
       "group flex h-full w-4 items-center justify-center rounded-md",
-      "bg-zinc-900 hover:bg-zinc-800",
+      "bg-surface-elevated hover:bg-surface-elevated-border",
       "transition-colors duration-200",
       "cursor-grab active:cursor-grabbing",
-      "border border-zinc-800/60"
+      "border border-border"
     )}>
-      <MdDragIndicator className="h-4 w-4 text-zinc-500" />
+      <MdDragIndicator className="h-4 w-4 text-muted-foreground" />
     </div>
   );
 };

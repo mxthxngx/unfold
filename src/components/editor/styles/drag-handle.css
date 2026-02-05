@@ -7,8 +7,8 @@
 /* Highlight dragged block when dragging starts */
 .ProseMirror.dragging .ProseMirror-selectednode {
   outline: none !important;
-  color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
+  color: var(--selection-text);
+  box-shadow: 0 0 0 2px var(--selection-ring) !important;
   padding: 0.5rem;
 }
 
@@ -66,7 +66,7 @@
   padding-right: var(--pm-padding-inline);
   border-radius: 10px;
   background: var(--selection-solid) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid var(--selection-ring) !important;
   box-shadow: none !important;
   outline: none !important;
 }

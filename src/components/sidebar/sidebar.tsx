@@ -191,7 +191,7 @@ const Sidebar = memo(function Sidebar() {
       className={cn(
         'bg-sidebar-container-bg/80 border-sidebar-container-border/80',
         'backdrop-blur-xl border-r border-b border-l border-t-0',
-        'shadow-[0_10px_40px_-25px_rgba(0,0,0,0.8)]',
+        'shadow-[var(--shadow-dropdown)]',
         'top-10! bottom-auto! h-[calc(100vh-2.5rem)]!',
         'flex flex-col'
       )}
@@ -268,7 +268,7 @@ const Sidebar = memo(function Sidebar() {
               menuRef={menuRef}
               className="max-h-[60vh]"
             >
-              <div className="text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-2.5 mb-1">
+              <div className="text-[10px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-2.5 mb-1">
                 spaces
               </div>
               <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-0.5 pr-1">
@@ -284,8 +284,8 @@ const Sidebar = memo(function Sidebar() {
                       className={cn(
                         'group/space flex items-center gap-2 rounded-xl px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border',
                         isActive
-                          ? 'bg-sidebar-item-hover-bg/80 text-white border-[#1f1f1f]'
-                          : 'text-white/85 hover:bg-white/2 hover:text-white border-transparent'
+                          ? 'bg-sidebar-item-hover-bg/80 text-foreground border-border-elevated'
+                          : 'text-foreground/85 hover:bg-foreground/5 hover:text-foreground border-transparent'
                       )}
                     >
                       {isEditing ? (
@@ -301,7 +301,7 @@ const Sidebar = memo(function Sidebar() {
                               setDraftName('');
                             }
                           }}
-                          className="w-full rounded-md bg-[#18181a] text-[#e0e0e5] px-2 py-1 text-xs outline-none border border-[#252527] focus:border-[#353538] transition-all duration-200"
+                          className="w-full rounded-md bg-surface-elevated text-foreground px-2 py-1 text-xs outline-none border border-surface-elevated-border focus:border-surface-elevated-focus transition-all duration-200"
                         />
                       ) : (
                         <button
@@ -320,7 +320,7 @@ const Sidebar = memo(function Sidebar() {
                               setEditingSpaceId(space.id);
                               setDraftName(space.name);
                             }}
-                            className="rounded-md p-1 hover:bg-[#252527] text-[#75757a] hover:text-[#a5a5aa] transition-colors duration-200"
+                            className="rounded-md p-1 hover:bg-surface-elevated-border text-foreground-muted-secondary hover:text-foreground-muted-hover transition-colors duration-200"
                           >
                             <Pencil size={14} />
                           </button>
@@ -331,7 +331,7 @@ const Sidebar = memo(function Sidebar() {
                             }}
                             disabled={sortedSpaces.length <= 1}
                             className={cn(
-                              'rounded-md p-1 hover:bg-[#252527] text-[#75757a] hover:text-[#a5a5aa] disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200'
+                              'rounded-md p-1 hover:bg-surface-elevated-border text-foreground-muted-secondary hover:text-foreground-muted-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors duration-200'
                             )}
                           >
                             <Trash2 size={14} />
@@ -345,7 +345,7 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-[#151516] border border-[#232325] text-[#85858a] hover:text-[#a5a5aa] hover:bg-white/2 hover:border-[#2a2a2b] transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-surface-deeper border border-border-strong text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-foreground/5 hover:border-surface-border-hover transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -382,12 +382,12 @@ const Sidebar = memo(function Sidebar() {
           className="flex flex-col gap-6 p-6"
         >
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-[#e0e0e5]">create space</h3>
-            <p className="text-sm text-[#85858a]">name your new space to organize your documents.</p>
+            <h3 className="text-xl font-semibold text-foreground">create space</h3>
+            <p className="text-sm text-foreground-muted-tertiary">name your new space to organize your documents.</p>
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <label className="text-[11px] uppercase tracking-[0.08em] text-[#75757a] font-medium  pointer-events-auto">
+            <label className="text-[11px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium  pointer-events-auto">
               space name
             </label>
             <input
@@ -398,10 +398,10 @@ const Sidebar = memo(function Sidebar() {
                 if (createSpaceError) setCreateSpaceError('');
               }}
               aria-invalid={!!createSpaceError}
-              className="w-full rounded-lg bg-[#18181a] border border-[#252527] text-[#e0e0e5] px-3.5 py-2.5 text-sm outline-none placeholder:text-[#404045] focus:border-[#353538] focus:bg-[#1a1a1c] transition-all duration-200 pointer-events-auto"
+              className="w-full rounded-lg bg-surface-elevated border border-surface-elevated-border text-foreground px-3.5 py-2.5 text-sm outline-none placeholder:text-[var(--input-placeholder)] focus:border-surface-elevated-focus focus:bg-surface-deep transition-all duration-200 pointer-events-auto"
               placeholder="enter a space name"
             />
-            <p className="min-h-[1.1rem] text-xs text-red-400/90">
+            <p className="min-h-[1.1rem] text-xs text-destructive">
               {createSpaceError ? createSpaceError : ''}
             </p>
           </div>
@@ -410,7 +410,7 @@ const Sidebar = memo(function Sidebar() {
             <button
               type="button"
               onClick={handleCloseCreateSpace}
-              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-[#85858a] hover:text-[#a5a5aa] hover:bg-[#18181a] transition-all duration-200 pointer-events-auto"
+              className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-surface-elevated transition-all duration-200 pointer-events-auto"
             >
               cancel
             </button>
@@ -490,8 +490,8 @@ const PinnedNodeItem = memo(({
               className={cn(
                 'group/pinned-item flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
-                  : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
+                  ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                  : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
               role="button"
@@ -652,8 +652,8 @@ export const SidebarNodes = memo(({
                 className={cn(
                   'group/item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                   isSelected
-                    ? 'bg-sidebar-item-hover-bg/80 text-white/90 font-[450] border-[#1f1f1f]'
-                    : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/80 border-transparent'
+                    ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                    : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
                 )}
                 onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
                 role="button"
@@ -761,8 +761,8 @@ export const SidebarNodes = memo(({
               className={cn(
                 'group/sub-item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-zinc-900/50 text-white/90 font-[450] border-[#1f1f1f]'
-                  : 'text-sidebar-foreground/90 hover:text-white hover:bg-sidebar-item-hover-bg/70 border-transparent'
+                  ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                  : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
               role="button"

@@ -34,21 +34,21 @@ export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
         ref={ref}
         className={cn(
           'group w-full rounded-2xl px-3 py-2 flex items-center justify-between gap-2',
-          'bg-sidebar-item-hover-bg/50 border border-[#1f1f21]',
+          'bg-sidebar-item-hover-bg/50 border border-border-elevated',
           'transition-all duration-300 ease-out',
           isOpen 
-            ? 'bg-sidebar-item-hover-bg/80 border-[#1f1f21]' 
-            : 'hover:bg-sidebar-item-hover-bg/80 hover:border-[#232325]',
+            ? 'bg-sidebar-item-hover-bg/80 border-border-elevated' 
+            : 'hover:bg-sidebar-item-hover-bg/80 hover:border-border-strong',
           className
         )}
         {...props}
       >
-        <span className="truncate text-sm font-medium text-[#c0c0c5]">{label}</span>
+        <span className="truncate text-sm font-medium text-sidebar-foreground">{label}</span>
         <ChevronDown
           size={14}
           strokeWidth={2}
           className={cn(
-            'text-[#75757a] transition-transform duration-300 ease-out',
+            'text-foreground-muted-secondary transition-transform duration-300 ease-out',
             isOpen && 'rotate-180'
           )}
         />
@@ -87,7 +87,7 @@ export function DialogContent({
           }}
           className={cn(
             'absolute left-0 bottom-full mb-2 z-20 w-full min-w-[16rem] rounded-xl',
-            'bg-[#0a0a0a] border border-sidebar-container-border/80',
+            'bg-sidebar-container-bg border border-sidebar-container-border/80',
             'shadow-lg backdrop-blur-2xl backdrop-saturate-150',
             'max-h-[60vh] overflow-hidden p-1.5',
             className
@@ -95,7 +95,7 @@ export function DialogContent({
           style={{ transformOrigin: 'bottom center' }}
           ref={assignMenuRef}
         >
-          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[#2a2a2d] scrollbar-track-transparent">
+          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[var(--scrollbar-thumb)] scrollbar-track-transparent">
             {children}
           </div>
         </motion.div>
@@ -109,7 +109,7 @@ export function DialogHeader({ className, children, ...props }: DialogHeaderProp
   return (
     <div
       className={cn(
-        'text-[10px] uppercase tracking-[0.08em] text-[#75757a] font-medium px-1 mb-1',
+        'text-[10px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-1 mb-1',
         className
       )}
       {...props}
@@ -134,8 +134,8 @@ export function DialogItem({ active, className, ...props }: DialogItemProps) {
       className={cn(
         'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
         active
-          ? 'bg-white/4 text-white'
-          : 'text-white/85 hover:bg-white/4 hover:text-white hover:shadow-[inset_0_0_8px_rgba(255,255,255,0.02)]',
+          ? 'bg-foreground/5 text-foreground'
+          : 'text-foreground/85 hover:bg-foreground/5 hover:text-foreground',
         className
       )}
       {...props}
@@ -162,9 +162,9 @@ export function DialogAddButton({ className, children, ...props }: DialogAddButt
     <button
       className={cn(
         'w-full mt-2 rounded-lg px-3 py-2.5',
-        'bg-[#18181a] border border-[#232325]',
-        'text-[#85858a] hover:text-[#a5a5aa]',
-        'hover:bg-[#1a1a1c] hover:border-[#282829]',
+        'bg-surface-elevated border border-border-strong',
+        'text-foreground-muted-tertiary hover:text-foreground-muted-hover',
+        'hover:bg-surface-deep hover:border-surface-border-hover',
         'transition-all duration-200 ease-out',
         'flex items-center gap-2 justify-center text-xs font-medium',
         className

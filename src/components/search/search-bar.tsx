@@ -166,7 +166,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
       <div
         className={cn(
           'pointer-events-auto flex flex-col gap-1.5 rounded-lg border border-border',
-          'bg-card/95 backdrop-blur-xl p-2 shadow-[0_18px_60px_rgba(0,0,0,0.45)]',
+          'bg-card/95 backdrop-blur-xl p-2 shadow-[var(--shadow-search)]',
           'min-w-[320px] w-[520px] max-w-[calc(100vw-2rem)]'
         )}
       >
@@ -253,7 +253,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
               className={cn(
                 'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
                 caseSensitive
-                  ? 'bg-[rgba(167,139,250,0.2)] border-[rgba(167,139,250,0.5)] text-[rgb(167,139,250)]'
+                  ? 'bg-highlight-vivid/20 border-highlight-vivid/50 text-highlight-vivid'
                   : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
               )}
               aria-label="Toggle case sensitive"
@@ -268,7 +268,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
               className={cn(
                 'inline-flex items-center justify-center rounded-md size-7 transition border border-border/60',
                 showReplace
-                  ? 'bg-[rgba(167,139,250,0.2)] border-[rgba(167,139,250,0.5)] text-[rgb(167,139,250)]'
+                  ? 'bg-highlight-vivid/20 border-highlight-vivid/50 text-highlight-vivid'
                   : 'bg-muted/50 hover:bg-muted/80 text-muted-foreground/70'
               )}
               aria-label="Toggle replace"

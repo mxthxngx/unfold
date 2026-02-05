@@ -2,32 +2,31 @@
 
 .search-result {
   color: rgba(255, 255, 255, 0.95);
-  background: var(--selection-solid) !important;
+  background-color: var(--highlight-color) !important;
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 .search-result-first {
   color: rgba(255, 255, 255, 0.95);
-  background: var(--selection-solid) !important;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  background-color: var(--highlight-color) !important;
+  border-bottom: 2px solid var(--highlight-contrast);
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
 
 .search-result-current {
   color: rgba(255, 255, 255, 0.95);
-  background: var(--selection-solid) !important;
+  background-color: var(--highlight-color) !important;
   border-radius: 4px;
   animation: pulse-highlight 1s ease-in-out;
 }
 
 @keyframes pulse-highlight {
   0%, 100% {
-    background: var(--selection-solid);
+    background: var(--highlight-color);
   }
   50% {
-    /* Slightly brighter for pulse effect */
-    background: color-mix(in srgb, var(--selection-solid) 150%, transparent);
+    background: var(--highlight-color);
   }
 }

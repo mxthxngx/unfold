@@ -24,28 +24,28 @@ interface ColorSelectorProps {
 
 const TEXT_COLORS: BubbleColorMenuItem[] = [
   { name: "Default", color: "" },
-  { name: "Gray", color: "#A8A29E" },
-  { name: "Brown", color: "#78716C" },
-  { name: "Orange", color: "#F97316" },
-  { name: "Yellow", color: "#EAB308" },
-  { name: "Green", color: "#22C55E" },
-  { name: "Blue", color: "#3B82F6" },
-  { name: "Purple", color: "#A855F7" },
-  { name: "Pink", color: "#EC4899" },
-  { name: "Red", color: "#EF4444" },
+  { name: "Gray", color: "var(--color-editor-text-gray)" },
+  { name: "Brown", color: "var(--color-editor-text-brown)" },
+  { name: "Orange", color: "var(--color-editor-text-orange)" },
+  { name: "Yellow", color: "var(--color-editor-text-yellow)" },
+  { name: "Green", color: "var(--color-editor-text-green)" },
+  { name: "Blue", color: "var(--color-editor-text-blue)" },
+  { name: "Purple", color: "var(--color-editor-text-purple)" },
+  { name: "Pink", color: "var(--color-editor-text-pink)" },
+  { name: "Red", color: "var(--color-editor-text-red)" },
 ];
 
 const BACKGROUND_COLORS: BubbleColorMenuItem[] = [
   { name: "Default", color: "" },
-  { name: "Gray", color: "#374151" },
-  { name: "Brown", color: "#451a03" },
-  { name: "Orange", color: "#7c2d12" },
-  { name: "Yellow", color: "#713f12" },
-  { name: "Green", color: "#14532d" },
-  { name: "Blue", color: "#1e3a5f" },
-  { name: "Purple", color: "#3b0764" },
-  { name: "Pink", color: "#500724" },
-  { name: "Red", color: "#7f1d1d" },
+  { name: "Gray", color: "var(--color-editor-highlight-gray)" },
+  { name: "Brown", color: "var(--color-editor-highlight-brown)" },
+  { name: "Orange", color: "var(--color-editor-highlight-orange)" },
+  { name: "Yellow", color: "var(--color-editor-highlight-yellow)" },
+  { name: "Green", color: "var(--color-editor-highlight-green)" },
+  { name: "Blue", color: "var(--color-editor-highlight-blue)" },
+  { name: "Purple", color: "var(--color-editor-highlight-purple)" },
+  { name: "Pink", color: "var(--color-editor-highlight-pink)" },
+  { name: "Red", color: "var(--color-editor-highlight-red)" },
 ];
 
 export const ColorSelector: FC<ColorSelectorProps> = ({
@@ -114,18 +114,18 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
         >
           {/* Recently used section */}
           <div className="mb-3">
-            <p className="text-xs font-medium text-zinc-400 mb-2">Recently used</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Recently used</p>
             <div className="flex gap-1.5">
               {activeTextColor && activeTextColor.color && (
                 <button
-                  className="w-8 h-8 rounded-lg border border-zinc-700/50 flex items-center justify-center transition-transform hover:scale-105"
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center transition-transform hover:scale-105"
                   style={{ backgroundColor: activeTextColor.color }}
                   onClick={() => editor.chain().focus().setColor(activeTextColor.color).run()}
                 />
               )}
               {activeHighlightColor && activeHighlightColor.color && (
                 <button
-                  className="w-8 h-8 rounded-lg border border-zinc-700/50 flex items-center justify-center transition-transform hover:scale-105"
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center transition-transform hover:scale-105"
                   style={{ backgroundColor: activeHighlightColor.color }}
                   onClick={() => editor.chain().focus().setHighlight({ color: activeHighlightColor.color }).run()}
                 />
@@ -135,7 +135,7 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
 
           {/* Text color section */}
           <div className="mb-3">
-            <p className="text-xs font-medium text-zinc-400 mb-2">Text color</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Text color</p>
             <div className="grid grid-cols-5 gap-1.5">
               {TEXT_COLORS.map(({ name, color }, index) => {
                 const isActive = activeTextColor?.color === color;
@@ -144,10 +144,10 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
                     key={index}
                     className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105 ${
                       isActive 
-                        ? 'border-white/40 ring-2 ring-white/20' 
-                        : 'border-zinc-700/50 hover:border-zinc-600'
+                        ? 'border-foreground/40 ring-2 ring-foreground/20' 
+                        : 'border-border hover:border-border-strong'
                     }`}
-                    style={{ backgroundColor: '#1c1c1e' }}
+                    style={{ backgroundColor: 'var(--editor-picker-swatch-bg)' }}
                     onClick={() => {
                       if (name === "Default") {
                         editor.commands.unsetColor();
@@ -159,7 +159,7 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
                   >
                     <span 
                       className="font-semibold text-sm"
-                      style={{ color: color || '#9ca3af' }}
+                      style={{ color: color || 'var(--editor-picker-text-muted)' }}
                     >
                       A
                     </span>
@@ -171,7 +171,7 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
 
           {/* Background color section */}
           <div>
-            <p className="text-xs font-medium text-zinc-400 mb-2">Background color</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Background color</p>
             <div className="grid grid-cols-5 gap-1.5">
               {BACKGROUND_COLORS.map(({ name, color }, index) => {
                 const isActive = activeHighlightColor?.color === color;
@@ -180,8 +180,8 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
                     key={index}
                     className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105 ${
                       isActive 
-                        ? 'border-white/40 ring-2 ring-white/20' 
-                        : 'border-zinc-700/50 hover:border-zinc-600'
+                        ? 'border-foreground/40 ring-2 ring-foreground/20' 
+                        : 'border-border hover:border-border-strong'
                     }`}
                     style={{ backgroundColor: color || 'transparent' }}
                     onClick={() => {

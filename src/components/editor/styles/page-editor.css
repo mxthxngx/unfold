@@ -42,7 +42,7 @@
 .page-editor-container:focus-within .ProseMirror p.is-editor-empty:first-child::before,
 .page-editor-container:focus-within .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--editor-placeholder-body);
   pointer-events: none;
   float: left;
   height: 0;
@@ -50,7 +50,7 @@
 
 .page-editor-container:focus-within .ProseMirror .is-editor-empty::before {
   content: attr(data-placeholder);
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--editor-placeholder-body);
   pointer-events: none;
   float: left;
   height: 0;

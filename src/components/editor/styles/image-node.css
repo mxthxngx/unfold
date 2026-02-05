@@ -36,21 +36,21 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 2rem;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--image-loading-bg);
   border-radius: 4px;
   width: 100%;
   min-height: 200px;
 }
 
 .image-error {
-  background: rgba(255, 0, 0, 0.05);
-  color: #dc2626;
+  background: var(--image-error-bg);
+  color: var(--destructive-solid);
 }
 
 .spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
+  border: 3px solid var(--image-border);
   border-top-color: var(--primary-highlight);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;

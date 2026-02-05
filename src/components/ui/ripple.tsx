@@ -15,7 +15,7 @@ interface RippleStyle {
 }
 
 export const Ripple: React.FC<RippleProps> = ({
-  color = "rgba(255, 255, 255, 0.3)",
+  color = "var(--ripple-color)",
   duration = 800,
 }) => {
   return (

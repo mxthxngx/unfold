@@ -15,8 +15,6 @@ export function DeleteConfirmationModal({
   onConfirm,
 }: DeleteConfirmationModalProps) {
   const resolvedItemName = itemName?.trim().length ? itemName.trim() : 'this note';
-  const actionButtonBaseClasses =
-    'justify-start gap-2 px-3 py-2 text-sm font-semibold border-2 transition-colors w-fit';
   return (
     <Modal
       open={isOpen}
@@ -51,18 +49,17 @@ export function DeleteConfirmationModal({
             <Button
               type="button"
               variant="outline"
-              size="lg"
+              size="action"
               onClick={onCancel}
-              className={`${actionButtonBaseClasses} cursor-pointer text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80`}
+              className="text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 transition-all duration-200"
             >
               keep it
             </Button>
             <Button
               type="button"
-              variant="outline"
-              size="lg"
+              variant="error"
+              size="action"
               onClick={onConfirm}
-              className={`${actionButtonBaseClasses} cursor-pointer text-red-400 border-red-500/20 bg-red-500/15 hover:bg-red-500/20 hover:border-red-500/40 focus-visible:ring-red-500/30`}
             >
               move to trash
             </Button>

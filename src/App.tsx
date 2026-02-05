@@ -36,8 +36,8 @@ function LayoutInitializer() {
     return (
       <div className="flex items-center justify-center h-screen w-screen bg-background">
         <div className="text-center">
-          <div className="text-lg font-semibold mb-2 text-red-400">Error Loading Layout</div>
-          <div className="text-sm text-red-300">{error}</div>
+          <div className="text-lg font-semibold mb-2 text-destructive">Error Loading Layout</div>
+          <div className="text-sm text-destructive/90">{error}</div>
         </div>
       </div>
     );

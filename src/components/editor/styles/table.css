@@ -121,35 +121,35 @@
       right: 0;
       top: 0;
       bottom: 0;
-      background: rgba(193, 123, 255, 0.08);
+      background: var(--table-selection-overlay);
       pointer-events: none;
       z-index: 1;
-      border: 1px solid rgba(193, 123, 255, 0.2);
+      border: 1px solid var(--table-selection-overlay-border);
     }
 
     /* Table cell background colors (for future use) */
     td[data-background-color],
     th[data-background-color] {
       &[data-background-color="#b4d5ff"] {
-        background-color: rgba(26, 58, 92, 0.6) !important;
+        background-color: var(--table-cell-blue) !important;
       }
       &[data-background-color="#acf5d2"] {
-        background-color: rgba(26, 77, 58, 0.6) !important;
+        background-color: var(--table-cell-green) !important;
       }
       &[data-background-color="#fef1b4"] {
-        background-color: rgba(124, 80, 20, 0.6) !important;
+        background-color: var(--table-cell-yellow) !important;
       }
       &[data-background-color="#ffbead"] {
-        background-color: rgba(92, 42, 35, 0.6) !important;
+        background-color: var(--table-cell-red) !important;
       }
       &[data-background-color="#ffc7fe"] {
-        background-color: rgba(77, 42, 77, 0.6) !important;
+        background-color: var(--table-cell-pink) !important;
       }
       &[data-background-color="#eaecef"] {
-        background-color: rgba(42, 46, 51, 0.6) !important;
+        background-color: var(--table-cell-gray) !important;
       }
       &[data-background-color="#c1b7f2"] {
-        background-color: rgba(58, 47, 92, 0.6) !important;
+        background-color: var(--table-cell-purple) !important;
       }
     }
   }
@@ -192,7 +192,7 @@
     position: relative; /* For absolute positioning of buttons */
     /* Thin scrollbar, matching global theme */
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: var(--table-scrollbar-thumb) transparent;
     
     /* Completely disable vertical scrollbar in all browsers */
     &::-webkit-scrollbar {
@@ -211,14 +211,14 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--table-scrollbar-thumb);
       border-radius: 3px;
       transition: background 0.15s ease;
     }
 
     /* Show horizontal scrollbar on hover when content overflows */
     &:hover {
-      scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+      scrollbar-color: var(--table-scrollbar-thumb-hover) transparent;
       
       &::-webkit-scrollbar:horizontal {
         height: 6px;
@@ -226,11 +226,11 @@
       }
       
       &::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
+        background: var(--table-scrollbar-thumb-hover);
       }
       
       &::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.4);
+        background: var(--table-scrollbar-thumb-active);
       }
     }
 
@@ -269,8 +269,8 @@
 
     &:hover {
       opacity: 1 !important;
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.12);
+      background: var(--table-button-hover-bg);
+      border-color: var(--table-button-hover-border);
     }
 
     svg {
@@ -302,8 +302,8 @@
 
     &:hover {
       opacity: 1 !important;
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.12);
+      background: var(--table-button-hover-bg);
+      border-color: var(--table-button-hover-border);
     }
 
     svg {
@@ -345,15 +345,15 @@
 /* Table drag and drop preview (if implemented) */
 .table-dnd-preview {
   padding: 0;
-  background-color: rgba(193, 123, 255, 0.05);
+  background-color: var(--table-dnd-bg);
   backdrop-filter: blur(2px);
-  border: 1px dashed rgba(193, 123, 255, 0.3);
+  border: 1px dashed var(--table-dnd-border);
   border-radius: 0.375rem;
 }
 
 .table-dnd-drop-indicator {
-  background-color: rgba(193, 123, 255, 0.15);
-  border: 1px solid rgba(193, 123, 255, 0.4);
+  background-color: var(--table-dnd-indicator-bg);
+  border: 1px solid var(--table-dnd-indicator-border);
   border-radius: 2px;
 }
 

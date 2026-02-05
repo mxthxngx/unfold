@@ -16,7 +16,7 @@
 .title-editor .ProseMirror.is-editor-empty h1::before,
 .title-editor .ProseMirror h1.is-empty::before {
   content: attr(data-placeholder);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--editor-placeholder);
   pointer-events: none;
   float: left;
   height: 0;
@@ -24,7 +24,7 @@
 
 .title-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--editor-placeholder);
   pointer-events: none;
   float: left;
   height: 0;

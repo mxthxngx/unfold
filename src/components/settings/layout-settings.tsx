@@ -33,7 +33,7 @@ const LayoutSettings: React.FC = () => {
         <h3 className="text-lg font-semibold mb-4">Layout Settings</h3>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-sm text-red-400">
+          <div className="mb-4 p-3 bg-destructive/10 border border-destructive/30 rounded text-sm text-destructive">
             {error}
           </div>
         )}
