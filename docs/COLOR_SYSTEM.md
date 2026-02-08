@@ -10,6 +10,7 @@ This document describes the semantic color token system used throughout the Unfo
 2. **Mode-Agnostic**: All tokens automatically adapt to light/dark mode
 3. **Component-Scoped**: Complex components have dedicated token namespaces
 4. **Tailwind-First**: All tokens exposed as clean Tailwind utilities
+5. **No Arbitrary Vars in Classes**: Avoid `bg-[var(--...)]` or `shadow-[var(--...)]`. Add a token and use a named utility instead.
 
 ## Token Categories
 
@@ -170,10 +171,10 @@ Use these for selected text and highlighted elements:
 | Token | Tailwind Class | Usage |
 |-------|---------------|-------|
 | `--color-modal-surface` | `bg-modal-surface` | Modal background |
-| `--color-modal-border` | `border-modal-border` | Modal border |
-| `--color-modal-foreground` | `text-modal-foreground` | Modal text |
+| `--color-modal-surface-border` | `border-modal-surface-border` | Modal border |
+| `--color-modal-surface-foreground` | `text-modal-surface-foreground` | Modal text |
 | `--color-modal-action-bg` | `bg-modal-action-bg` | Action button background |
-| `--color-modal-action-hover` | `bg-modal-action-hover` | Action button hover |
+| `--color-modal-action-bg-hover` | `bg-modal-action-bg-hover` | Action button hover |
 
 ### Button
 
@@ -280,31 +281,67 @@ Use these for selected text and highlighted elements:
 
 ## Adding New Colors
 
+Use this process whenever you need a new color or a new component variant.
+
 When adding new colors to the system:
 
 1. **Define in `:root`** (dark mode) in `src/App.css`
 2. **Define in `.light`** (light mode override)
 3. **Expose in `@theme inline`** to make available as Tailwind utility
-4. **Document in this file** with usage examples
-5. **Test in both modes** to ensure proper contrast
+4. **Use the token in components** via named utilities
+5. **Document in this file** with usage examples
+6. **Test in both modes** to ensure proper contrast
 
 Example:
 ```css
 /* In :root */
---color-my-new-token: #value;
+--my-new-token: #value;
 
 /* In .light */
---color-my-new-token: #light-value;
+--my-new-token: #light-value;
 
 /* In @theme inline */
---color-my-new-token: var(--color-my-new-token);
+--color-my-new-token: var(--my-new-token);
 ```
 
 Then use as: `bg-my-new-token` or `text-my-new-token`
 
+## Extending Components
+
+When you add a new component or variant, follow this extension pattern:
+
+1. **Create or reuse a semantic token** in `src/App.css`
+2. **Map it in `@theme inline`**
+3. **Use the named utility class** in the component
+
+Example: adding a new “info” banner background
+
+```css
+/* :root */
+--banner-info-bg: rgba(59, 130, 246, 0.12);
+
+/* .light */
+--banner-info-bg: rgba(59, 130, 246, 0.08);
+
+/* @theme inline */
+--color-banner-info-bg: var(--banner-info-bg);
+```
+
+```tsx
+<div className="bg-banner-info-bg text-foreground border border-border">
+  Info banner content
+</div>
+```
+
 ## JavaScript Usage
 
-For colors that need to be set as inline styles in JavaScript (e.g., editor text colors), use the `var()` syntax:
+Prefer class-based utilities for anything rendered as DOM. Only use `var(--...)` in JavaScript when the library requires a raw color string.
+
+When a raw string is required:
+
+1. Use the semantic CSS variable `var(--color-...)`
+2. Keep the list centralized in a constants array
+3. Avoid inline `style={{ backgroundColor: ... }}` when a class can be used
 
 ```tsx
 const TEXT_COLORS = [
@@ -313,7 +350,7 @@ const TEXT_COLORS = [
 ];
 
 // Later in the component:
-<span style={{ color: selectedColor }}>Text</span>
+editor.chain().focus().setColor(selectedColor).run();
 ```
 
 ## Accessibility
@@ -365,5 +402,5 @@ For JavaScript usage, make sure to use `var(--color-token-name)` syntax, not jus
 
 ---
 
-**Last Updated**: 2026-02-04
+**Last Updated**: 2026-02-07
 **Version**: 1.0.0

@@ -9,11 +9,21 @@ import {
 import { Tooltip, AppTooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface BubbleColorMenuItem {
   name: string;
   color: string;
 }
+
+type BubbleTextColor = BubbleColorMenuItem & {
+  textClass: string;
+  swatchClass: string;
+};
+
+type BubbleHighlightColor = BubbleColorMenuItem & {
+  swatchClass: string;
+};
 
 interface ColorSelectorProps {
   editor: Editor | null;
@@ -22,30 +32,30 @@ interface ColorSelectorProps {
   container?: HTMLElement | null;
 }
 
-const TEXT_COLORS: BubbleColorMenuItem[] = [
-  { name: "Default", color: "" },
-  { name: "Gray", color: "var(--color-editor-text-gray)" },
-  { name: "Brown", color: "var(--color-editor-text-brown)" },
-  { name: "Orange", color: "var(--color-editor-text-orange)" },
-  { name: "Yellow", color: "var(--color-editor-text-yellow)" },
-  { name: "Green", color: "var(--color-editor-text-green)" },
-  { name: "Blue", color: "var(--color-editor-text-blue)" },
-  { name: "Purple", color: "var(--color-editor-text-purple)" },
-  { name: "Pink", color: "var(--color-editor-text-pink)" },
-  { name: "Red", color: "var(--color-editor-text-red)" },
+const TEXT_COLORS: BubbleTextColor[] = [
+  { name: "Default", color: "", textClass: "text-editor-picker-text-muted", swatchClass: "bg-transparent" },
+  { name: "Gray", color: "var(--color-editor-text-gray)", textClass: "text-editor-text-gray", swatchClass: "bg-editor-text-gray" },
+  { name: "Brown", color: "var(--color-editor-text-brown)", textClass: "text-editor-text-brown", swatchClass: "bg-editor-text-brown" },
+  { name: "Orange", color: "var(--color-editor-text-orange)", textClass: "text-editor-text-orange", swatchClass: "bg-editor-text-orange" },
+  { name: "Yellow", color: "var(--color-editor-text-yellow)", textClass: "text-editor-text-yellow", swatchClass: "bg-editor-text-yellow" },
+  { name: "Green", color: "var(--color-editor-text-green)", textClass: "text-editor-text-green", swatchClass: "bg-editor-text-green" },
+  { name: "Blue", color: "var(--color-editor-text-blue)", textClass: "text-editor-text-blue", swatchClass: "bg-editor-text-blue" },
+  { name: "Purple", color: "var(--color-editor-text-purple)", textClass: "text-editor-text-purple", swatchClass: "bg-editor-text-purple" },
+  { name: "Pink", color: "var(--color-editor-text-pink)", textClass: "text-editor-text-pink", swatchClass: "bg-editor-text-pink" },
+  { name: "Red", color: "var(--color-editor-text-red)", textClass: "text-editor-text-red", swatchClass: "bg-editor-text-red" },
 ];
 
-const BACKGROUND_COLORS: BubbleColorMenuItem[] = [
-  { name: "Default", color: "" },
-  { name: "Gray", color: "var(--color-editor-highlight-gray)" },
-  { name: "Brown", color: "var(--color-editor-highlight-brown)" },
-  { name: "Orange", color: "var(--color-editor-highlight-orange)" },
-  { name: "Yellow", color: "var(--color-editor-highlight-yellow)" },
-  { name: "Green", color: "var(--color-editor-highlight-green)" },
-  { name: "Blue", color: "var(--color-editor-highlight-blue)" },
-  { name: "Purple", color: "var(--color-editor-highlight-purple)" },
-  { name: "Pink", color: "var(--color-editor-highlight-pink)" },
-  { name: "Red", color: "var(--color-editor-highlight-red)" },
+const BACKGROUND_COLORS: BubbleHighlightColor[] = [
+  { name: "Default", color: "", swatchClass: "bg-transparent" },
+  { name: "Gray", color: "var(--color-editor-highlight-gray)", swatchClass: "bg-editor-highlight-gray" },
+  { name: "Brown", color: "var(--color-editor-highlight-brown)", swatchClass: "bg-editor-highlight-brown" },
+  { name: "Orange", color: "var(--color-editor-highlight-orange)", swatchClass: "bg-editor-highlight-orange" },
+  { name: "Yellow", color: "var(--color-editor-highlight-yellow)", swatchClass: "bg-editor-highlight-yellow" },
+  { name: "Green", color: "var(--color-editor-highlight-green)", swatchClass: "bg-editor-highlight-green" },
+  { name: "Blue", color: "var(--color-editor-highlight-blue)", swatchClass: "bg-editor-highlight-blue" },
+  { name: "Purple", color: "var(--color-editor-highlight-purple)", swatchClass: "bg-editor-highlight-purple" },
+  { name: "Pink", color: "var(--color-editor-highlight-pink)", swatchClass: "bg-editor-highlight-pink" },
+  { name: "Red", color: "var(--color-editor-highlight-red)", swatchClass: "bg-editor-highlight-red" },
 ];
 
 export const ColorSelector: FC<ColorSelectorProps> = ({
@@ -85,6 +95,10 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
     editorState[`highlight_${color}`]
   );
 
+  const activeTextClass = activeTextColor?.color
+    ? TEXT_COLORS.find((item) => item.name === activeTextColor.name)?.textClass
+    : undefined;
+
   return (
     <Tooltip>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -96,8 +110,7 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
               className="h-8 gap-1 px-2 rounded-lg"
             >
               <span 
-                className="font-semibold"
-                style={{ color: activeTextColor?.color || 'currentColor' }}
+                className={cn("font-semibold", activeTextClass)}
               >
                 A
               </span>
@@ -114,19 +127,23 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
         >
           {/* Recently used section */}
           <div className="mb-3">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Recently used</p>
+            <p className="text-xs font-medium text-editor-label mb-2">Recently used</p>
             <div className="flex gap-1.5">
               {activeTextColor && activeTextColor.color && (
                 <button
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center transition-transform hover:scale-105"
-                  style={{ backgroundColor: activeTextColor.color }}
+                  className={cn(
+                    "w-8 h-8 rounded-lg border border-editor-swatch-border flex items-center justify-center transition-transform hover:scale-105",
+                    TEXT_COLORS.find((item) => item.name === activeTextColor.name)?.swatchClass
+                  )}
                   onClick={() => editor.chain().focus().setColor(activeTextColor.color).run()}
                 />
               )}
               {activeHighlightColor && activeHighlightColor.color && (
                 <button
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center transition-transform hover:scale-105"
-                  style={{ backgroundColor: activeHighlightColor.color }}
+                  className={cn(
+                    "w-8 h-8 rounded-lg border border-editor-swatch-border flex items-center justify-center transition-transform hover:scale-105",
+                    BACKGROUND_COLORS.find((item) => item.name === activeHighlightColor.name)?.swatchClass
+                  )}
                   onClick={() => editor.chain().focus().setHighlight({ color: activeHighlightColor.color }).run()}
                 />
               )}
@@ -135,19 +152,19 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
 
           {/* Text color section */}
           <div className="mb-3">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Text color</p>
+            <p className="text-xs font-medium text-editor-label mb-2">Text color</p>
             <div className="grid grid-cols-5 gap-1.5">
-              {TEXT_COLORS.map(({ name, color }, index) => {
+              {TEXT_COLORS.map(({ name, color, textClass }, index) => {
                 const isActive = activeTextColor?.color === color;
                 return (
                   <button
                     key={index}
-                    className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105 ${
-                      isActive 
-                        ? 'border-foreground/40 ring-2 ring-foreground/20' 
-                        : 'border-border hover:border-border-strong'
-                    }`}
-                    style={{ backgroundColor: 'var(--editor-picker-swatch-bg)' }}
+                    className={cn(
+                      "w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105 bg-editor-picker-swatch-bg",
+                      isActive
+                        ? "border-editor-swatch-active-border ring-2 ring-editor-swatch-active-ring"
+                        : "border-editor-swatch-border hover:border-editor-swatch-border-hover"
+                    )}
                     onClick={() => {
                       if (name === "Default") {
                         editor.commands.unsetColor();
@@ -158,8 +175,7 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
                     title={name}
                   >
                     <span 
-                      className="font-semibold text-sm"
-                      style={{ color: color || 'var(--editor-picker-text-muted)' }}
+                      className={cn("font-semibold text-sm", textClass)}
                     >
                       A
                     </span>
@@ -171,19 +187,20 @@ export const ColorSelector: FC<ColorSelectorProps> = ({
 
           {/* Background color section */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">Background color</p>
+            <p className="text-xs font-medium text-editor-label mb-2">Background color</p>
             <div className="grid grid-cols-5 gap-1.5">
-              {BACKGROUND_COLORS.map(({ name, color }, index) => {
+              {BACKGROUND_COLORS.map(({ name, color, swatchClass }, index) => {
                 const isActive = activeHighlightColor?.color === color;
                 return (
                   <button
                     key={index}
-                    className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105 ${
-                      isActive 
-                        ? 'border-foreground/40 ring-2 ring-foreground/20' 
-                        : 'border-border hover:border-border-strong'
-                    }`}
-                    style={{ backgroundColor: color || 'transparent' }}
+                    className={cn(
+                      "w-8 h-8 rounded-lg border flex items-center justify-center transition-all hover:scale-105",
+                      swatchClass,
+                      isActive
+                        ? "border-editor-swatch-active-border ring-2 ring-editor-swatch-active-ring"
+                        : "border-editor-swatch-border hover:border-editor-swatch-border-hover"
+                    )}
                     onClick={() => {
                       if (name === "Default") {
                         editor.commands.unsetHighlight();

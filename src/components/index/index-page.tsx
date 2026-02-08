@@ -30,7 +30,7 @@ export function IndexPage() {
   return (
     <div className="flex h-full w-full min-h-[calc(100vh-3rem)] items-center justify-start px-6 text-muted-foreground">
       {hasFiles ? (
-        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-card/70 px-4 py-3 text-sm shadow-[var(--shadow-card)]">
+        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-card/70 px-4 py-3 text-sm shadow-card">
           <span className="inline-flex size-2 rounded-full bg-muted-foreground/60" />
           <span className="text-muted-foreground">select a file to start editing</span>
         </div>

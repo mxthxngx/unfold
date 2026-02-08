@@ -38,8 +38,9 @@ function getDragHandleRanges(event: DragEvent, editor: Editor): SelectionRange[]
     return []
   }
 
+  const nodeSize = result.resultNode?.nodeSize ?? 1
   const $from = doc.resolve(result.pos)
-  const $to = doc.resolve(result.pos + 1)
+  const $to = doc.resolve(result.pos + nodeSize)
 
   return getSelectionRanges($from, $to, 0)
 }

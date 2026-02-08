@@ -18,7 +18,7 @@ const buttonVariants = cva(
         error:
           "cursor-pointer text-button-error-text border-2 bg-button-error-bg border-button-error-border hover:bg-button-error-hover-bg hover:border-button-error-hover-border focus-visible:ring-button-error-ring transition-all duration-300",
         secondary:
-          "hover:bg-sidebar-item-hover-bg/85 bg-sidebar-item-hover-bg/50 text-sidebar-foreground hover:text-foreground data-[active=true]:bg-foreground/5 data-[active=true]:text-foreground transition-colors",
+          "hover:bg-sidebar-item-hover-bg/85 bg-sidebar-item-hover-bg/50 text-sidebar-foreground hover:text-foreground data-[active=true]:bg-hover-bg-strong data-[active=true]:text-foreground data-[active=true]:shadow-button-active transition-colors",
         ghost:
           "bg-button-ghost text-button hover:bg-button-hover transition-colors",
         link: "text-primary underline-offset-4 hover:underline",

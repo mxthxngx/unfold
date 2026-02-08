@@ -59,6 +59,10 @@ declare module '@tiptap/core' {
        * Select current item
        */
       selectCurrentItem: () => ReturnType;
+      /**
+       * Set current result index
+       */
+      setResultIndex: (index: number) => ReturnType;
     };
   }
 }
@@ -302,6 +306,19 @@ export const SearchAndReplace = Extension.create<SearchAndReplaceOptions, Search
 
           return true;
         },
+
+      setResultIndex:
+        (index: number) =>
+        ({ state, dispatch }) => {
+          const { results } = this.storage;
+          if (results.length === 0) return false;
+          if (index < 0 || index >= results.length) return false;
+          this.storage.resultIndex = index;
+          if (dispatch) {
+            dispatch(state.tr);
+          }
+          return true;
+        },
     };
   },
 
@@ -324,14 +341,15 @@ export const SearchAndReplace = Extension.create<SearchAndReplaceOptions, Search
             }
 
             const decorations = results.map((result, index) => {
-              let className = searchResultClass;
+              const classes = [searchResultClass];
               if (index === 0) {
-                className = searchResultFirstClass;
-              } else if (index === resultIndex) {
-                className = searchResultCurrentClass;
+                classes.push(searchResultFirstClass);
+              }
+              if (index === resultIndex) {
+                classes.push(searchResultCurrentClass);
               }
               return Decoration.inline(result.from, result.to, {
-                class: className,
+                class: classes.join(' '),
               });
             });
 

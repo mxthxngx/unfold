@@ -6,6 +6,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
 import { SearchBar } from '@/components/search/search-bar';
 import { useFileSystem } from '@/contexts/FileSystemContext';
+import { useEditorContext } from '@/contexts/EditorContext';
 
 function LoadingScreen() {
     return (
@@ -19,6 +20,7 @@ function LoadingScreen() {
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
     const { layout } = useLayout();
+    const { pageEditorRef } = useEditorContext();
 
     useGlobalSidebarShortcuts();
     
@@ -29,7 +31,10 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 
         if (isFindShortcut) {
             e.preventDefault();
-            document.dispatchEvent(new CustomEvent('openFindDialogFromEditor'));
+            const cursorPos = pageEditorRef.current?.state.selection.from ?? null;
+            document.dispatchEvent(new CustomEvent('openFindDialogFromEditor', {
+                detail: { cursorPos },
+            }));
             return;
         }
     }, []);
@@ -53,7 +58,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 
                 {/* Main Content Area */}
                 <SidebarInset 
-                    className="flex-1 relative"
+                    className="flex-1 relative bg-background"
                 >
                     <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-transparent hover:scrollbar-thumb-white/10 transition-colors">
                         <div className="w-full max-w-4xl min-h-full px-6 py-8 mx-auto">

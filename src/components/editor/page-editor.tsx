@@ -5,6 +5,7 @@ import { ReactNodeViewRenderer } from "@tiptap/react";
 import { useEditorContext } from "@/contexts/EditorContext";
 import { useFileSystem } from "@/contexts/FileSystemContext";
 import { useSettings } from "@/hooks/use-settings";
+import { Selection } from "@tiptap/pm/state";
 import { HeadingExtension } from "./extensions/heading";
 import { starterKit } from "./extensions/starterkit";
 import CustomKeymap from "./extensions/custom-keymap";
@@ -45,6 +46,7 @@ function PageEditor({ fileId }: PageEditorProps) {
   const lastSavedRef = useRef<string>(file?.content || "");
   const currentFileIdRef = useRef<string>(fileId);
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const pendingArrowScrollRef = useRef(false);
 
   const clearDropHighlight = useCallback(() => {
     if (!editorContainerRef.current) return;
@@ -52,19 +54,12 @@ function PageEditor({ fileId }: PageEditorProps) {
     highlighted.forEach((el) => el.classList.remove("drop-highlight"));
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".drop-highlight")) {
-        clearDropHighlight();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [clearDropHighlight]);
+  const clearNativeSelection = useCallback(() => {
+    const selection = document.getSelection();
+    if (selection && !selection.isCollapsed) {
+      selection.removeAllRanges();
+    }
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -126,6 +121,11 @@ function PageEditor({ fileId }: PageEditorProps) {
         updateNodeContent(currentFileIdRef.current, jsonContent);
       }
     },
+    onSelectionUpdate: ({ editor }) => {
+      if (!pendingArrowScrollRef.current) return;
+      pendingArrowScrollRef.current = false;
+      editor.view?.dispatch(editor.state.tr.scrollIntoView());
+    },
     coreExtensionOptions: {
       clipboardTextSerializer: { blockSeparator: "\n" },
     },
@@ -136,6 +136,9 @@ function PageEditor({ fileId }: PageEditorProps) {
       handleDOMEvents: {
         keydown: (view, event) => {
           if (event.isComposing || event.keyCode === 229) return false;
+          if (event.key.startsWith("Arrow") && !event.metaKey && !event.ctrlKey && !event.altKey) {
+            pendingArrowScrollRef.current = true;
+          }
           const { $head, $anchor } = view.state.selection;
           const isAtDocumentStart = $head.pos <= 1;
           const isAtFirstBlockStart = $head.depth === 1 && 
@@ -164,6 +167,52 @@ function PageEditor({ fileId }: PageEditorProps) {
       handleDrop: (view, event, _slice, moved) => handleDrop(view, event, moved, currentFileIdRef.current),
     },
   });
+
+  const clearEditorSelection = useCallback(() => {
+    if (!editor) return;
+    const { selection } = editor.state;
+    if (selection.empty) return;
+    const nextSelection = Selection.near(selection.$to, 1);
+    editor.view.dispatch(editor.state.tr.setSelection(nextSelection));
+  }, [editor]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".drop-highlight")) {
+        clearDropHighlight();
+      }
+
+      if (!editorContainerRef.current?.contains(target)) {
+        clearEditorSelection();
+        clearNativeSelection();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [clearDropHighlight, clearEditorSelection, clearNativeSelection]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      const target = event.target as HTMLElement | null;
+      const isInEditor = target ? editorContainerRef.current?.contains(target) : false;
+      if (!editor.view.hasFocus() && !isInEditor) return;
+      if (editor.state.selection.empty) return;
+
+      event.preventDefault();
+      clearEditorSelection();
+      clearNativeSelection();
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [editor, clearEditorSelection, clearNativeSelection]);
 
   useEffect(() => {
     if (editor) {

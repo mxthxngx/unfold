@@ -54,7 +54,7 @@ export const starterKit = StarterKit.configure({
         },
     dropcursor: {
       width: 2,
-      color: "var(--primary-highlight)",
+      color: "var(--editor-dropcursor)",
       class: "ProseMirror-dropcursor",
     },
     horizontalRule: {

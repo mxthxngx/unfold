@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { FC, useRef, useState, type SetStateAction } from "react";
 import {
   isNodeSelection,
   useEditor,
@@ -50,7 +50,12 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
 
   const bindSelector = (key: Exclude<OpenSelector, null>) => ({
     isOpen: openSelector === key,
-    setIsOpen: (open: boolean) => setOpenSelector(open ? key : null),
+    setIsOpen: (value: SetStateAction<boolean>) => {
+      const nextOpen = typeof value === "function"
+        ? value(openSelector === key)
+        : value;
+      setOpenSelector(nextOpen ? key : null);
+    },
   });
 
   const items: BubbleMenuItem[] = [
@@ -73,6 +78,14 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
         if (selection.empty) return false;
         if (isNodeSelection(selection) && selection.node?.type.name === "image") {
           return false;
+        }
+        const searchStorage = (props.editor?.storage as any)?.searchAndReplace;
+        if (searchStorage?.searchTerm && Array.isArray(searchStorage.results)) {
+          const isSearchSelection = searchStorage.results.some(
+            (result: { from: number; to: number }) =>
+              result.from === selection.from && result.to === selection.to
+          );
+          if (isSearchSelection) return false;
         }
         return true;
       }}

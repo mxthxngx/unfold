@@ -1,8 +1,33 @@
 import { X, Search as SearchIcon, ChevronUp, ChevronDown, CaseSensitive, Replace } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
+import { useEditorState } from '@tiptap/react';
+import type { Node } from '@tiptap/pm/model';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { cn } from '@/lib/utils';
 import { useEditorContext } from '@/contexts/EditorContext';
+
+/** Get the word at the given position in the document (for pre-filling find with word under cursor). */
+function getWordAtPosition(doc: Node, pos: number): string {
+  let start = pos;
+  let end = pos;
+  let found = false;
+  doc.nodesBetween(pos, pos + 1, (node, from) => {
+    if (found) return false;
+    if (node.isText && node.text != null) {
+      const text = node.text;
+      const offset = pos - from;
+      let s = offset;
+      while (s > 0 && /\w/.test(text[s - 1] ?? '')) s--;
+      start = from + s;
+      let e = offset;
+      while (e < text.length && /\w/.test(text[e] ?? '')) e++;
+      end = from + e;
+      found = true;
+      return false;
+    }
+  });
+  return !found ? '' : doc.textBetween(start, end);
+}
 
 
 export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
@@ -18,13 +43,25 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   const [replaceText, setReplaceText] = useState('');
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [showReplace, setShowReplace] = useState(false);
+  const shouldFocusClosestOnOpenRef = useRef(false);
+  const openCursorPosRef = useRef<number | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
 
-  const searchStorage = (editor?.storage as any)?.searchAndReplace;
-  const matchesCount = searchStorage?.results?.length || 0;
-  const activeIndex = searchStorage?.resultIndex ?? -1;
+  const searchState = useEditorState({
+    editor,
+    selector: (ctx) => {
+      if (!ctx?.editor) return { matchesCount: 0, activeIndex: -1 };
+      const storage = (ctx.editor.storage as any)?.searchAndReplace;
+      return {
+        matchesCount: storage?.results?.length || 0,
+        activeIndex: storage?.resultIndex ?? -1,
+      };
+    },
+  });
+  const matchesCount = searchState?.matchesCount ?? 0;
+  const activeIndex = searchState?.activeIndex ?? -1;
   
   const hasMatches = matchesCount > 0;
   const activeDisplay = hasMatches && activeIndex >= 0 ? activeIndex + 1 : 0;
@@ -38,6 +75,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   };
 
   const closeDialog = () => {
+    shouldFocusClosestOnOpenRef.current = false;
     setSearchText('');
     setReplaceText('');
     setIsOpen(false);
@@ -49,41 +87,66 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     }
   };
 
-  const goToSelection = () => {
-    if (!editor) return;
+  const focusActiveResult = () => {
+    const editorToUse = pageEditorRef.current ?? editor;
+    if (!editorToUse) return;
 
-    const { results, resultIndex } = (editor.storage as any).searchAndReplace;
+    const storage = (editorToUse.storage as any)?.searchAndReplace;
+    const results = storage?.results ?? [];
+    const resultIndex = storage?.resultIndex ?? -1;
     const position = results[resultIndex];
 
     if (!position) return;
 
-    editor.commands.setTextSelection(position);
+    const { state, view } = editorToUse;
+    // Dispatch a single transaction that both updates selection and scrolls.
+    const tr = state.tr
+      // @ts-ignore selection constructor is compatible with TextSelection
+      .setSelection(state.selection.constructor.create(state.doc, position.from, position.to))
+      .scrollIntoView();
+    view.dispatch(tr);
+  };
 
-    const element = document.querySelector('.search-result-current, .search-result-first');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const focusClosestResultToCursor = () => {
+    const editorRef = pageEditorRef.current;
+    if (!editorRef) return;
+    const storage = (editorRef.storage as any)?.searchAndReplace;
+    const results = storage?.results ?? [];
+    if (!results.length) return;
+    const cursorPos = openCursorPosRef.current ?? editorRef.state.selection.from;
+    let closestIndex = 0;
+    let closestDistance = Math.abs(results[0].from - cursorPos);
+    for (let i = 1; i < results.length; i++) {
+      const distance = Math.abs(results[i].from - cursorPos);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = i;
+      }
     }
-
-    editor.commands.setTextSelection(0);
+    editorRef.commands.setResultIndex(closestIndex);
+    editorRef.commands.selectCurrentItem();
+    focusActiveResult();
   };
 
   const next = () => {
     if (!editor) return;
+    shouldFocusClosestOnOpenRef.current = false;
     editor.commands.nextSearchResult();
-    goToSelection();
+    focusActiveResult();
   };
 
   const previous = () => {
     if (!editor) return;
+    shouldFocusClosestOnOpenRef.current = false;
     editor.commands.previousSearchResult();
-    goToSelection();
+    focusActiveResult();
   };
 
   const replace = () => {
     if (!editor) return;
     editor.commands.setReplaceTerm(replaceText);
     editor.commands.replace();
-    goToSelection();
+    focusActiveResult();
   };
 
   const replaceAll = () => {
@@ -106,31 +169,56 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   useEffect(() => {
     if (!editor) return;
     editor.commands.setSearchTerm(searchText);
-    editor.commands.resetIndex();
-    editor.commands.selectCurrentItem();
+    const skipReset = shouldFocusClosestOnOpenRef.current && searchText.trim().length > 0;
+    if (!skipReset) {
+      editor.commands.resetIndex();
+      editor.commands.selectCurrentItem();
+      focusActiveResult();
+    }
+    const willFocusClosest = shouldFocusClosestOnOpenRef.current && searchText.trim() && matchesCount > 0;
+    if (willFocusClosest) {
+      focusClosestResultToCursor();
+    }
   }, [searchText, editor]);
+
+  useEffect(() => {
+    if (!shouldFocusClosestOnOpenRef.current) return;
+    if (!editor) return;
+    if (!searchText.trim() || matchesCount === 0) return;
+    focusClosestResultToCursor();
+  }, [matchesCount, searchText, editor]);
 
   useEffect(() => {
     if (!editor) return;
     editor.commands.setCaseSensitive(caseSensitive);
     editor.commands.resetIndex();
     editor.commands.selectCurrentItem();
-    goToSelection();
+    focusActiveResult();
   }, [caseSensitive, editor]);
 
-  const handleOpenEvent = () => {
+  const handleOpenEvent = (event?: Event) => {
+    const editorInHandler = pageEditorRef.current;
+    const detail = (event as CustomEvent<{ cursorPos?: number | null }>)?.detail;
+    const cursorPos = detail?.cursorPos ?? editorInHandler?.state.selection.from ?? null;
     setIsOpen(true);
-    
-    if (editor) {
-      const selectedText = editor.state.doc.textBetween(
-        editor.state.selection.from,
-        editor.state.selection.to,
+    shouldFocusClosestOnOpenRef.current = true;
+    openCursorPosRef.current = cursorPos;
+
+    if (editorInHandler) {
+      const selectedText = editorInHandler.state.doc.textBetween(
+        editorInHandler.state.selection.from,
+        editorInHandler.state.selection.to,
       );
       if (selectedText !== '') {
         setSearchText(selectedText);
+      } else if (cursorPos != null) {
+        const wordAtCursor = getWordAtPosition(editorInHandler.state.doc, cursorPos);
+        if (wordAtCursor) {
+          setSearchText(wordAtCursor);
+        }
       }
     }
-    
+
     setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -166,7 +254,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
       <div
         className={cn(
           'pointer-events-auto flex flex-col gap-1.5 rounded-lg border border-border',
-          'bg-card/95 backdrop-blur-xl p-2 shadow-[var(--shadow-search)]',
+          'bg-card/95 backdrop-blur-xl p-2 shadow-search',
           'min-w-[320px] w-[520px] max-w-[calc(100vw-2rem)]'
         )}
       >

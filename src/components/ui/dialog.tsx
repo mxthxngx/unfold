@@ -1,5 +1,5 @@
 import React, { forwardRef, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/tiptap-utils';
@@ -95,7 +95,7 @@ export function DialogContent({
           style={{ transformOrigin: 'bottom center' }}
           ref={assignMenuRef}
         >
-          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-[var(--scrollbar-thumb)] scrollbar-track-transparent">
+          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-scrollbar scrollbar-track-transparent">
             {children}
           </div>
         </motion.div>
@@ -134,8 +134,8 @@ export function DialogItem({ active, className, ...props }: DialogItemProps) {
       className={cn(
         'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150',
         active
-          ? 'bg-foreground/5 text-foreground'
-          : 'text-foreground/85 hover:bg-foreground/5 hover:text-foreground',
+          ? 'bg-hover-bg text-foreground'
+          : 'text-foreground/85 hover:bg-hover-bg hover:text-foreground hover:shadow-menu-item',
         className
       )}
       {...props}

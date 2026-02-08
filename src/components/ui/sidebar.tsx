@@ -4,6 +4,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
+import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -32,6 +33,19 @@ const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "k"
+const SIDEBAR_OFFCANVAS_BLUR = "2px"
+
+const SIDEBAR_SPRING = {
+  type: "tween",
+  duration: 0.56,
+  ease: [0.42, 0, 0.58, 1],
+} as const
+
+const SIDEBAR_GAP_SPRING = {
+  type: "tween",
+  duration: 0.56,
+  ease: [0.42, 0, 0.58, 1],
+} as const
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -152,6 +166,13 @@ function SidebarProvider({
   )
 }
 
+type SidebarProps = Omit<HTMLMotionProps<"div">, "children"> & {
+  side?: "left" | "right"
+  variant?: "sidebar" | "floating" | "inset"
+  collapsible?: "offcanvas" | "icon" | "none"
+  children?: React.ReactNode
+}
+
 function Sidebar({
   side = "left",
   variant = "sidebar",
@@ -159,22 +180,44 @@ function Sidebar({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
-  side?: "left" | "right"
-  variant?: "sidebar" | "floating" | "inset"
-  collapsible?: "offcanvas" | "icon" | "none"
-}) {
+}: SidebarProps) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+  const prefersReducedMotion = useReducedMotion()
+  const isCollapsed = state === "collapsed"
+  const isOffcanvas = collapsible === "offcanvas"
+
+  const gapTransition = prefersReducedMotion ? { duration: 0 } : SIDEBAR_GAP_SPRING
+  const sidebarTransition = prefersReducedMotion ? { duration: 0 } : SIDEBAR_SPRING
+  const collapsedX =
+    prefersReducedMotion || !isOffcanvas
+      ? "0%"
+      : side === "left"
+        ? "calc(-100% - 48px)"
+        : "calc(100% + 48px)"
+  const sidebarMotion = isOffcanvas
+    ? {
+        initial: false,
+        animate: {
+          x: isCollapsed ? collapsedX : "0%",
+          opacity: isCollapsed ? 0 : 1,
+          filter: prefersReducedMotion
+            ? "none"
+            : isCollapsed
+              ? `blur(${SIDEBAR_OFFCANVAS_BLUR})`
+              : "blur(0px)",
+        },
+        transition: sidebarTransition,
+      }
+    : { initial: false }
 
   if (collapsible === "none") {
     return (
       <div
         data-slot="sidebar"
         className={cn(
-          "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
+          "bg-sidebar-container-bg/80 text-sidebar-foreground flex h-full sidebar-width flex-col",
           className
         )}
-        {...props}
       >
         {children}
       </div>
@@ -183,12 +226,12 @@ function Sidebar({
 
   if (isMobile) {
     return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+      <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar-container-bg text-sidebar-foreground border-sidebar-container-border/80 w-(--sidebar-width) p-0 [&>button]:hidden"
+          className="bg-sidebar-container-bg/80 text-sidebar-foreground border-sidebar-container-border/80 sidebar-width p-0 [&>button]:hidden"
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -216,40 +259,38 @@ function Sidebar({
       data-slot="sidebar"
     >
       {/* This is what handles the sidebar gap on desktop */}
-      <div
+      <motion.div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
-          "group-data-[collapsible=offcanvas]:w-0",
-          "group-data-[side=right]:rotate-180",
-          variant === "floating" || variant === "inset"
-            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+          "relative sidebar-gap bg-background",
+          "group-data-[side=right]:rotate-180"
         )}
+        layout
+        transition={gapTransition}
       />
-      <div
+      <motion.div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
-          side === "left"
-            ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
-            : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
+          "fixed inset-y-0 z-10 hidden h-svh sidebar-container transition-[width] duration-200 ease-out md:flex",
+          side === "left" ? "left-0" : "right-0",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
-            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+            ? "p-2"
+            : "group-data-[side=left]:border-r group-data-[side=right]:border-l border-sidebar-container-border/60",
           className
         )}
+        {...sidebarMotion}
+        style={{ transformOrigin: side === "left" ? "left center" : "right center" }}
         {...props}
       >
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-sidebar-container-bg/80 group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
@@ -309,15 +350,32 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   )
 }
 
-function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+function SidebarInset({
+  className,
+  onDrag: _onDrag,
+  onDragStart: _onDragStart,
+  onDragEnd: _onDragEnd,
+  onDragOver: _onDragOver,
+  onDragEnter: _onDragEnter,
+  onDragLeave: _onDragLeave,
+  onAnimationStart: _onAnimationStart,
+  onAnimationEnd: _onAnimationEnd,
+  onAnimationIteration: _onAnimationIteration,
+  ...props
+}: React.ComponentProps<"main">) {
+  const prefersReducedMotion = useReducedMotion()
+  const insetTransition = prefersReducedMotion ? { duration: 0 } : SIDEBAR_GAP_SPRING
+
   return (
-    <main
+    <motion.main
       data-slot="sidebar-inset"
       className={cn(
         "bg-background relative flex w-full flex-1 flex-col",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className
       )}
+      layout
+      transition={insetTransition}
       {...props}
     />
   )
@@ -379,7 +437,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden pb-4",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden group-data-[collapsible=icon]:overflow-hidden pb-4",
         className
       )}
       {...props}
@@ -485,7 +543,7 @@ const sidebarMenuButtonVariants = cva(
       variant: {
         default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         outline:
-          "bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]",
+          "bg-background shadow-sidebar-outline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-sidebar-accent-outline",
       },
       size: {
         default: "h-8 text-sm",
@@ -651,8 +709,8 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        "border-sidebar-border flex ml-2.5 min-w-0 translate-x-px flex-col gap-1 pl-3 py-0.5 relative",
-        "before:absolute before:left-1 before:top-0 before:bottom-0 before:w-[2px] before:bg-sidebar-border before:rounded-full",
+        "border-sidebar-border/40 flex ml-2.5 min-w-0 w-full max-w-[calc(100%-0.75rem)] box-border translate-x-px flex-col gap-1 pl-3 py-0.5 relative",
+        "before:absolute before:left-1 before:top-0 before:bottom-0 before:w-[2px] before:bg-sidebar-border/40 before:rounded-full",
         "group-data-[collapsible=icon]:hidden",
         className
       )}

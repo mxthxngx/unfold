@@ -29,10 +29,11 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
 } from "@/components/ui/context-menu"
-import { ChevronDown, ChevronRight, Plus, Trash2, Pencil } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, Pencil } from 'lucide-react';
 import { AnimatedIcon } from '@/components/ui/animated-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '../ui/button';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 const Sidebar = memo(function Sidebar() {
   const {
@@ -189,9 +190,8 @@ const Sidebar = memo(function Sidebar() {
       variant="sidebar"
       collapsible="offcanvas"
       className={cn(
-        'bg-sidebar-container-bg/80 border-sidebar-container-border/80',
-        'backdrop-blur-xl border-r border-b border-l border-t-0',
-        'shadow-[var(--shadow-dropdown)]',
+        'bg-sidebar-container-bg border-0',
+        'shadow-none',
         'top-10! bottom-auto! h-[calc(100vh-2.5rem)]!',
         'flex flex-col'
       )}
@@ -285,7 +285,7 @@ const Sidebar = memo(function Sidebar() {
                         'group/space flex items-center gap-2 rounded-xl px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border',
                         isActive
                           ? 'bg-sidebar-item-hover-bg/80 text-foreground border-border-elevated'
-                          : 'text-foreground/85 hover:bg-foreground/5 hover:text-foreground border-transparent'
+                  : 'text-foreground/85 hover:bg-hover-bg-subtle hover:text-foreground border-transparent'
                       )}
                     >
                       {isEditing ? (
@@ -345,7 +345,7 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-surface-deeper border border-border-strong text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-foreground/5 hover:border-surface-border-hover transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-surface-deeper border border-border-strong text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-hover-bg-subtle hover:border-surface-border-hover transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -382,7 +382,7 @@ const Sidebar = memo(function Sidebar() {
           className="flex flex-col gap-6 p-6"
         >
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">create space</h3>
+            <h3 className="text-xl font-semibold text-sidebar-title">create space</h3>
             <p className="text-sm text-foreground-muted-tertiary">name your new space to organize your documents.</p>
           </div>
 
@@ -398,10 +398,10 @@ const Sidebar = memo(function Sidebar() {
                 if (createSpaceError) setCreateSpaceError('');
               }}
               aria-invalid={!!createSpaceError}
-              className="w-full rounded-lg bg-surface-elevated border border-surface-elevated-border text-foreground px-3.5 py-2.5 text-sm outline-none placeholder:text-[var(--input-placeholder)] focus:border-surface-elevated-focus focus:bg-surface-deep transition-all duration-200 pointer-events-auto"
+              className="w-full rounded-lg bg-surface-elevated border border-surface-elevated-border text-sidebar-title px-3.5 py-2.5 text-sm outline-none placeholder:text-input-placeholder focus:border-surface-elevated-focus focus:bg-surface-deep transition-all duration-200 pointer-events-auto"
               placeholder="enter a space name"
             />
-            <p className="min-h-[1.1rem] text-xs text-destructive">
+            <p className="min-h-[1.1rem] text-xs text-error">
               {createSpaceError ? createSpaceError : ''}
             </p>
           </div>
@@ -490,7 +490,7 @@ const PinnedNodeItem = memo(({
               className={cn(
                 'group/pinned-item flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
                 isSelected
-                  ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                  ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -577,10 +577,19 @@ export const SidebarNodes = memo(({
   const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode, togglePinNode, isNodePinned } = useFileSystem();
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   const hasChildren = node.nodes && node.nodes.length > 0;
   const isSelected = selectedItem === node.id;
   const isPinned = isNodePinned(node.id);
+  const isOpen = !!node.isOpen;
+
+  const subtreeTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'tween' as const, duration: 0.34, ease: [0.42, 0, 0.58, 1] as const };
+  const iconTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 380, damping: 28, mass: 0.35 };
 
   const handleOpenDeleteModal = useCallback((_nodeId?: string) => {
     setIsDeleteModalOpen(true);
@@ -650,7 +659,7 @@ export const SidebarNodes = memo(({
             <ContextMenuTrigger asChild>
               <div
                 className={cn(
-                  'group/item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
+                  'group/item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] px-2 pr-2 py-1 box-border',
                   isSelected
                     ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
                     : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
@@ -701,7 +710,14 @@ export const SidebarNodes = memo(({
                     className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                   >
                     <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                      {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+                      <motion.span
+                        className="inline-flex"
+                        initial={false}
+                        animate={{ rotate: isOpen ? 0 : -90, opacity: isOpen ? 1 : 0.9 }}
+                        transition={iconTransition}
+                      >
+                        <ChevronDown size={14} strokeWidth={3} />
+                      </motion.span>
                     </AnimatedIcon>
                     <Ripple />
                   </button>
@@ -725,27 +741,45 @@ export const SidebarNodes = memo(({
             </ContextMenuContent>
           </ContextMenu>
 
-          {node.isOpen && (
-            <SidebarMenuSub 
-              key={`sub-${node.id}`}
-              className="ml-2.5 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
-            >
-              {hasChildren ? (
-                node.nodes!.map((childNode, index) => (
-                  <SidebarNodes
-                    key={childNode.id}
-                    node={childNode}
-                    selectedItem={selectedItem}
-                    level={level + 1}
-                    isFirstChild={index === 0}
-                    addFileShortcut={addFileShortcut}
-                  />
-                ))
-              ) : (
-                <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
-              )}
-            </SidebarMenuSub>
-          )}
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.div
+                key={`sub-${node.id}`}
+                className="overflow-x-hidden overflow-y-hidden"
+                initial={{ height: 0, opacity: 0, y: -4 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -4 }}
+                transition={subtreeTransition}
+              >
+                <SidebarMenuSub 
+                  className="ml-2.5 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
+                >
+                  {hasChildren ? (
+                    node.nodes!.map((childNode, index) => (
+                      <motion.div
+                        key={childNode.id}
+                        layout
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={subtreeTransition}
+                      >
+                        <SidebarNodes
+                          node={childNode}
+                          selectedItem={selectedItem}
+                          level={level + 1}
+                          isFirstChild={index === 0}
+                          addFileShortcut={addFileShortcut}
+                        />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
+                  )}
+                </SidebarMenuSub>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </SidebarMenuItem>
     {deleteModal}
       </>
@@ -757,9 +791,9 @@ export const SidebarNodes = memo(({
       <SidebarMenuSubItem className={cn(isFirstChild && 'mt-1', 'px-0')}>
         <ContextMenu>
           <ContextMenuTrigger asChild>
-            <div 
+            <div
               className={cn(
-                'group/sub-item-row flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
+                'group/sub-item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] px-2 py-1 box-border',
                 isSelected
                   ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/70 border-transparent'
@@ -811,7 +845,14 @@ export const SidebarNodes = memo(({
                   className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                 >
                   <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                    {node.isOpen ? <ChevronDown size={14} strokeWidth={3} /> : <ChevronRight size={14} strokeWidth={3} />}
+                    <motion.span
+                      className="inline-flex"
+                      initial={false}
+                      animate={{ rotate: isOpen ? 0 : -90, opacity: isOpen ? 1 : 0.9 }}
+                      transition={iconTransition}
+                    >
+                      <ChevronDown size={14} strokeWidth={3} />
+                    </motion.span>
                   </AnimatedIcon>
                   <Ripple />
                 </button>
@@ -834,27 +875,45 @@ export const SidebarNodes = memo(({
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
-          {node.isOpen && (
-            <SidebarMenuSub 
-              key={`sub-${node.id}`}
-              className="ml-0 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
-            >
-              {hasChildren ? (
-                node.nodes!.map((childNode, index) => (
-                  <SidebarNodes
-                    key={childNode.id}
-                    node={childNode}
-                    selectedItem={selectedItem}
-                    level={level + 1}
-                    isFirstChild={index === 0}
-                    addFileShortcut={addFileShortcut}
-                  />
-                ))
-              ) : (
-                <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
-              )}
-            </SidebarMenuSub>
-          )}
+          <AnimatePresence initial={false}>
+            {isOpen && (
+              <motion.div
+                key={`sub-${node.id}`}
+                className="overflow-x-hidden overflow-y-hidden"
+                initial={{ height: 0, opacity: 0, y: -4 }}
+                animate={{ height: "auto", opacity: 1, y: 0 }}
+                exit={{ height: 0, opacity: 0, y: -4 }}
+                transition={subtreeTransition}
+              >
+                <SidebarMenuSub 
+                  className="ml-0 pl-2.5 pt-0 pb-0 gap-1 before:top-1"
+                >
+                  {hasChildren ? (
+                    node.nodes!.map((childNode, index) => (
+                      <motion.div
+                        key={childNode.id}
+                        layout
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={subtreeTransition}
+                      >
+                        <SidebarNodes
+                          node={childNode}
+                          selectedItem={selectedItem}
+                          level={level + 1}
+                          isFirstChild={index === 0}
+                          addFileShortcut={addFileShortcut}
+                        />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-sidebar-foreground/50 text-xs py-1 px-2 mt-1">No sub notes</div>
+                  )}
+                </SidebarMenuSub>
+              </motion.div>
+            )}
+          </AnimatePresence>
       </SidebarMenuSubItem>
     {deleteModal}
     </>

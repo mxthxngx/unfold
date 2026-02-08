@@ -22,10 +22,12 @@
   pointer-events: none !important;
   height: 2px !important;
   width: 80% !important;
-  background: var(--highlight-color) !important;
+  background: color-mix(in srgb, var(--highlight-vivid) 70%, transparent) !important;
   border: none !important;
   border-radius: 1px;
-  box-shadow: 0 0 4px var(--highlight-contrast);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--highlight-vivid) 45%, transparent),
+    0 0 10px color-mix(in srgb, var(--highlight-vivid) 40%, transparent);
   z-index: 20;
   transition: opacity 0.2s;
   margin: 0 !important;
@@ -35,13 +37,15 @@
 .ProseMirror-dropcursor::before {
   content: '';
   position: absolute;
-  left: -4px;
-  top: -4px;
-  width: 8px;
-  height: 8px;
-  background: var(--highlight-color);
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  background: var(--highlight-vivid);
   border-radius: 50%;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--highlight-color) 60%, transparent);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--highlight-vivid) 35%, transparent),
+    0 0 12px color-mix(in srgb, var(--highlight-vivid) 45%, transparent);
 }
 
 .ProseMirror {

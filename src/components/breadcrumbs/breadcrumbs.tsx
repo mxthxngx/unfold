@@ -33,7 +33,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
   if (!fileId || path.length === 0) {
     return (
       <Breadcrumb className="w-full" data-tauri-drag-region>
-        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-[var(--shadow-breadcrumb)] backdrop-blur-lg text-sidebar-foreground  border border-border-elevated ">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground  border border-border-elevated ">
           <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
             <BreadcrumbItem>
               <BreadcrumbPage className="text-foreground/75 font-normal tracking-tight">
@@ -50,7 +50,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
 
   return (
     <Breadcrumb className="w-full" data-tauri-drag-region>
-      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-[var(--shadow-breadcrumb)] backdrop-blur-lg text-sidebar-foreground   border border-border-elevated ">
+      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground   border border-border-elevated ">
         <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap ">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -155,4 +155,3 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
     </Breadcrumb>
   );
 });
-

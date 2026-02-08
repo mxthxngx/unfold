@@ -54,7 +54,7 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "bg-tooltip text-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-2.5 py-1 text-xs text-balance shadow-lg backdrop-blur-sm border border-border",
+          "bg-tooltip text-tooltip-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-2.5 py-1 text-xs text-balance shadow-lg backdrop-blur-sm border border-tooltip-border",
           className
         )}
         {...props}
@@ -90,19 +90,19 @@ function AppTooltipContent({
       sideOffset={sideOffset}
       showArrow={showArrow}
       className={cn(
-        "bg-tooltip text-foreground border border-border shadow-[var(--shadow-tooltip)]",
+        "bg-tooltip-strong text-tooltip-strong-foreground border border-tooltip-strong-border shadow-tooltip",
         className
       )}
       {...props}
     >
       <div className="inline-flex items-center gap-2.5  p-.5">
         {label ? (
-          <span className="text-[11px] font-medium text-foreground whitespace-nowrap">
+          <span className="text-[11px] font-medium text-tooltip-strong-foreground whitespace-nowrap">
             {label}
           </span>
         ) : null}
         {shortcut ? (
-          <span className="text-[11px] font-semibold leading-none text-foreground whitespace-nowrap">
+          <span className="text-[11px] font-semibold leading-none text-tooltip-strong-foreground whitespace-nowrap">
             {shortcut}
           </span>
         ) : null}

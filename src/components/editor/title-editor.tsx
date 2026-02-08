@@ -70,18 +70,11 @@ function TitleEditor({ fileId }: TitleEditorProps) {
             event.preventDefault();
             const pageEditor = pageEditorRef.current;
             if (pageEditor) {
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:69',message:'Enter key pressed in title editor',data:{docSize:pageEditor.state.doc.content.size,firstChildType:pageEditor.state.doc.firstChild?.type.name,firstChildText:pageEditor.state.doc.firstChild?.textContent},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-              // #endregion
               const firstNode = pageEditor.state.doc.firstChild;
               const needsLeadingParagraph =
                 !firstNode ||
                 firstNode.type.name !== "paragraph" ||
                 firstNode.textContent.length > 0;
-
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:77',message:'Enter key - needsLeadingParagraph check',data:{needsLeadingParagraph,firstNodeExists:!!firstNode,firstNodeType:firstNode?.type.name,firstNodeTextLength:firstNode?.textContent.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-              // #endregion
 
               if (needsLeadingParagraph) {
                 // Insert paragraph and immediately set cursor inside it using a single transaction
@@ -95,13 +88,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
                 // Use TextSelection.near to find a valid text position inside the paragraph
                 const selection = TextSelection.near($paragraphPos, 1);
                 tr.setSelection(selection);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:87',message:'Enter key - before dispatch (needsLeadingParagraph=true)',data:{cursorPos:selection.$head.pos,docSize:tr.doc.content.size,firstChildType:tr.doc.firstChild?.type.name,$posParentType:selection.$head.parent.type.name},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 pageEditor.view.dispatch(tr);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:91',message:'Enter key - after dispatch (needsLeadingParagraph=true)',data:{cursorPos:pageEditor.state.selection.$head.pos,docSize:pageEditor.state.doc.content.size,firstChildType:pageEditor.state.doc.firstChild?.type.name},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 pageEditor.commands.focus();
               } else {
                 // If paragraph already exists and is empty, place cursor inside it
@@ -110,15 +97,9 @@ function TitleEditor({ fileId }: TitleEditorProps) {
                 const $paragraphPos = state.doc.resolve(paragraphStart);
                 // Use TextSelection.near to find a valid text position inside the paragraph
                 const selection = TextSelection.near($paragraphPos, 1);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:95',message:'Enter key - before dispatch (needsLeadingParagraph=false)',data:{cursorPos:selection.$head.pos,docSize:state.doc.content.size,firstChildType:state.doc.firstChild?.type.name,$posParentType:selection.$head.parent.type.name},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 pageEditor.view.dispatch(
                   state.tr.setSelection(selection)
                 );
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/452adbbd-389f-46b2-b4bc-a91946c80e3d',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'title-editor.tsx:100',message:'Enter key - after dispatch (paragraph branch)',data:{cursorPos:pageEditor.state.selection.$head.pos,docSize:pageEditor.state.doc.content.size},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 pageEditor.commands.focus();
               }
             }
