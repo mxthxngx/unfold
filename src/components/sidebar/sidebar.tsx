@@ -358,7 +358,7 @@ const Sidebar = memo(function Sidebar() {
               <button
                 onClick={handleGlobalAdd}
                 title=""
-                className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center shrink-0 relative overflow-hidden text-sidebar-foreground"
+                className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center shrink-0 relative overflow-hidden text-sidebar-foreground"
               >
                 <AnimatedIcon className="w-full h-full flex items-center justify-center">
                   <Plus size={14} strokeWidth={3}/>
@@ -520,7 +520,7 @@ const PinnedNodeItem = memo(({
                         e.stopPropagation();
                         handleAddChild(e);
                       }}
-                      className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                      className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                     >
                       <AnimatedIcon className="w-full h-full flex items-center justify-center">
                         <Plus size={14} strokeWidth={3}/>
@@ -691,7 +691,7 @@ export const SidebarNodes = memo(({
                           e.stopPropagation();
                           handleAddChild(e);
                         }}
-                        className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                        className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                       >
                         <AnimatedIcon className="w-full h-full flex items-center justify-center">
                           <Plus size={14} strokeWidth={3}/>
@@ -707,7 +707,7 @@ export const SidebarNodes = memo(({
                       e.stopPropagation();
                       handleToggle(e);
                     }}
-                    className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                    className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                   >
                     <AnimatedIcon className="w-full h-full flex items-center justify-center">
                       <motion.span
@@ -826,7 +826,7 @@ export const SidebarNodes = memo(({
                         e.stopPropagation();
                         handleAddChild(e);
                       }}
-                      className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                      className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                     >
                       <AnimatedIcon className="w-full h-full flex items-center justify-center">
                         <Plus size={14} strokeWidth={3} />
@@ -842,7 +842,7 @@ export const SidebarNodes = memo(({
                     e.stopPropagation();
                     handleToggle(e);
                   }}
-                  className="rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                  className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
                 >
                   <AnimatedIcon className="w-full h-full flex items-center justify-center">
                     <motion.span

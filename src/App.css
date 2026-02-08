@@ -7,7 +7,25 @@
 @plugin "@tailwindcss/typography";
 
 html, body {
-  background: var(--background-solid) !important;
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(155, 214, 200, 0.18), transparent 45%),
+    radial-gradient(90% 70% at 85% 8%, rgba(120, 139, 188, 0.14), transparent 52%),
+    linear-gradient(180deg, rgba(7, 11, 15, 0.95) 0%, rgba(6, 10, 14, 1) 100%),
+    var(--background-solid) !important;
+  color: var(--foreground);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 50% 10%, rgba(255, 255, 255, 0.04), transparent 60%),
+    radial-gradient(45% 35% at 80% 0%, rgba(155, 214, 200, 0.08), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  z-index: 0;
 }
 :root {
   --background: var(--background-solid);
@@ -138,12 +156,12 @@ html, body {
   --search-active-ring: 0 0 0 2px rgba(255, 255, 255, 0.15);
   --resize-handle-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   --resize-handle-hover-shadow: 0 2px 12px rgba(193, 123, 255, 0.6);
-  --sidebar-selected-bg: #141414;
-  --sidebar-item-hover-bg: #141414;
+  --sidebar-selected-bg: #1a1a1c;
+  --sidebar-item-hover-bg: #1a1a1c;
   --sidebar-icon-hover-bg: #18191a;
   --sidebar-selection-indicator: #9d9d9f;
   --sidebar-title: #e0e0e5;
-  --sidebar-subitem-selected-bg: rgba(24, 24, 27, 0.5);
+  --sidebar-subitem-selected-bg: rgba(32, 32, 36, 0.55);
   --error-text: rgba(248, 113, 113, 0.9);
   --icon-hover: rgba(25, 25, 25, 0.585);
   --unselected-icon: #8e8d8d;
@@ -316,6 +334,8 @@ html, body {
   --sidebar-ring: #71717a;
   --sidebar-foreground-active: #09090b;
   --sidebar-tab-accent: rgb(163, 163, 163);
+  --sidebar-selected-bg: #f1f1f4;
+  --sidebar-item-hover-bg: #f1f1f4;
   --unselected-icon: #9f9f9f;
   --border-elevated: #e4e4e7;
   --border-strong: #d4d4d8;
@@ -345,7 +365,7 @@ html, body {
   --editor-picker-swatch-bg: #f4f4f5;
   --editor-picker-text-muted: #71717a;
   --selection-text: rgba(0, 0, 0, 0.95);
-  --highlight-vivid: rgb(124, 58, 237);
+  --highlight-vivid: rgb(167, 139, 250);
   --edge-grip-bg: #f4f4f5;
   --edge-grip-dot: #71717a;
   --resize-handle-bg: #ffffff;
@@ -400,7 +420,7 @@ html, body {
   --modal-action-border: #d1d2d8;
   --modal-primary-foreground: #0f1115;
   --sidebar-title: #09090b;
-  --sidebar-subitem-selected-bg: rgba(0, 0, 0, 0.04);
+  --sidebar-subitem-selected-bg: rgba(0, 0, 0, 0.03);
   --error-text: rgba(220, 38, 38, 0.9);
   /* Button error variant tokens - semantic links to red palette */
   --button-error-text: var(--color-red-400);
@@ -699,6 +719,56 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .sidebar-gap {
     transition: none;
+  }
+}
+
+/* Sidebar icon microinteractions */
+.sidebar-icon-button {
+  position: relative;
+  overflow: hidden;
+  color: var(--color-sidebar-foreground);
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 220ms ease, color 160ms ease;
+}
+
+.sidebar-icon-button::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  background-color: color-mix(in srgb, var(--color-sidebar-item-hover-bg) 92%, black 8%);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+.sidebar-icon-button:hover::before {
+  opacity: 1;
+}
+
+.sidebar-icon-button svg {
+  transition: transform 180ms ease, filter 200ms ease;
+}
+
+.sidebar-icon-button:hover svg {
+  transform: translateY(-0.5px) scale(1.08);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+}
+
+.sidebar-icon-button:active svg {
+  transform: translateY(0) scale(0.98);
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-icon-button,
+  .sidebar-icon-button svg {
+    transition: none;
+  }
+
+  .sidebar-icon-button:hover svg,
+  .sidebar-icon-button:active svg {
+    transform: none;
+    filter: none;
   }
 }
 

@@ -105,6 +105,13 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
       .setSelection(state.selection.constructor.create(state.doc, position.from, position.to))
       .scrollIntoView();
     view.dispatch(tr);
+    if (view.dom.isConnected && !view.hasFocus()) {
+      const { node } = view.domAtPos(position.from);
+      const el = (node.nodeType === 3 ? node.parentNode : node) as HTMLElement | null; 
+      if (el?.scrollIntoView) {
+        el.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+      }
+    }
   };
 
   const focusClosestResultToCursor = () => {
