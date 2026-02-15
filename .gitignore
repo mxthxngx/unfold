@@ -35,3 +35,4 @@ package-lock.json
 # Rust / Tauri (backup for root; src-tauri has its own)
 src-tauri/target
 src-tauri/gen
+src/target

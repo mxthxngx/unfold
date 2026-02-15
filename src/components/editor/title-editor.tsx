@@ -33,6 +33,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
   const file = getNode(fileId);
   const lastSavedRef = useRef<string>(file?.name || "");
   const currentFileIdRef = useRef<string>(fileId);
+  const isHydratingRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -49,6 +50,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
     onUpdate: ({ editor }) => {
+      if (isHydratingRef.current) return;
       const text = editor.getText().trim();
       if (text !== lastSavedRef.current) {
         lastSavedRef.current = text;
@@ -77,25 +79,20 @@ function TitleEditor({ fileId }: TitleEditorProps) {
                 firstNode.textContent.length > 0;
 
               if (needsLeadingParagraph) {
-                // Insert paragraph and immediately set cursor inside it using a single transaction
                 const { state } = pageEditor;
                 const { tr } = state;
                 const paragraph = state.schema.nodes.paragraph.create();
                 tr.insert(0, paragraph);
-                // Find the correct position inside the paragraph (after the paragraph start)
                 const paragraphStart = 1;
                 const $paragraphPos = tr.doc.resolve(paragraphStart);
-                // Use TextSelection.near to find a valid text position inside the paragraph
                 const selection = TextSelection.near($paragraphPos, 1);
                 tr.setSelection(selection);
                 pageEditor.view.dispatch(tr);
                 pageEditor.commands.focus();
               } else {
-                // If paragraph already exists and is empty, place cursor inside it
                 const { state } = pageEditor;
                 const paragraphStart = 1;
                 const $paragraphPos = state.doc.resolve(paragraphStart);
-                // Use TextSelection.near to find a valid text position inside the paragraph
                 const selection = TextSelection.near($paragraphPos, 1);
                 pageEditor.view.dispatch(
                   state.tr.setSelection(selection)
@@ -132,7 +129,9 @@ function TitleEditor({ fileId }: TitleEditorProps) {
     const currentFile = getNode(fileId);
     const name = currentFile?.name || "";
     
+    isHydratingRef.current = true;
     editor.commands.setContent(name);
+    isHydratingRef.current = false;
     lastSavedRef.current = name;
 
     if (!name.trim()) {

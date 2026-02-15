@@ -11,14 +11,9 @@ fn main() {
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
-            }
-
             let migrations = migrations::get_migrations();
             let app_data_dir = app
                 .path()
@@ -57,14 +52,7 @@ fn main() {
             commands::check_database_schema,
             commands::check_nodes_schema,
             commands::repair_nodes_schema,
-        ])
-        .invoke_handler(tauri::generate_handler![
-            commands::upload_image,
-            commands::get_image,
-            commands::delete_image,
-            commands::check_database_schema,
-            commands::check_nodes_schema,
-            commands::repair_nodes_schema,
+            commands::save_pdf_file,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

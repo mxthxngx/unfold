@@ -1,69 +1,49 @@
-import "./App.css";
-import { useLayoutConfig } from "./hooks/use-layout-config";
-import { LayoutProvider } from "./contexts/LayoutContext";
-import { RouterProvider } from "@tanstack/react-router";
-import { router } from "./router";
-import { FileSystemProvider } from "./contexts/FileSystemContext";
-import { EditorProvider } from "./contexts/EditorContext";
-import { GlobalSelectionHighlighter } from "./components/common/global-selection-highlighter";
+import './App.css';
 
-function AppContent() {
-  return <AppRouter />;
-}
+import { useEffect } from 'react';
+import { RouterProvider } from '@tanstack/react-router';
 
-function AppRouter() {
-  return (
-    <RouterProvider router={router} />
-  );
-}
-
-
-function LayoutInitializer() {
-  const { layout, isLoading, error, saveLayout } = useLayoutConfig();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen w-screen bg-background">
-        <div className="text-center">
-          <div className="text-lg font-semibold mb-2">Loading Configuration</div>
-          <div className="text-sm text-muted-foreground">Setting up your layout...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen w-screen bg-background">
-        <div className="text-center">
-          <div className="text-lg font-semibold mb-2 text-destructive">Error Loading Layout</div>
-          <div className="text-sm text-destructive/90">{error}</div>
-        </div>
-      </div>
-    );
-  }
-
-  const initialLayout = layout || { sidebar_position: 'right' };
-
-  return (
-    <FileSystemProvider>
-      <GlobalSelectionHighlighter />
-      <EditorProvider>
-        <LayoutProvider
-          initialLayout={initialLayout}
-          updateLayoutFn={saveLayout}
-          isLoading={isLoading}
-          error={error}
-        >
-          <AppContent />
-        </LayoutProvider>
-      </EditorProvider>
-    </FileSystemProvider>
-  );
-}
+import { GlobalSelectionHighlighter } from '@/components/common/global-selection-highlighter';
+import { EditorProvider } from '@/contexts/EditorContext';
+import { FileSystemProvider } from '@/contexts/FileSystemContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import { router } from '@/router';
 
 function App() {
-  return <LayoutInitializer />;
+  useEffect(() => {
+    const splash = document.getElementById('boot-splash');
+    if (!splash) {
+      return;
+    }
+
+    let rafA = 0;
+    let rafB = 0;
+    let timeoutId = 0;
+
+    rafA = window.requestAnimationFrame(() => {
+      rafB = window.requestAnimationFrame(() => {
+        splash.classList.add('is-hidden');
+        timeoutId = window.setTimeout(() => splash.remove(), 940);
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafA);
+      window.cancelAnimationFrame(rafB);
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  return (
+    <ThemeProvider>
+      <FileSystemProvider>
+        <GlobalSelectionHighlighter />
+        <EditorProvider>
+          <RouterProvider router={router} />
+        </EditorProvider>
+      </FileSystemProvider>
+    </ThemeProvider>
+  );
 }
 
 export default App;

@@ -3,11 +3,6 @@ import { useLayout } from '@/contexts/LayoutContext';
 import { LAYOUT_OPTIONS, SidebarPosition } from '@/types/layout';
 import { cn } from '@/lib/tiptap-utils';
 
-/**
- * Settings component to customize layout preferences.
- * This is modular and can be easily extended for additional settings
- * like fonts, heading sizes, etc.
- */
 const LayoutSettings: React.FC = () => {
   const { layout, updateLayout, isLoading, error } = useLayout();
 
@@ -38,7 +33,6 @@ const LayoutSettings: React.FC = () => {
           </div>
         )}
 
-        {/* Sidebar Position Setting */}
         <div className="space-y-3">
           <label className="block text-sm font-medium">
             {LAYOUT_OPTIONS.sidebar_position.label}
@@ -64,8 +58,6 @@ const LayoutSettings: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Placeholder for future settings */}
       <div className="text-xs text-muted-foreground border-t pt-4">
         More customization options (fonts, heading sizes, etc.) coming soon...
       </div>

@@ -45,6 +45,8 @@ function PageEditor({ fileId }: PageEditorProps) {
   
   const lastSavedRef = useRef<string>(file?.content || "");
   const currentFileIdRef = useRef<string>(fileId);
+  const hydratedFileIdRef = useRef<string | null>(null);
+  const isHydratingRef = useRef(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const pendingArrowScrollRef = useRef(false);
 
@@ -115,6 +117,7 @@ function PageEditor({ fileId }: PageEditorProps) {
     autofocus: false,
     content: "",
     onUpdate: ({ editor }) => {
+      if (isHydratingRef.current) return;
       const jsonContent = JSON.stringify(editor.getJSON());
       if (jsonContent !== lastSavedRef.current) {
         lastSavedRef.current = jsonContent;
@@ -225,13 +228,15 @@ function PageEditor({ fileId }: PageEditorProps) {
     if (!editor) return;
 
     const isFileChanged = fileId !== currentFileIdRef.current;
-    const isInitialLoad = editor.isEmpty;
-
-    if (!isFileChanged && !isInitialLoad) return;
-
-    currentFileIdRef.current = fileId;
+    const isFirstHydrationForFile = hydratedFileIdRef.current !== fileId;
     const currentFile = getNode(fileId);
     const rawContent = currentFile?.content || "";
+
+    if (!isFileChanged && !isFirstHydrationForFile && rawContent === lastSavedRef.current) {
+      return;
+    }
+
+    currentFileIdRef.current = fileId;
 
     let content: object | string = "";
     if (rawContent) {
@@ -242,10 +247,12 @@ function PageEditor({ fileId }: PageEditorProps) {
       }
     }
 
+    isHydratingRef.current = true;
     editor.commands.setContent(content);
+    isHydratingRef.current = false;
+    hydratedFileIdRef.current = fileId;
     lastSavedRef.current = rawContent;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileId, editor]);
+  }, [fileId, editor, getNode]);
 
   if (!editor) return null;
 

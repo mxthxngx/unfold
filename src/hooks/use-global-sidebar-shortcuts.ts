@@ -5,9 +5,6 @@ import { useFileSystem } from '@/contexts/FileSystemContext';
 import { useEditorContext } from '@/contexts/EditorContext';
 import { KEYBOARD_SHORTCUTS } from '@/config/keyboard-shortcuts';
 
-/**
- * Parse accelerator string to key event properties
- */
 const parseAccelerator = (accelerator: string) => {
   const parts = accelerator.split('+');
   const key = parts[parts.length - 1];
@@ -21,19 +18,12 @@ const parseAccelerator = (accelerator: string) => {
   };
 };
 
-/**
- * Global keyboard shortcuts for sidebar operations
- */
 export function  useGlobalSidebarShortcuts() {
   const { fileId } = useParams({ strict: false });
-  const { addNode, deleteNode, togglePinNode } = useFileSystem();
+  const { addNode, togglePinNode } = useFileSystem();
   const { pageEditorRef, titleEditorRef } = useEditorContext();
   const navigate = useNavigate();
 
-  /**
-   * Check if user is currently editing/focused on an input element or editor
-   * Returns true if actively typing in an input/textarea or if TipTap editors are focused
-   */
   const isEditingContent = (): boolean => {
     const activeElement = document.activeElement as HTMLElement;
     if (!activeElement) return false;
@@ -41,10 +31,8 @@ export function  useGlobalSidebarShortcuts() {
     const tagName = activeElement.tagName.toLowerCase();
     const isEditableInput = tagName === 'input' || tagName === 'textarea';
     
-    // Check if active element is contentEditable
     const isContentEditable = activeElement.isContentEditable;
-    
-    // Check if TipTap editors are focused
+
     const isPageEditorFocused = pageEditorRef.current?.isFocused ?? false;
     const isTitleEditorFocused = titleEditorRef.current?.isFocused ?? false;
     
@@ -61,8 +49,6 @@ export function  useGlobalSidebarShortcuts() {
       const isAlt = event.altKey;
       const isShift = event.shiftKey;
 
-      // Create child note shortcut
-      // Allow this shortcut even when editor is focused (but not when typing in input/textarea)
       if (
         event.key.toLowerCase() === createFileShortcut.key &&
         (!createFileShortcut.requiresCmdOrCtrl || isCmdOrCtrl) &&
@@ -76,7 +62,6 @@ export function  useGlobalSidebarShortcuts() {
         return;
       }
 
-      // Delete note shortcut (only when not editing content)
       if (
         fileId &&
         !isEditingContent() &&
@@ -107,5 +92,5 @@ export function  useGlobalSidebarShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId, addNode, deleteNode, togglePinNode, navigate, pageEditorRef, titleEditorRef]);
+  }, [fileId, addNode, togglePinNode, navigate, pageEditorRef, titleEditorRef]);
 }

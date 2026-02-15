@@ -141,7 +141,7 @@ export function Modal({
                   onCancel?.();
                   onClose?.();
                 }}
-                className="absolute top-4 right-4 z-10 rounded-md p-2 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg transition-colors pointer-events-auto"
+                className="absolute top-4 right-4 z-10 inline-flex size-8 items-center justify-center rounded-full text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-icon-hover-bg/95 transition-colors pointer-events-auto"
               >
                 <X size={16} />
               </button>
@@ -155,4 +155,3 @@ export function Modal({
     document.body
   );
 }
-

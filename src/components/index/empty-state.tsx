@@ -4,9 +4,6 @@ interface EmptyStateProps {
   onCreateFile: () => void;
 }
 
-/**
- * Empty state component displayed when there are no files in the workspace
- */
 export function EmptyState({ onCreateFile }: EmptyStateProps) {
   return (
     <div className="space-y-1 flex flex-col gap-4 text-left max-w-md w-full">

@@ -14,6 +14,8 @@ export interface Node {
   id: string;
   name: string;
   content?: string;
+  createdAt?: string;
+  updatedAt?: string;
   parentId?: string;
   nodes?: Node[];
   isOpen?: boolean;

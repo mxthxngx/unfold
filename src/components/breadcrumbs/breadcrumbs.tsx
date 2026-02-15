@@ -98,7 +98,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                       <span className="sr-only">Toggle menu</span>
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
+                  <DropdownMenuContent align="start" className="bg-sidebar-container-bg border border-sidebar-container-border/80">
                     {path.slice(1, path.length - 1).map((node) => (
                       <DropdownMenuItem key={node.id} onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}>
                         {node.name || "new page"}

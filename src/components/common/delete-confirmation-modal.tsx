@@ -14,56 +14,50 @@ export function DeleteConfirmationModal({
   onCancel,
   onConfirm,
 }: DeleteConfirmationModalProps) {
-  const resolvedItemName = itemName?.trim().length ? itemName.trim() : 'this note';
+  const resolvedItemName = itemName?.trim().length ? itemName.trim() : 'this item';
   return (
     <Modal
       open={isOpen}
       onClose={onCancel}
       onCancel={onCancel}
       onConfirm={onConfirm}
-      className="border border-modal-surface-border/40 ring-modal-surface-border/40"
-      backdropClassName="backdrop-blur-xs bg-sidebar/70"
+      className="bg-sidebar-container-bg border border-sidebar-container-border/80 ring-sidebar-container-border/80 shadow-lg backdrop-blur-2xl backdrop-saturate-150"
+      backdropClassName="bg-sidebar/50"
     >
-      <div className="flex flex-col gap-2 p-6 sm:p-8 text-modal-surface-foreground">
-        <div className="space-y-5">
+      <div className="flex flex-col gap-4 p-6 sm:p-7 text-modal-surface-foreground select-none lowercase">
+        <div className="space-y-2.5">
+          <h3 className="text-[18px] font-medium leading-snug text-modal-surface-foreground font-sans-serif">
+            send{' '}
+            <span className="font-semibold italic">
+              {resolvedItemName}
+            </span>{' '}
+            to trash?
+          </h3>
+          <p className="text-[12.5px] leading-relaxed text-modal-surface-foreground/62 font-sans">
+            it stays in trash for 15 days before it is removed
+          </p>
 
-          <div className="p-1">
-            <div className="absolute -top-8 -right-12 size-32 rounded-full bg-modal-primary-foreground/10 blur-2xl" aria-hidden />
-       
-              <div className="flex text-sm leading-relaxed">
-                <h3 className="text-2xl font-semibold leading-snug text-modal-surface-foreground">
-                  Move{' '}     {resolvedItemName} {' '} 
-                 
-                  to trash?
-                </h3>
-            </div>
-          </div>
         </div>
 
-
-        <div className="flex flex-col gap-3 border-t border-modal-surface-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-modal-surface-foreground/70">
-            You can always bring it back from trash before day 15—no data loss until you confirm.
-          </p>
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="action"
-              onClick={onCancel}
-              className="text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80 transition-all duration-200"
-            >
-              keep it
-            </Button>
-            <Button
-              type="button"
-              variant="error"
-              size="action"
-              onClick={onConfirm}
-            >
-              move to trash
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-end gap-2.5 pt-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="action"
+            onClick={onCancel}
+            className="text-sidebar-foreground/90 bg-sidebar-item-hover-bg/40 border-sidebar-border/60 hover:bg-sidebar-item-hover-bg/70 transition-all duration-200"
+          >
+            keep it
+          </Button>
+          <Button
+            type="button"
+            variant="error"
+            size="action"
+            onClick={onConfirm}
+            className="bg-button-error-bg/70 border-button-error-border/70 text-button-error-text hover:bg-button-error-hover-bg hover:border-button-error-hover-border"
+          >
+            move to trash
+          </Button>
         </div>
       </div>
     </Modal>

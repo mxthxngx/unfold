@@ -7,10 +7,6 @@ interface SettingsPageProps {
   onClose: () => void;
 }
 
-/**
- * Settings page component that can be used as a modal or drawer.
- * Currently displays layout settings, easily extensible for other settings categories.
- */
 const SettingsPage: React.FC<SettingsPageProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'layout'>('layout');
 
@@ -19,7 +15,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-sm">
       <div className="w-full max-w-2xl max-h-[90vh] bg-background border border-border rounded-lg shadow-lg flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
           <h2 className="text-xl font-semibold">Settings</h2>
           <button
@@ -34,7 +29,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-border px-6">
           <button
             onClick={() => setActiveTab('layout')}
@@ -47,15 +41,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ isOpen, onClose }) => {
           >
             Layout
           </button>
-          {/* More tabs can be added here for fonts, appearance, etc. */}
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {activeTab === 'layout' && <LayoutSettings />}
         </div>
 
-        {/* Footer */}
         <div className="border-t border-border px-6 py-4 flex justify-end gap-2">
           <button
             onClick={onClose}

@@ -3,17 +3,10 @@ import { useFileSystem } from '../../contexts/FileSystemContext';
 import { useIndexRedirect } from '../../hooks/use-index-redirect';
 import { EmptyState } from './empty-state';
 
-/**
- * Index page component that handles redirection and displays appropriate UI
- * - Automatically redirects to the last opened file or first available file
- * - Shows empty state if no files exist
- * - Shows loading indicator while files are loading
- */
 export function IndexPage() {
   const { fileTree, addNode, isLoading } = useFileSystem();
   const navigate = useNavigate();
 
-  // Handle automatic redirection
   useIndexRedirect();
 
   const handleCreateFile = async () => {
@@ -28,14 +21,17 @@ export function IndexPage() {
   const hasFiles = fileTree.length > 0;
 
   return (
-    <div className="flex h-full w-full min-h-[calc(100vh-3rem)] items-center justify-start px-6 text-muted-foreground">
-      {hasFiles ? (
-        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-card/70 px-4 py-3 text-sm shadow-card">
-          <span className="inline-flex size-2 rounded-full bg-muted-foreground/60" />
-          <span className="text-muted-foreground">select a file to start editing</span>
+    <div
+      className={
+        hasFiles
+          ? 'flex w-full min-h-[calc(100svh-5.75rem)] items-start justify-start px-6 text-muted-foreground'
+          : 'flex w-full min-h-[calc(100svh-5.75rem)] items-end justify-start px-6 pb-16 text-muted-foreground'
+      }
+    >
+      {hasFiles ? null : (
+        <div className="md:-translate-x-28 md:-translate-y-24">
+          <EmptyState onCreateFile={handleCreateFile} />
         </div>
-      ) : (
-        <EmptyState onCreateFile={handleCreateFile} />
       )}
     </div>
   );

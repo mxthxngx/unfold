@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
+
 import { Layout } from '@/types/layout';
-import { getLayoutSettings, updateLayoutSettings, DEFAULT_SETTINGS } from '@/services/settings-store';
+import { useLayoutStore } from '@/store/hooks/use-layout-store';
 
 interface UseLayoutConfigReturn {
   layout: Layout | null;
@@ -9,57 +10,15 @@ interface UseLayoutConfigReturn {
   saveLayout: (updates: Partial<Layout>) => Promise<void>;
 }
 
-/**
- * Hook to load and manage layout configuration using the Tauri Store plugin.
- * Loads the layout settings on mount and provides methods to update them.
- */
 export const useLayoutConfig = (): UseLayoutConfigReturn => {
-  const [layout, setLayout] = useState<Layout | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { layout, isLoading, error, updateLayout } = useLayoutStore();
 
-  // Load layout settings on mount
-  useEffect(() => {
-    let mounted = true;
-
-    const loadLayout = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const layoutSettings = await getLayoutSettings();
-        if (mounted) {
-          setLayout(layoutSettings);
-        }
-      } catch (err) {
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load layout settings');
-          // Fall back to default settings
-          setLayout(DEFAULT_SETTINGS.layout);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadLayout();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // Save layout settings
-  const saveLayout = async (updates: Partial<Layout>) => {
-    try {
-      const updatedLayout = await updateLayoutSettings(updates);
-      setLayout(updatedLayout);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save layout settings');
-      throw err;
-    }
-  };
+  const saveLayout = useCallback(
+    async (updates: Partial<Layout>) => {
+      await updateLayout(updates);
+    },
+    [updateLayout],
+  );
 
   return {
     layout,

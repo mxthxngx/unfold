@@ -4,10 +4,6 @@ import { useFileSystem } from '../contexts/FileSystemContext';
 import { findFirstFileId, findNodeById } from '../lib/file-tree';
 import { getLastOpenedFile, setLastOpenedFile } from '../utils/last-opened';
 
-/**
- * Custom hook that validates the current file and handles redirects if the file is invalid
- * Also tracks the last opened file for the current space
- */
 export function useFileValidation(fileId: string | undefined): void {
   const navigate = useNavigate();
   const { getNode, fileTree, activeSpaceId, isLoading } = useFileSystem();

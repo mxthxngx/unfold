@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use tauri::{AppHandle, Manager, command};
+use tauri_plugin_dialog::{DialogExt, FilePath};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +18,12 @@ pub struct UploadImageResponse {
     id: String,
     path: String,
     size: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SavePdfRequest {
+    suggested_name: String,
+    pdf_bytes: Vec<u8>,
 }
 
 #[command]
@@ -316,4 +323,31 @@ pub async fn repair_nodes_schema(app: AppHandle) -> Result<String, String> {
         .map_err(|e| format!("Failed to repair schema: {}", e))?;
 
     Ok("Repaired nodes schema (removed 'type' column)".into())
+}
+
+#[command]
+pub async fn save_pdf_file(app: AppHandle, request: SavePdfRequest) -> Result<(), String> {
+    let file_path = app
+        .dialog()
+        .file()
+        .add_filter("PDF Document", &["pdf"])
+        .set_file_name(&request.suggested_name)
+        .blocking_save_file();
+
+    let Some(chosen) = file_path else {
+        // User canceled save dialog.
+        return Ok(());
+    };
+
+    let path = match chosen {
+        FilePath::Path(path) => path,
+        FilePath::Url(url) => url
+            .to_file_path()
+            .map_err(|_| "Failed to resolve selected file path.".to_string())?,
+    };
+
+    fs::write(&path, &request.pdf_bytes)
+        .map_err(|e| format!("Failed to write PDF file: {}", e))?;
+
+    Ok(())
 }

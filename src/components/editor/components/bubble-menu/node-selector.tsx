@@ -135,7 +135,7 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              className="h-8 gap-1 px-2 rounded-lg"
+              className="bubble-node-trigger h-8 gap-1 px-2 rounded-lg"
               onMouseDown={(e) => e.preventDefault()}
             >
               {activeItem?.name}
@@ -147,13 +147,14 @@ export const NodeSelector: FC<NodeSelectorProps> = ({
 
       <DropdownMenuContent
         align="start"
-        className="w-48"
+        className="bubble-node-menu w-48"
         container={container}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {items.map((item, index) => (
           <DropdownMenuItem
             key={index}
+            className="bubble-node-item"
             onMouseDown={(e) => {
               e.preventDefault();
               item.command();

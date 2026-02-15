@@ -1,14 +1,14 @@
 export const editorClasses = {
   documentTitle:
-    "bg-editor-title text-[2.5em] font-bold mt-[.5em] mb-[0.5em] tracking-tight pe-2",
+    "bg-editor-title text-4xl font-bold mt-2 mb-2 tracking-tight pe-2",
 
   blockquote:
-    "border-l-[3px] border-editor-blockquote-border pl-6 pr-4 py-2 my-4 italic text-editor-blockquote-text bg-editor-blockquote-bg rounded-r-md",
+    "border-l-[3px] border-editor-blockquote-border pl-6 pr-4 py-2 my-4 text-editor-blockquote-text bg-editor-blockquote-bg rounded-r-md",
 
   bold: "font-bold",
 
   details:
-    "border border-editor-details-border rounded-lg mb-4 overflow-hidden bg-editor-details-bg shadow-sm",
+    "border border-editor-details-border rounded-lg mb-4 overflow-hidden bg-editor-details-bg",
 
   detailsSummary:
     "cursor-pointer bg-editor-details-summary-bg hover:bg-editor-details-summary-hover-bg px-5 py-3 rounded-t-lg font-medium text-editor-details-summary-text transition-colors duration-150",
@@ -21,28 +21,28 @@ export const editorClasses = {
   italic: "italic",
 
   heading1:
-    "text-[1.75em] font-bold  m-y-[3px] tracking-tight pe-2",
+    "text-4xl font-bold my-1 tracking-tight pe-2",
 
   heading2:
-    "text-[1.5em] font-semibold m-y-[3px] tracking-tight",
+    "text-2xl font-semibold my-1 tracking-tight",
 
   heading3:
-    "text-[1.25em] font-semibold m-y-[3px] tracking-tight",
+    "text-xl font-semibold my-1 tracking-tight",
 
   horizontalRule:
     "border-t border-editor-hr my-6",
 
   codeMark:
-    "bg-editor-code-mark-bg backdrop-blur-sm text-sm rounded-[4px] py-0.5 px-1.5 font-mono text-xs font-medium border border-editor-code-mark-border",
+    "bg-editor-code-mark-bg inline-flex items-baseline align-baseline rounded-md px-1.5 py-px font-mono text-editor-code-mark-text leading-[1.1] border border-editor-code-mark-border ",
 
   codeBlock:
-    "bg-code-block-bg backdrop-blur-sm text-sm rounded-lg p-5 border border-editor-code-block-border shadow-sm overflow-x-auto my-4",
+    "bg-code-block-bg backdrop-blur-sm text-code text-editor-code-block-text rounded-lg p-5 border border-editor-code-block-border overflow-x-auto my-4",
 
   link:
     "text-editor-link-text underline decoration-editor-link-decoration decoration-[0.025em] decoration-solid hover:text-editor-link-hover-text hover:decoration-editor-link-hover-decoration transition-colors",
 
   paragraph:
-    "text-base m-y-[3px]",
+    "mt-0",
 
   listItem:
     "mb-2",
@@ -72,6 +72,6 @@ export const editorClasses = {
     "relative edge-cell [&_p]:mb-0 [&_p]:pb-0 [&_p]:leading-relaxed",
 
   bubbleMenu:
-    "bg-sidebar-container-bg border border-sidebar-container-border shadow-lg rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
+    "bg-sidebar-container-bg border border-sidebar-container-border rounded-xl py-1.5 px-2 flex items-center justify-center gap-0.5",
 
 };

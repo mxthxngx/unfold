@@ -10,7 +10,7 @@ This document describes the semantic color token system used throughout the Unfo
 2. **Mode-Agnostic**: All tokens automatically adapt to light/dark mode
 3. **Component-Scoped**: Complex components have dedicated token namespaces
 4. **Tailwind-First**: All tokens exposed as clean Tailwind utilities
-5. **No Arbitrary Vars in Classes**: Avoid `bg-[var(--...)]` or `shadow-[var(--...)]`. Add a token and use a named utility instead.
+5. **No Arbitrary Vars in Classes**: Avoid raw arbitrary classes like `bg-[var(--token-name)]` or `shadow-[var(--token-name)]`. Add a semantic token and use a named utility instead.
 
 ## Token Categories
 
@@ -232,7 +232,7 @@ Use these for selected text and highlighted elements:
 <div className="bg-surface text-muted-foreground">
 ```
 
-### From `bg-[var(--...)]` Syntax
+### From `bg-[var(--token-name)]` Syntax
 
 ```tsx
 // ❌ Before (verbose)

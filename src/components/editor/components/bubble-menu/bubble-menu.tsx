@@ -29,6 +29,16 @@ type EditorBubbleMenuProps = Omit<BubbleMenuProps, "children" | "editor"> & {
 
 type OpenSelector = "node" | "link" | "color" | "alignment" | null;
 
+interface SearchRange {
+  from: number;
+  to: number;
+}
+
+interface SearchStorage {
+  searchTerm?: string;
+  results?: SearchRange[];
+}
+
 export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
   const [openSelector, setOpenSelector] = useState<OpenSelector>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,11 +69,11 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
   });
 
   const items: BubbleMenuItem[] = [
-    { name: "bold", label: "Bold", isActive: () => editorState?.isBold ?? false, command: () => props.editor.chain().focus().toggleBold().run(), icon: <BoldIcon /> },
-    { name: "italic", label: "Italic", isActive: () => editorState?.isItalic ?? false, command: () => props.editor.chain().focus().toggleItalic().run(), icon: <ItalicIcon /> },
-    { name: "underline", label: "Underline", isActive: () => editorState?.isUnderline ?? false, command: () => props.editor.chain().focus().toggleUnderline().run(), icon: <UnderlineIcon /> },
-    { name: "strike", label: "Strikethrough", isActive: () => editorState?.isStrike ?? false, command: () => props.editor.chain().focus().toggleStrike().run(), icon: <StrikethroughIcon /> },
-    { name: "code", label: "Code", isActive: () => editorState?.isCode ?? false, command: () => props.editor.chain().focus().toggleCode().run(), icon: <CodeIcon /> },
+    { name: "bold", label: "Bold", isActive: () => editorState?.isBold ?? false, command: () => props.editor.chain().focus().toggleBold().run(), icon: <BoldIcon className="h-[18px] w-[18px]" strokeWidth={2.4} /> },
+    { name: "italic", label: "Italic", isActive: () => editorState?.isItalic ?? false, command: () => props.editor.chain().focus().toggleItalic().run(), icon: <ItalicIcon className="h-[18px] w-[18px]" strokeWidth={2.4} /> },
+    { name: "underline", label: "Underline", isActive: () => editorState?.isUnderline ?? false, command: () => props.editor.chain().focus().toggleUnderline().run(), icon: <UnderlineIcon className="h-[18px] w-[18px]" strokeWidth={2.4} /> },
+    { name: "strike", label: "Strikethrough", isActive: () => editorState?.isStrike ?? false, command: () => props.editor.chain().focus().toggleStrike().run(), icon: <StrikethroughIcon className="h-[18px] w-[18px]" strokeWidth={2.4} /> },
+    { name: "code", label: "Code", isActive: () => editorState?.isCode ?? false, command: () => props.editor.chain().focus().toggleCode().run(), icon: <CodeIcon className="h-[18px] w-[18px]" strokeWidth={2.4} /> },
   ];
 
 
@@ -79,11 +89,12 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
         if (isNodeSelection(selection) && selection.node?.type.name === "image") {
           return false;
         }
-        const searchStorage = (props.editor?.storage as any)?.searchAndReplace;
+        const searchStorage =
+          (props.editor.storage as { searchAndReplace?: SearchStorage }).searchAndReplace ??
+          undefined;
         if (searchStorage?.searchTerm && Array.isArray(searchStorage.results)) {
           const isSearchSelection = searchStorage.results.some(
-            (result: { from: number; to: number }) =>
-              result.from === selection.from && result.to === selection.to
+            (result) => result.from === selection.from && result.to === selection.to
           );
           if (isSearchSelection) return false;
         }
@@ -100,8 +111,8 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
         <div className="w-px h-6 bg-border mx-1" />
 
         <ButtonGroup>
-          {items.map((item, index) => (
-            <Tooltip key={index}>
+          {items.map((item) => (
+            <Tooltip key={item.name}>
               <TooltipTrigger asChild>
                 <Button
                   variant="secondary"
@@ -111,7 +122,7 @@ export const EditorBubbleMenu: FC<EditorBubbleMenuProps> = (props) => {
                     e.preventDefault();
                     item.command();
                   }}
-                  className="h-8 w-8 p-0 rounded-lg"
+                  className={`h-8 w-8 p-0 rounded-lg ${item.isActive() ? "bg-sidebar-item-hover-bg/95 text-foreground" : ""}`}
                 >
                   {item.icon}
                 </Button>

@@ -1,7 +1,8 @@
 import { X, Search as SearchIcon, ChevronUp, ChevronDown, CaseSensitive, Replace } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
-import { useEditorState } from '@tiptap/react';
+import { useEditorState, type Editor } from '@tiptap/react';
 import type { Node } from '@tiptap/pm/model';
+import { TextSelection } from '@tiptap/pm/state';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { cn } from '@/lib/utils';
 import { useEditorContext } from '@/contexts/EditorContext';
@@ -29,6 +30,23 @@ function getWordAtPosition(doc: Node, pos: number): string {
   return !found ? '' : doc.textBetween(start, end);
 }
 
+interface SearchResultRange {
+  from: number;
+  to: number;
+}
+
+interface SearchStorageState {
+  results?: SearchResultRange[];
+  resultIndex?: number;
+}
+
+function getSearchStorage(editor: Editor | null | undefined): SearchStorageState {
+  if (!editor) {
+    return {};
+  }
+
+  return (editor.storage as { searchAndReplace?: SearchStorageState }).searchAndReplace ?? {};
+}
 
 export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   _props,
@@ -53,7 +71,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     editor,
     selector: (ctx) => {
       if (!ctx?.editor) return { matchesCount: 0, activeIndex: -1 };
-      const storage = (ctx.editor.storage as any)?.searchAndReplace;
+      const storage = getSearchStorage(ctx.editor);
       return {
         matchesCount: storage?.results?.length || 0,
         activeIndex: storage?.resultIndex ?? -1,
@@ -91,7 +109,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     const editorToUse = pageEditorRef.current ?? editor;
     if (!editorToUse) return;
 
-    const storage = (editorToUse.storage as any)?.searchAndReplace;
+    const storage = getSearchStorage(editorToUse);
     const results = storage?.results ?? [];
     const resultIndex = storage?.resultIndex ?? -1;
     const position = results[resultIndex];
@@ -99,11 +117,8 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
     if (!position) return;
 
     const { state, view } = editorToUse;
-    // Dispatch a single transaction that both updates selection and scrolls.
-    const tr = state.tr
-      // @ts-ignore selection constructor is compatible with TextSelection
-      .setSelection(state.selection.constructor.create(state.doc, position.from, position.to))
-      .scrollIntoView();
+    const selection = TextSelection.create(state.doc, position.from, position.to);
+    const tr = state.tr.setSelection(selection).scrollIntoView();
     view.dispatch(tr);
     if (view.dom.isConnected && !view.hasFocus()) {
       const { node } = view.domAtPos(position.from);
@@ -117,7 +132,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
   const focusClosestResultToCursor = () => {
     const editorRef = pageEditorRef.current;
     if (!editorRef) return;
-    const storage = (editorRef.storage as any)?.searchAndReplace;
+    const storage = getSearchStorage(editorRef);
     const results = storage?.results ?? [];
     if (!results.length) return;
     const cursorPos = openCursorPosRef.current ?? editorRef.state.selection.from;

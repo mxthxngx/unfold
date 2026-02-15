@@ -4,13 +4,200 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>Unfold</title>
+    <script>
+      (() => {
+        const key = "unfold-theme-preference";
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const stored = localStorage.getItem(key);
+        const theme = stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
+        const resolved = theme === "system" ? (prefersDark ? "dark" : "light") : theme;
+        const root = document.documentElement;
+        const isLight = resolved === "light";
+        root.classList.toggle("light", isLight);
+        root.classList.toggle("dark", !isLight);
+        root.style.colorScheme = isLight ? "light" : "dark";
+      })();
+    </script>
     <style>
-      html, body, #root { background-color: #0d0d0d !important; min-height: 100%; }
+      html,
+      body,
+      #root {
+        min-height: 100%;
+        background: #0d0d0c;
+      }
+
+      html.light,
+      html.light body,
+      html.light #root {
+        background: #ffffff;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0d0d0c;
+        color: #f7f2f2;
+        transition: opacity 180ms ease;
+      }
+
+      #boot-splash.is-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      html.light #boot-splash {
+        background: #ffffff;
+        color: #111827;
+      }
+
+      #boot-splash-mark {
+        width: 6.25rem;
+        height: auto;
+        overflow: visible;
+        filter: drop-shadow(0 0 10px rgba(247, 242, 242, 0.28));
+      }
+
+      html.light #boot-splash-mark {
+        filter: drop-shadow(0 0 10px rgba(17, 24, 39, 0.2));
+      }
+
+      #boot-splash-mark .wing {
+        fill: currentColor;
+        transform-origin: 60px 62px;
+        transform-box: view-box;
+        opacity: 0;
+      }
+
+      #boot-splash-mark .left-wing {
+        animation: bootWingLeft 1.25s cubic-bezier(0.22, 0.74, 0.2, 1) infinite;
+      }
+
+      #boot-splash-mark .right-wing {
+        animation: bootWingRight 1.25s cubic-bezier(0.22, 0.74, 0.2, 1) infinite;
+      }
+
+      #boot-splash-mark .core {
+        fill: currentColor;
+        transform-origin: 60px 62px;
+        transform-box: view-box;
+        opacity: 0;
+        animation: bootCore 1.25s ease-in-out infinite;
+      }
+
+      @keyframes bootWingLeft {
+        0% {
+          transform: translateY(7px) rotate(24deg) scale(0.45, 0.72);
+          opacity: 0;
+        }
+        14% {
+          opacity: 0.98;
+        }
+        34% {
+          transform: translateY(0) rotate(0deg) scale(1, 1);
+          opacity: 1;
+        }
+        52% {
+          transform: translateY(-1px) rotate(-6deg) scale(1.03, 1.01);
+          opacity: 0.98;
+        }
+        74% {
+          transform: translateY(0) rotate(2deg) scale(0.99, 0.99);
+          opacity: 0.95;
+        }
+        100% {
+          transform: translateY(0) rotate(0deg) scale(1, 1);
+          opacity: 0.88;
+        }
+      }
+
+      @keyframes bootWingRight {
+        0% {
+          transform: translateY(7px) rotate(-24deg) scale(0.45, 0.72);
+          opacity: 0;
+        }
+        14% {
+          opacity: 0.98;
+        }
+        34% {
+          transform: translateY(0) rotate(0deg) scale(1, 1);
+          opacity: 1;
+        }
+        52% {
+          transform: translateY(-1px) rotate(6deg) scale(1.03, 1.01);
+          opacity: 0.98;
+        }
+        74% {
+          transform: translateY(0) rotate(-2deg) scale(0.99, 0.99);
+          opacity: 0.95;
+        }
+        100% {
+          transform: translateY(0) rotate(0deg) scale(1, 1);
+          opacity: 0.88;
+        }
+      }
+
+      @keyframes bootCore {
+        0% {
+          transform: translateY(7px) scale(0.55);
+          opacity: 0;
+        }
+        28% {
+          transform: translateY(0) scale(1);
+          opacity: 0.48;
+        }
+        58% {
+          transform: translateY(0) scale(1.05);
+          opacity: 0.52;
+        }
+        100% {
+          transform: translateY(0) scale(0.94);
+          opacity: 0.34;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash-mark .wing,
+        #boot-splash-mark .left-wing,
+        #boot-splash-mark .right-wing,
+        #boot-splash-mark .core {
+          animation: none;
+        }
+
+        #boot-splash-mark .wing {
+          transform: none;
+          opacity: 0.8;
+        }
+
+        #boot-splash-mark .core {
+          transform: scale(1);
+          opacity: 0.36;
+        }
+      }
     </style>
   </head>
   <body>
+    <div id="boot-splash" aria-hidden="true">
+      <svg
+        id="boot-splash-mark"
+        viewBox="0 0 120 72"
+        role="presentation"
+        focusable="false"
+      >
+        <path class="wing left-wing" d="M60 55 C56 50 50 41 43 31 C35 20 27 14 18 10 C29 19 39 31 48 46 C52 52 56 57 60 63 Z" />
+        <path class="wing right-wing" d="M60 55 C64 50 70 41 77 31 C85 20 93 14 102 10 C91 19 81 31 72 46 C68 52 64 57 60 63 Z" />
+        <path class="core" d="M60 62 C57 61.7 55 59.8 55 57.2 C55 53.6 57.6 50.7 60 48 C62.4 50.7 65 53.6 65 57.2 C65 59.8 63 61.7 60 62 Z" />
+      </svg>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx">
     </script>

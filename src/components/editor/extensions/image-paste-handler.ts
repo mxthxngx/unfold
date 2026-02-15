@@ -1,4 +1,5 @@
 import type { EditorView } from "@tiptap/pm/view";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 export const handleImagePaste = (
   view: EditorView,
@@ -52,7 +53,6 @@ export async function uploadImageFromFile(
   noteId: string,
 ) {
   const { uploadImage } = await import("@/utils/invoke");
-  const { convertFileSrc } = await import("@tauri-apps/api/core");
   
   // Convert file to base64
   const base64 = await fileToBase64(file);

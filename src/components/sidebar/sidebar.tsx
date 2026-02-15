@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useParams, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
 import { DialogRoot, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { Modal } from '@/components/ui/modal';
@@ -30,12 +30,18 @@ import {
   ContextMenuShortcut,
 } from "@/components/ui/context-menu"
 import { ChevronDown, Plus, Trash2, Pencil } from 'lucide-react';
-import { AnimatedIcon } from '@/components/ui/animated-icon';
-import { Skeleton } from '@/components/ui/skeleton';
+import { SidebarTreeSkeleton } from '@/components/skeletons/workspace-skeleton';
 import { Button } from '../ui/button';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useIsNodeSelected, useSelectedFileId } from '@/store/hooks/use-filesystem-store';
+import { SidebarSectionLabel } from '@/components/common/sidebar/sidebar-section-label';
+import { SidebarActionButton } from '@/components/common/sidebar/sidebar-action-button';
 
-const Sidebar = memo(function Sidebar() {
+type SidebarProps = {
+  side?: 'left' | 'right';
+};
+
+const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
   const {
     spaces,
     activeSpaceId,
@@ -51,7 +57,7 @@ const Sidebar = memo(function Sidebar() {
     getNodePath,
     toggleFolder,
   } = useFileSystem();
-  const { fileId } = useParams({ strict: false });
+  const selectedFileId = useSelectedFileId();
   const navigate = useNavigate();
   const lastExpandedFileId = useRef<string | null>(null);
   const [isSpaceMenuOpen, setIsSpaceMenuOpen] = useState(false);
@@ -66,16 +72,30 @@ const Sidebar = memo(function Sidebar() {
   const activeSpaceItemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (fileId && fileId !== lastExpandedFileId.current) {
-      lastExpandedFileId.current = fileId;
-      const path = getNodePath(fileId);
+    const expandToActiveFile = () => {
+      if (!selectedFileId) return;
+      const path = getNodePath(selectedFileId);
       path.forEach((node, index) => {
         if (index < path.length - 1 && node.nodes && node.nodes.length > 0 && !node.isOpen) {
           toggleFolder(node.id);
         }
       });
+    };
+
+    if (selectedFileId && selectedFileId !== lastExpandedFileId.current) {
+      lastExpandedFileId.current = selectedFileId;
+      expandToActiveFile();
     }
-  }, [fileId, getNodePath, toggleFolder]);
+
+    const handleEditorActivate = () => {
+      expandToActiveFile();
+    };
+
+    document.addEventListener('editor:activate-file', handleEditorActivate);
+    return () => {
+      document.removeEventListener('editor:activate-file', handleEditorActivate);
+    };
+  }, [selectedFileId, getNodePath, toggleFolder]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -130,6 +150,7 @@ const Sidebar = memo(function Sidebar() {
       return;
     }
     await addSpace(nextName);
+    navigate({ to: '/' });
     setIsCreateSpaceOpen(false);
     setEditingSpaceId(null);
     setDraftName('');
@@ -187,33 +208,29 @@ const Sidebar = memo(function Sidebar() {
 
   return (
     <ShadcnSidebar 
-      variant="sidebar"
+      side={side}
+      variant="floating"
       collapsible="offcanvas"
       className={cn(
-        'bg-sidebar-container-bg border-0',
+        'bg-transparent border-0',
         'shadow-none',
-        'top-10! bottom-auto! h-[calc(100vh-2.5rem)]!',
+        'top-10! bottom-2! h-auto!',
         'flex flex-col'
       )}
     >
-      <SidebarHeader className="px-4 pt-3">
+      <SidebarHeader className="px-3 pt-2">
         <div className="h-1" />
       </SidebarHeader>
 
-         <SidebarContent className="px-4 overflow-y-auto">
+         <SidebarContent className="px-3 overflow-y-auto">
         {!isLoading && pinnedNodes.length > 0 && (
           <div className="mb-1">
-            <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
-              <span className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase">
-                pinned
-              </span>
-            </div>
+            <SidebarSectionLabel label="pinned" />
             <SidebarMenu className="space-y-0.5">
               {pinnedNodes.map((node) => (
                 <PinnedNodeItem
                   key={node.id}
                   node={node}
-                  selectedItem={fileId || null}
                   addFileShortcut={addFileShortcut}
                 />
               ))}
@@ -222,28 +239,15 @@ const Sidebar = memo(function Sidebar() {
         )}
 
         <div className={cn(!isLoading && pinnedNodes.length > 0 && 'mt-2')}>
-          <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1">
-            <span className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase">
-              notes
-            </span>
-          </div>
+          <SidebarSectionLabel label="notes" />
           <SidebarMenu className="space-y-0.5 pt-px">
             {isLoading ? (
-              <>
-                {[1, 2, 3].map((i) => (
-                  <SidebarMenuItem key={i}>
-                    <div className="flex items-center px-2 py-1.5">
-                      <Skeleton className="h-4 w-50 rounded" />
-                    </div>
-                  </SidebarMenuItem>
-                ))}
-              </>
+              <SidebarTreeSkeleton rows={10} className="pt-1.5" />
             ) : (
               fileTree.map((node) => (
                 <SidebarNodes
                   key={node.id}
                   node={node}
-                  selectedItem={fileId || null}
                   level={0}
                   addFileShortcut={addFileShortcut}
                 />
@@ -252,7 +256,7 @@ const Sidebar = memo(function Sidebar() {
           </SidebarMenu>
         </div>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-container-border/80 px-4 py-3">
+      <SidebarFooter className="border-t border-sidebar-container-border/80 px-3 py-2.5">
         <div className="flex items-center gap-2 w-full">
           <DialogRoot className="relative flex-1">
             <DialogTrigger
@@ -268,7 +272,7 @@ const Sidebar = memo(function Sidebar() {
               menuRef={menuRef}
               className="max-h-[60vh]"
             >
-              <div className="text-[10px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-2.5 mb-1">
+              <div className="text-[11px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-2.5 mb-1">
                 spaces
               </div>
               <div className="max-h-[48vh] overflow-y-auto overscroll-contain space-y-0.5 pr-1">
@@ -282,9 +286,9 @@ const Sidebar = memo(function Sidebar() {
                       onClick={() => handleSwitchSpace(space.id)}
                       ref={isActive ? activeSpaceItemRef : undefined}
                       className={cn(
-                        'group/space flex items-center gap-2 rounded-xl px-2.5 py-1 text-[11px] font-medium transition-all duration-150 border',
+                        'group/space flex items-center gap-2 rounded-xl px-2.5 py-1 text-[13px] font-medium transition-all duration-150 border cursor-pointer',
                         isActive
-                          ? 'bg-sidebar-item-hover-bg/80 text-foreground border-border-elevated'
+                          ? 'bg-sidebar-subitem-selected-bg text-foreground border-border-elevated'
                   : 'text-foreground/85 hover:bg-hover-bg-subtle hover:text-foreground border-transparent'
                       )}
                     >
@@ -301,19 +305,19 @@ const Sidebar = memo(function Sidebar() {
                               setDraftName('');
                             }
                           }}
-                          className="w-full rounded-md bg-surface-elevated text-foreground px-2 py-1 text-xs outline-none border border-surface-elevated-border focus:border-surface-elevated-focus transition-all duration-200"
+                          className="w-full rounded-md bg-surface-elevated text-foreground px-2 py-1 text-[13px] outline-none border border-surface-elevated-border focus:border-surface-elevated-focus transition-all duration-200"
                         />
                       ) : (
                         <button
                           onClick={() => handleSwitchSpace(space.id)}
-                          className="flex-1 text-left truncate text-xs font-medium text-inherit"
+                          className="flex-1 text-left truncate text-[13px] font-medium text-inherit"
                         >
                           {space.name}
                         </button>
                       )}
 
                       {!isEditing && (
-                        <div className="flex items-center gap-1 opacity-0 group-hover/space:opacity-100 transition-opacity duration-200">
+                        <div className="ml-auto flex w-12 shrink-0 items-center justify-end gap-1 opacity-0 group-hover/space:opacity-100 pointer-events-none group-hover/space:pointer-events-auto transition-opacity duration-150">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -345,7 +349,7 @@ const Sidebar = memo(function Sidebar() {
 
               <button
                 onClick={handleOpenCreateSpace}
-                className="w-full mt-2 rounded-lg px-3 py-2 bg-surface-deeper border border-border-strong text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-hover-bg-subtle hover:border-surface-border-hover transition-all duration-200 ease-out flex items-center gap-2 justify-center text-xs font-medium"
+                className="w-full mt-2 rounded-lg px-3 py-2 bg-surface-elevated border border-dashed border-surface-elevated-border text-foreground-muted-tertiary hover:text-foreground-muted-hover hover:bg-hover-bg-subtle hover:border-surface-border-hover transition-all duration-200 ease-out flex items-center gap-2 justify-center text-[13px] font-medium"
               >
                 <Plus size={14} strokeWidth={2} />
                 <span>add new space</span>
@@ -355,16 +359,16 @@ const Sidebar = memo(function Sidebar() {
 
           <Tooltip delayDuration={120}>
             <TooltipTrigger asChild>
-              <button
-                onClick={handleGlobalAdd}
-                title=""
-                className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center shrink-0 relative overflow-hidden text-sidebar-foreground"
+              <SidebarActionButton
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleGlobalAdd();
+                }}
+                className="shrink-0 text-sidebar-foreground"
+                ariaLabel="Add a new file"
               >
-                <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                  <Plus size={14} strokeWidth={3}/>
-                </AnimatedIcon>
-                <Ripple />
-              </button>
+                <Plus size={14} strokeWidth={3} />
+              </SidebarActionButton>
             </TooltipTrigger>
             <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
           </Tooltip>
@@ -387,7 +391,7 @@ const Sidebar = memo(function Sidebar() {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <label className="text-[11px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium  pointer-events-auto">
+            <label className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase pointer-events-auto">
               space name
             </label>
             <input
@@ -415,11 +419,23 @@ const Sidebar = memo(function Sidebar() {
               cancel
             </button>
             <Button
-            variant={"outline"}
+              variant="outline"
+              size="lg"
               type="submit"
-              className="pointer-events-auto"
+              className={cn(
+                'pointer-events-auto cursor-pointer relative overflow-hidden justify-start gap-2 px-3 py-2 text-sm font-semibold',
+                'text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80',
+                'transition-all duration-200 w-fit',
+                'disabled:cursor-not-allowed disabled:opacity-50',
+              )}
             >
-              create space
+              <span className="relative z-10 inline-flex items-center gap-2 font-sans-serif">
+                create space
+              </span>
+              <Ripple
+                duration={1200}
+                color="color-mix(in srgb, var(--sidebar-item-hover-bg) 82%, transparent)"
+              />
             </Button>
           </div>
         </form>
@@ -436,25 +452,27 @@ const Sidebar = memo(function Sidebar() {
 
 const PinnedNodeItem = memo(({
   node,
-  selectedItem,
   addFileShortcut,
 }: {
   node: SidebarNode;
-  selectedItem: null | string;
   addFileShortcut: string;
 }) => {
-  const { addNode, deleteNode, getPreviousVisibleNode, togglePinNode } = useFileSystem();
+  const { addNode, deleteNode, getPreviousVisibleNode, togglePinNode, toggleFolder, getNodePath, getNode } = useFileSystem();
+  const selectedFileId = useSelectedFileId();
+  const isSelected = useIsNodeSelected(node.id);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const isSelected = selectedItem === node.id;
+  const canonicalNode = getNode(node.id);
+  const hasChildren = !!canonicalNode?.nodes?.length;
+  const isOpen = !!canonicalNode?.isOpen;
 
   const handleOpenDeleteModal = useCallback(() => {
     setIsDeleteModalOpen(true);
   }, []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
   const handleConfirmDeleteNode = async () => {
-    if (selectedItem === node.id) {
+    if (selectedFileId === node.id) {
       const prevNodeId = getPreviousVisibleNode(node.id);
       if (prevNodeId) {
         navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
@@ -481,6 +499,20 @@ const PinnedNodeItem = memo(({
     navigate({ to: '/files/$fileId', params: { fileId: newId } });
   };
 
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Expand the real parent chain in Notes first, then toggle this node.
+    const path = getNodePath(node.id);
+    path.forEach((pathNode, index) => {
+      if (index < path.length - 1 && pathNode.nodes && pathNode.nodes.length > 0 && !pathNode.isOpen) {
+        toggleFolder(pathNode.id);
+      }
+    });
+    if (hasChildren) {
+      toggleFolder(node.id);
+    }
+  };
+
   return (
     <>
       <SidebarMenuItem className="px-0">
@@ -488,7 +520,7 @@ const PinnedNodeItem = memo(({
           <ContextMenuTrigger asChild>
             <div
               className={cn(
-                'group/pinned-item flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] px-2 py-1',
+                'group/pinned-item flex items-center w-full rounded-xl border transition-all text-[13px] font-[450] font-sans px-2 py-1',
                 isSelected
                   ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
@@ -504,32 +536,39 @@ const PinnedNodeItem = memo(({
               }}
             >
               <div className="flex-1 min-w-0">
-                <span className="block truncate select-none">{node.name || "new page"}</span>
+                <span className="block truncate select-none font-sans">{node.name || "new page"}</span>
               </div>
               <div
                 className={cn(
                   "flex items-center gap-1 pl-2 overflow-hidden transition-opacity duration-150",
                   "opacity-0 max-w-0 pointer-events-none",
-                  "group-hover/pinned-item:opacity-100 group-hover/pinned-item:max-w-22 group-hover/pinned-item:pointer-events-auto"
+                  "group-hover/pinned-item:opacity-100 group-hover/pinned-item:max-w-28 group-hover/pinned-item:pointer-events-auto"
                 )}
               >
                 <Tooltip delayDuration={120}>
                   <TooltipTrigger asChild>
-                    <button
+                    <SidebarActionButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleAddChild(e);
+                        void handleAddChild(e);
                       }}
-                      className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                      ariaLabel="Add child note"
                     >
-                      <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                        <Plus size={14} strokeWidth={3}/>
-                      </AnimatedIcon>
-                      <Ripple />
-                    </button>
+                      <Plus size={14} strokeWidth={3} />
+                    </SidebarActionButton>
                   </TooltipTrigger>
                   <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
                 </Tooltip>
+                {hasChildren && (
+                  <SidebarActionButton
+                    onClick={handleToggle}
+                    aria-label={isOpen ? 'Collapse note' : 'Expand note'}
+                  >
+                    <span className={cn("inline-flex transition-transform duration-200 ease-out", !isOpen && "-rotate-90 opacity-90")}>
+                      <ChevronDown size={14} strokeWidth={3} />
+                    </span>
+                  </SidebarActionButton>
+                )}
               </div>
             </div>
           </ContextMenuTrigger>
@@ -553,7 +592,7 @@ const PinnedNodeItem = memo(({
 
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
-        itemName={node.name || 'note'}
+        itemName={node.name?.trim() || 'new page'}
         onCancel={handleCancelDeleteNode}
         onConfirm={handleConfirmDeleteNode}
       />
@@ -563,40 +602,36 @@ const PinnedNodeItem = memo(({
 
 export const SidebarNodes = memo(({ 
   node, 
-  selectedItem, 
   level = 0,
   isFirstChild = false,
   addFileShortcut
 }: { 
   node: SidebarNode;
-  selectedItem: null | string;
   level?: number;
   isFirstChild?: boolean;
   addFileShortcut: string;
 }) => {
   const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode, togglePinNode, isNodePinned } = useFileSystem();
+  const selectedFileId = useSelectedFileId();
+  const isSelected = useIsNodeSelected(node.id);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
 
   const hasChildren = node.nodes && node.nodes.length > 0;
-  const isSelected = selectedItem === node.id;
   const isPinned = isNodePinned(node.id);
   const isOpen = !!node.isOpen;
 
   const subtreeTransition = prefersReducedMotion
     ? { duration: 0 }
     : { type: 'tween' as const, duration: 0.34, ease: [0.42, 0, 0.58, 1] as const };
-  const iconTransition = prefersReducedMotion
-    ? { duration: 0 }
-    : { type: 'spring' as const, stiffness: 380, damping: 28, mass: 0.35 };
 
   const handleOpenDeleteModal = useCallback((_nodeId?: string) => {
     setIsDeleteModalOpen(true);
   }, []);
   const handleCancelDeleteNode = () => setIsDeleteModalOpen(false);
   const handleConfirmDeleteNode = async () => {
-    if (selectedItem === node.id) {
+    if (selectedFileId === node.id) {
       const prevNodeId = getPreviousVisibleNode(node.id);
       if (prevNodeId) {
         navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
@@ -645,7 +680,7 @@ export const SidebarNodes = memo(({
   const deleteModal = (
     <DeleteConfirmationModal
       isOpen={isDeleteModalOpen}
-      itemName={node.name || 'note'}
+      itemName={node.name?.trim() || 'new page'}
       onCancel={handleCancelDeleteNode}
       onConfirm={handleConfirmDeleteNode}
     />
@@ -659,9 +694,9 @@ export const SidebarNodes = memo(({
             <ContextMenuTrigger asChild>
               <div
                 className={cn(
-                  'group/item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] px-2 pr-2 py-1 box-border',
+                  'group/item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] font-sans px-2 pr-2 py-1 box-border',
                   isSelected
-                    ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                    ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                     : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
                 )}
                 onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -675,7 +710,7 @@ export const SidebarNodes = memo(({
                 }}
               >
                 <div className="flex-1 min-w-0">
-                  <span className="block truncate select-none">{node.name || "new page"}</span>
+                  <span className="block truncate select-none font-sans">{node.name || "new page"}</span>
                 </div>
                 <div
                   className={cn(
@@ -686,41 +721,30 @@ export const SidebarNodes = memo(({
                 >
                   <Tooltip delayDuration={120}>
                     <TooltipTrigger asChild>
-                      <button
+                      <SidebarActionButton
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleAddChild(e);
+                          void handleAddChild(e);
                         }}
-                        className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                        ariaLabel="Add child note"
                       >
-                        <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                          <Plus size={14} strokeWidth={3}/>
-                        </AnimatedIcon>
-                        <Ripple />
-                      </button>
+                        <Plus size={14} strokeWidth={3} />
+                      </SidebarActionButton>
                     </TooltipTrigger>
                     <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
                   </Tooltip>
 
-                  <button
+                  <SidebarActionButton
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggle(e);
                     }}
-                    className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                    ariaLabel={isOpen ? 'Collapse note' : 'Expand note'}
                   >
-                    <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                      <motion.span
-                        className="inline-flex"
-                        initial={false}
-                        animate={{ rotate: isOpen ? 0 : -90, opacity: isOpen ? 1 : 0.9 }}
-                        transition={iconTransition}
-                      >
-                        <ChevronDown size={14} strokeWidth={3} />
-                      </motion.span>
-                    </AnimatedIcon>
-                    <Ripple />
-                  </button>
+                    <span className={cn("inline-flex transition-transform duration-200 ease-out", !isOpen && "-rotate-90 opacity-90")}>
+                      <ChevronDown size={14} strokeWidth={3} />
+                    </span>
+                  </SidebarActionButton>
                 </div>
               </div>
             </ContextMenuTrigger>
@@ -766,7 +790,6 @@ export const SidebarNodes = memo(({
                       >
                         <SidebarNodes
                           node={childNode}
-                          selectedItem={selectedItem}
                           level={level + 1}
                           isFirstChild={index === 0}
                           addFileShortcut={addFileShortcut}
@@ -793,9 +816,9 @@ export const SidebarNodes = memo(({
           <ContextMenuTrigger asChild>
             <div
               className={cn(
-                'group/sub-item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] px-2 py-1 box-border',
+                'group/sub-item-row flex items-center w-full min-w-0 rounded-xl border transition-all text-[13px] font-[450] font-sans px-2 py-1 box-border',
                 isSelected
-                  ? 'bg-sidebar-item-hover-bg/80 text-foreground/90 font-[450] border-border-elevated'
+                  ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
               onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
@@ -809,7 +832,7 @@ export const SidebarNodes = memo(({
               }}
             >
               <div className="flex-1 min-w-0">
-                <span className="block truncate select-none">{node.name || "new page"}</span>
+                <span className="block truncate select-none font-sans">{node.name || "new page"}</span>
               </div>
 
               <div
@@ -821,41 +844,30 @@ export const SidebarNodes = memo(({
               >
                 <Tooltip delayDuration={120}>
                   <TooltipTrigger asChild>
-                    <button
+                    <SidebarActionButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleAddChild(e);
+                        void handleAddChild(e);
                       }}
-                      className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                      ariaLabel="Add child note"
                     >
-                      <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                        <Plus size={14} strokeWidth={3} />
-                      </AnimatedIcon>
-                      <Ripple />
-                    </button>
+                      <Plus size={14} strokeWidth={3} />
+                    </SidebarActionButton>
                   </TooltipTrigger>
                   <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
                 </Tooltip>
 
-                <button
+                <SidebarActionButton
                   onClick={(e) => {
                     e.stopPropagation();
                     handleToggle(e);
                   }}
-                  className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/60 active:scale-95 transition-all size-5 flex items-center justify-center"
+                  ariaLabel={isOpen ? 'Collapse note' : 'Expand note'}
                 >
-                  <AnimatedIcon className="w-full h-full flex items-center justify-center">
-                    <motion.span
-                      className="inline-flex"
-                      initial={false}
-                      animate={{ rotate: isOpen ? 0 : -90, opacity: isOpen ? 1 : 0.9 }}
-                      transition={iconTransition}
-                    >
-                      <ChevronDown size={14} strokeWidth={3} />
-                    </motion.span>
-                  </AnimatedIcon>
-                  <Ripple />
-                </button>
+                  <span className={cn("inline-flex transition-transform duration-200 ease-out", !isOpen && "-rotate-90 opacity-90")}>
+                    <ChevronDown size={14} strokeWidth={3} />
+                  </span>
+                </SidebarActionButton>
               </div>
             </div>
           </ContextMenuTrigger>
@@ -900,7 +912,6 @@ export const SidebarNodes = memo(({
                       >
                         <SidebarNodes
                           node={childNode}
-                          selectedItem={selectedItem}
                           level={level + 1}
                           isFirstChild={index === 0}
                           addFileShortcut={addFileShortcut}

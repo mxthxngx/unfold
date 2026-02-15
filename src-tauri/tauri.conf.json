@@ -38,6 +38,7 @@
         "store:default",
         "core:event:allow-listen",
         "core:event:default",
+        "core:webview:allow-print",
         "core:window:allow-start-dragging",
         "core:window:allow-internal-toggle-maximize",
         "core:menu:default",
@@ -93,7 +94,8 @@
         "x": 20,
         "y": 23
       },
-      "shadow": false
+      "shadow": false,
+      "backgroundColor": "#0D0D0C"
     }
   ],
   "withGlobalTauri": false

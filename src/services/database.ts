@@ -27,6 +27,8 @@ export interface NodeRow {
   parent_id: string | null;
   name: string;
   content: string | null;
+  created_at: string | null;
+  updated_at: string | null;
   is_open: number;
   sort_order: number;
   is_pinned: number;
@@ -111,7 +113,7 @@ export async function updateNode(
 ): Promise<void> {
   const database = await getDb();
   const fields: string[] = [];
-  const values: any[] = [];
+  const values: Array<string | number> = [];
 
   if (updates.name !== undefined) {
     fields.push("name = $" + (values.length + 1));
@@ -214,6 +216,8 @@ export function buildNodeTree(rows: NodeRow[]): Node[] {
       id: row.id,
       name: row.name,
       content: row.content || undefined,
+      createdAt: row.created_at || undefined,
+      updatedAt: row.updated_at || undefined,
       isOpen: Boolean(row.is_open),
       isPinned: Boolean(row.is_pinned),
     });

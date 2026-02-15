@@ -8,7 +8,8 @@
 .ProseMirror.dragging .ProseMirror-selectednode {
   outline: none !important;
   color: var(--selection-text);
-  box-shadow: 0 0 0 2px var(--selection-ring) !important;
+  border: 2px solid var(--selection-ring) !important;
+  box-shadow: none !important;
   padding: 0.5rem;
 }
 
@@ -25,9 +26,7 @@
   background: color-mix(in srgb, var(--highlight-vivid) 70%, transparent) !important;
   border: none !important;
   border-radius: 1px;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--highlight-vivid) 45%, transparent),
-    0 0 10px color-mix(in srgb, var(--highlight-vivid) 40%, transparent);
+  box-shadow: none !important;
   z-index: 20;
   transition: opacity 0.2s;
   margin: 0 !important;
@@ -43,9 +42,7 @@
   height: 10px;
   background: var(--highlight-vivid);
   border-radius: 50%;
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--highlight-vivid) 35%, transparent),
-    0 0 12px color-mix(in srgb, var(--highlight-vivid) 45%, transparent);
+  box-shadow: none !important;
 }
 
 .ProseMirror {

@@ -1,35 +1,66 @@
 # Unfold
 
-Tauri + React + TypeScript. A distraction-free notes app.
+Unfold is a Tauri + React + TypeScript note-taking app focused on fast keyboard-first editing, nested pages, and rich content export.
 
-## Run
+## Tech stack
+
+- Tauri 2 (Rust backend + desktop shell)
+- React 19 + TypeScript
+- TanStack Router
+- Redux Toolkit + RTK Query
+- TipTap editor
+- Tailwind CSS v4 token system
+
+## Prerequisites
+
+- Node.js 20+
+- pnpm 9+
+- Rust toolchain (for Tauri desktop builds)
+- Platform-specific Tauri prerequisites: [Tauri setup docs](https://tauri.app/start/prerequisites/)
+
+## Quick start
 
 ```bash
-pnpm tauri dev
+pnpm install
+pnpm dev
 ```
 
-## Recommended IDE Setup
+Run desktop app:
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+```bash
+pnpm dev:tauri
+```
 
-## Web Inspector
+## Common scripts
 
-Right-click the webview → **Inspect**, or use **Ctrl+Shift+I** (Windows/Linux) / **Cmd+Option+I** (macOS).
+- `pnpm dev`: web dev server
+- `pnpm dev:tauri`: Tauri desktop dev mode
+- `pnpm typecheck`: TypeScript validation
+- `pnpm build`: production build
+- `pnpm check`: full local gate (`typecheck` + `build`)
 
----
+## Project docs
 
-## Implemented
+- Developer guide: [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
+- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Color and design token system: [docs/COLOR_SYSTEM.md](docs/COLOR_SYSTEM.md)
+- Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
 
-- Last edited on (per page or block).
+## Quality gates
 
----
+GitHub CI runs on pull requests and validates:
 
-## Layout settings (planned)
+- `pnpm install --frozen-lockfile`
+- `pnpm typecheck`
+- `pnpm build`
 
-- Show page title in the sidebar when collapsed.
-- Option to fully collapse the sidebar.
+## Contributing
 
-## Other ideas
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for branch/PR expectations and required checks.
 
-- Scroll between sections (e.g. headings) when reaching the end of a section, similar to Google Docs.
-  - e.g. [Motion scroll animations](https://motion.dev/docs/react-scroll-animations), track element within viewport.
+## License
+
+[MIT](LICENSE)

@@ -17,9 +17,7 @@
 .search-result-current {
   color: var(--selection-text);
   background-color: color-mix(in srgb, var(--highlight-vivid) 70%, transparent) !important;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--highlight-vivid) 45%, transparent),
-    0 0 10px color-mix(in srgb, var(--highlight-vivid) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--highlight-vivid) 45%, transparent);
   border-radius: 4px;
   animation: pulse-highlight 1s ease-in-out;
 }

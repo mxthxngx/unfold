@@ -9,6 +9,7 @@ const rootRoute = createRootRoute({
       <Outlet />
     </EditorLayout>
   ),
+  notFoundComponent: IndexPage,
 });
 
 const indexRoute = createRoute({
@@ -25,7 +26,10 @@ const fileRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([indexRoute, fileRoute]);
 
-export const router = createRouter({ routeTree });
+export const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+});
 
 declare module '@tanstack/react-router' {
   interface Register {
