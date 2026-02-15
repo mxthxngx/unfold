@@ -71,7 +71,7 @@
     "@types/node": "^24.5.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
+    "@vitejs/plugin-react": "^5.1.4",
     "sass-embedded": "^1.93.3",
     "serve": "^14.2.5",
     "typescript": "~5.8.3",
