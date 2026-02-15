@@ -1,5 +1,4 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 import { useNavigate } from '@tanstack/react-router';
 import { Ripple } from '@/components/ui/ripple';
 import { DialogRoot, DialogTrigger, DialogContent } from '@/components/ui/dialog';
@@ -36,6 +35,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useIsNodeSelected, useSelectedFileId } from '@/store/hooks/use-filesystem-store';
 import { SidebarSectionLabel } from '@/components/common/sidebar/sidebar-section-label';
 import { SidebarActionButton } from '@/components/common/sidebar/sidebar-action-button';
+import { AnimatedIcon } from '../ui/animated-icon';
 
 type SidebarProps = {
   side?: 'left' | 'right';
@@ -150,7 +150,6 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
       return;
     }
     await addSpace(nextName);
-    navigate({ to: '/' });
     setIsCreateSpaceOpen(false);
     setEditingSpaceId(null);
     setDraftName('');
@@ -391,7 +390,7 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
           </div>
 
           <div className="flex flex-col gap-2.5">
-            <label className="text-xs text-sidebar-foreground/50 font-medium tracking-wide font-sans-serif lowercase pointer-events-auto">
+            <label className="text-[11px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium  pointer-events-auto">
               space name
             </label>
             <input
@@ -844,30 +843,34 @@ export const SidebarNodes = memo(({
               >
                 <Tooltip delayDuration={120}>
                   <TooltipTrigger asChild>
-                    <SidebarActionButton
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        void handleAddChild(e);
+                        handleAddChild(e);
                       }}
-                      ariaLabel="Add child note"
+                      className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/75 transition-colors duration-150 size-5 flex items-center justify-center"
                     >
-                      <Plus size={14} strokeWidth={3} />
-                    </SidebarActionButton>
+                      <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                        <Plus size={14} strokeWidth={3} />
+                      </AnimatedIcon>
+                    </button>
                   </TooltipTrigger>
                   <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
                 </Tooltip>
 
-                <SidebarActionButton
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleToggle(e);
                   }}
-                  ariaLabel={isOpen ? 'Collapse note' : 'Expand note'}
+                  className="sidebar-icon-button rounded-md hover:bg-sidebar-icon-hover-bg/75 transition-colors duration-150 size-5 flex items-center justify-center"
                 >
-                  <span className={cn("inline-flex transition-transform duration-200 ease-out", !isOpen && "-rotate-90 opacity-90")}>
-                    <ChevronDown size={14} strokeWidth={3} />
-                  </span>
-                </SidebarActionButton>
+                  <AnimatedIcon className="w-full h-full flex items-center justify-center">
+                    <span className={cn("inline-flex transition-transform duration-200 ease-out", !isOpen && "-rotate-90 opacity-90")}>
+                      <ChevronDown size={14} strokeWidth={3} />
+                    </span>
+                  </AnimatedIcon>
+                </button>
               </div>
             </div>
           </ContextMenuTrigger>
