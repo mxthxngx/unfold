@@ -62,7 +62,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
         <SidebarInset className="flex-1 relative bg-background">
           <div
             className={[
-              'flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-transparent',
+              'editor-scroll-stable flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-transparent',
             ].join(' ')}
           >
             <div

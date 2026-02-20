@@ -26,6 +26,7 @@ import Highlight from "@tiptap/extension-highlight";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { TextStyle } from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
+import invoke from "@/utils/invoke";
 import "./styles/drag-handle.css";
 import "./styles/block-spacing.css";
 import "./styles/image-node.css";
@@ -61,6 +62,28 @@ function PageEditor({ fileId }: PageEditorProps) {
     if (selection && !selection.isCollapsed) {
       selection.removeAllRanges();
     }
+  }, []);
+
+  const handleExternalLinkOpen = useCallback((event: MouseEvent) => {
+    const target = event.target as HTMLElement | null;
+    const anchor = target?.closest("a[href]") as HTMLAnchorElement | null;
+    if (!anchor || !editorContainerRef.current?.contains(anchor)) {
+      return false;
+    }
+
+    const href = anchor.getAttribute("href")?.trim();
+    if (!href || href.startsWith("#")) {
+      return false;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    void invoke("open_external_url", { url: href }).catch((error) => {
+      console.error("Failed to open external URL:", error);
+    });
+
+    return true;
   }, []);
 
   const editor = useEditor({
@@ -137,6 +160,13 @@ function PageEditor({ fileId }: PageEditorProps) {
         class: "w-full outline-none bg-transparent border-none px-6 pb-6 text-foreground min-h-full",
       },
       handleDOMEvents: {
+        click: (_view, event) => handleExternalLinkOpen(event),
+        auxclick: (_view, event) => {
+          if (event.button !== 1) {
+            return false;
+          }
+          return handleExternalLinkOpen(event);
+        },
         keydown: (view, event) => {
           if (event.isComposing || event.keyCode === 229) return false;
           if (event.key.startsWith("Arrow") && !event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -243,7 +273,7 @@ function PageEditor({ fileId }: PageEditorProps) {
       try {
         content = JSON.parse(rawContent);
       } catch {
-        content = "";
+        content = rawContent;
       }
     }
 
