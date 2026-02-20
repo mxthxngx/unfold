@@ -25,6 +25,7 @@ base64 = "0.22"
 urlencoding = "2.1"
 rusqlite = { version = "0.32", features = ["bundled"] }
 tauri-plugin-log = "2"
+reqwest = "0.13.2"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!

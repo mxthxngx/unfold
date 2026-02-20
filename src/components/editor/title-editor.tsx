@@ -123,18 +123,25 @@ function TitleEditor({ fileId }: TitleEditorProps) {
   }, [editor, setTitleEditor]);
 
   useEffect(() => {
-    if (!editor || fileId === currentFileIdRef.current) return;
-    
-    currentFileIdRef.current = fileId;
+    if (!editor) return;
+
     const currentFile = getNode(fileId);
     const name = currentFile?.name || "";
-    
+    const isFileChanged = fileId !== currentFileIdRef.current;
+    const isNameChanged = name !== lastSavedRef.current;
+
+    if (!isFileChanged && !isNameChanged) {
+      return;
+    }
+
+    currentFileIdRef.current = fileId;
+
     isHydratingRef.current = true;
     editor.commands.setContent(name);
     isHydratingRef.current = false;
     lastSavedRef.current = name;
 
-    if (!name.trim()) {
+    if (isFileChanged && !name.trim()) {
       editor.commands.focus("start");
     }
   }, [fileId, editor, getNode]);

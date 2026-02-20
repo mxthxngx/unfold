@@ -37,6 +37,10 @@ type InvokeMap = {
         args: { attachmentId: string };
         returnType: void;
     };
+    open_external_url: {
+        args: { url: string };
+        returnType: void;
+    };
 };
 
 type InvocationName = keyof InvokeMap;

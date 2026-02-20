@@ -19,6 +19,16 @@ html, body, #root {
   box-sizing: border-box;
 }
 
+.editor-scroll-stable {
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  .editor-scroll-stable {
+    overflow-y: scroll !important;
+  }
+}
+
 img, picture, video, canvas, svg {
   display: block;
   max-width: 100%;
@@ -140,6 +150,15 @@ button:not(:disabled),
     0 0 0 1px rgba(255, 255, 255, 0.035);
   --selection-text: rgba(255, 255, 255, 0.95);
   --highlight-vivid: rgb(167, 139, 250);
+  --import-toggle-on-start: #3f189f;
+  --import-toggle-on-mid: #4d29b0;
+  --import-toggle-on-end: #5f3fbe;
+  --import-toggle-on-ring: transparent;
+  --import-filter-active-bg: color-mix(in srgb, var(--sidebar-item-hover-bg) 36%, transparent);
+  --import-toggle-off-track: color-mix(in srgb, var(--foreground-muted-secondary) 22%, transparent);
+  --import-toggle-off-ring: color-mix(in srgb, var(--foreground-muted-secondary) 30%, transparent);
+  --import-toggle-knob-on: #ffffff;
+  --import-toggle-knob-off: rgba(247, 242, 242, 0.4);
   --edge-grip-bg: #1c1c1f;
   --edge-grip-dot: #7c7c7d;
   --resize-handle-bg: #ffffff;
@@ -310,10 +329,10 @@ button:not(:disabled),
   --editor-code-mark-border: rgba(39, 39, 42, 0.7);
   --editor-code-block-text: var(--foreground);
   --editor-code-block-border: #2a2d35;
-  --editor-link-text: #a1a1aa;
-  --editor-link-decoration: #52525b;
-  --editor-link-hover-text: #e4e4e7;
-  --editor-link-hover-decoration: #a1a1aa;
+  --editor-link-text: #c4c4ce;
+  --editor-link-decoration: #71717a;
+  --editor-link-hover-text: #a1a1aa;
+  --editor-link-hover-decoration: #52525b;
   --editor-dropcursor: #c17bff;
   --drag-handle-bg: #18181b;
   --drag-handle-hover-bg: #27272a;
@@ -478,6 +497,15 @@ button:not(:disabled),
   --editor-picker-text-muted: #71717a;
   --selection-text: rgba(0, 0, 0, 0.95);
   --highlight-vivid: rgb(167, 139, 250);
+  --import-toggle-on-start: #3f189f;
+  --import-toggle-on-mid: #4d29b0;
+  --import-toggle-on-end: #5f3fbe;
+  --import-toggle-on-ring: transparent;
+  --import-filter-active-bg: color-mix(in srgb, white 74%, var(--modal-surface) 26%);
+  --import-toggle-off-track: color-mix(in srgb, var(--foreground-muted-secondary) 16%, transparent);
+  --import-toggle-off-ring: color-mix(in srgb, var(--foreground-muted-secondary) 24%, transparent);
+  --import-toggle-knob-on: #ffffff;
+  --import-toggle-knob-off: rgba(15, 17, 21, 0.4);
   --edge-grip-bg: #f4f4f5;
   --edge-grip-dot: #71717a;
   --resize-handle-bg: #ffffff;
@@ -504,9 +532,9 @@ button:not(:disabled),
   --editor-code-mark-border: var(--editor-code-block-border);
   --editor-code-block-text: var(--foreground);
   --editor-code-block-border: #dbe0ea;
-  --editor-link-text: #3f3f46;
+  --editor-link-text: #52525b;
   --editor-link-decoration: #a1a1aa;
-  --editor-link-hover-text: #18181b;
+  --editor-link-hover-text: #27272a;
   --editor-link-hover-decoration: #52525b;
   --editor-dropcursor: #7c3aed;
   --selection-ring: color-mix(in srgb, var(--highlight-vivid) 40%, transparent);

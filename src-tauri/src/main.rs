@@ -53,6 +53,8 @@ fn main() {
             commands::check_nodes_schema,
             commands::repair_nodes_schema,
             commands::save_pdf_file,
+            commands::fetch_website_html,
+            commands::open_external_url,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

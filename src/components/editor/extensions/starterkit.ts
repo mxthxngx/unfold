@@ -63,9 +63,11 @@ export const starterKit = StarterKit.configure({
         },
     },
     link:{
-      openOnClick:false,
+      openOnClick:true,
         HTMLAttributes: {
             class: cx(editorClasses.link),
+            target: "_blank",
+            rel: "noopener noreferrer",
         },
     }
 });

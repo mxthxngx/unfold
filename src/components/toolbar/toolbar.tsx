@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { PanelLeftIcon, SlidersHorizontalIcon } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
 import { FileBreadcrumbs } from '@/components/breadcrumbs/breadcrumbs';
 import { cn } from '@/lib/tiptap-utils';
@@ -8,13 +9,27 @@ import { Ripple } from '@/components/ui/ripple';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tooltip';
 import { SettingsModal } from '@/components/toolbar/settings-modal';
-import { useParams } from '@tanstack/react-router';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import {
   PrintScope,
   exportRichContent,
   selectPrintableNodes,
 } from '@/utils/print';
+import {
+  extractMainContentFromHtml,
+  importFromWebsite,
+  type ImportExtractionOptions,
+} from '@/utils/web-import';
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  if (typeof error === 'string' && error.trim()) {
+    return error;
+  }
+  return 'Import failed. Try another page or HTML source.';
+}
 
 function parseNodeTimestamp(value?: string): Date | null {
   if (!value) {
@@ -55,12 +70,15 @@ function formatRelativeTime(timestamp: Date, nowMs: number): string {
 
 export const Toolbar = memo(function Toolbar() {
   const { toggleSidebar } = useSidebar();
+  const navigate = useNavigate();
   const toggleSidebarShortcut = getShortcutDisplay(KEYBOARD_SHORTCUTS.TOGGLE_SIDEBAR);
   const { fileId } = useParams({ strict: false });
-  const { fileTree, getNode, spaceName } = useFileSystem();
+  const { fileTree, getNode, spaceName, addNode, renameNode, updateNodeContent } = useFileSystem();
 
   const [printScope, setPrintScope] = useState<PrintScope>('current');
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -96,6 +114,56 @@ export const Toolbar = memo(function Toolbar() {
       setIsPrinting(false);
     }
   }, [fileId, fileTree, getNode, printScope, spaceName]);
+
+  const createImportedNote = useCallback(
+    async (title: string, contentHtml: string) => {
+      const newId = await addNode(null);
+      if (!newId) {
+        throw new Error('Could not create a new file for imported content.');
+      }
+
+      await renameNode(newId, title);
+      await updateNodeContent(newId, contentHtml);
+      navigate({ to: '/files/$fileId', params: { fileId: newId } });
+      setIsSettingsOpen(false);
+      setImportError(null);
+    },
+    [addNode, navigate, renameNode, updateNodeContent],
+  );
+
+  const handleImportFromWebsite = useCallback(
+    async (url: string, options: ImportExtractionOptions) => {
+      setIsImporting(true);
+      setImportError(null);
+
+      try {
+        const imported = await importFromWebsite(url, options);
+        await createImportedNote(imported.title, imported.contentHtml);
+      } catch (error) {
+        setImportError(toErrorMessage(error));
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [createImportedNote],
+  );
+
+  const handleImportFromHtml = useCallback(
+    async (html: string, sourceUrl: string | undefined, options: ImportExtractionOptions) => {
+      setIsImporting(true);
+      setImportError(null);
+
+      try {
+        const imported = extractMainContentFromHtml(html, sourceUrl, options);
+        await createImportedNote(imported.title, imported.contentHtml);
+      } catch (error) {
+        setImportError(toErrorMessage(error));
+      } finally {
+        setIsImporting(false);
+      }
+    },
+    [createImportedNote],
+  );
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -169,7 +237,10 @@ export const Toolbar = memo(function Toolbar() {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.96 }}
           transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-          onClick={() => setIsSettingsOpen(true)}
+          onClick={() => {
+            setImportError(null);
+            setIsSettingsOpen(true);
+          }}
           className={cn(
             'sidebar-icon-button relative ml-2 size-5 rounded-md flex items-center justify-center overflow-hidden',
             'text-sidebar-foreground hover:text-foreground',
@@ -191,6 +262,10 @@ export const Toolbar = memo(function Toolbar() {
           isPrinting={isPrinting}
           hasActiveFile={hasActiveFile}
           onPrint={handlePrint}
+          onImportFromWebsite={handleImportFromWebsite}
+          onImportFromHtml={handleImportFromHtml}
+          isImporting={isImporting}
+          importError={importError}
         />
 
       </div>
