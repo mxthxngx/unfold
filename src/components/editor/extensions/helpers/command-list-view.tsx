@@ -154,7 +154,7 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
     return (
       <div
         id="slash-command"
-        className="h-slash-menu max-h-slash-menu w-[300px] overflow-y-auto overscroll-contain rounded-2xl border border-sidebar-container-border/80 bg-sidebar-container-bg p-1.5 shadow-dropdown [scrollbar-width:none] [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
+        className="max-h-slash-menu w-[300px] overflow-y-auto overscroll-contain rounded-2xl border border-sidebar-container-border/80 bg-sidebar-container-bg p-1.5 shadow-dropdown [scrollbar-width:none] [&::-webkit-scrollbar]:h-0 [&::-webkit-scrollbar]:w-0"
         ref={viewportRef}
       >
         {Object.entries(items).map(([category, categoryItems]) => {

@@ -54,7 +54,7 @@ export const editorClasses = {
     "list-decimal pl-6 space-y-1",
 
   taskList:
-  "list-none not-prose pl-2 space-y-2",
+  "list-none not-prose space-y-2",
 
   taskItem:
   "flex gap-2",
