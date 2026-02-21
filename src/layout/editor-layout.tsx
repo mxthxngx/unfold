@@ -9,17 +9,21 @@ import { SearchBar } from '@/components/search/search-bar';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import { useEditorContext } from '@/contexts/EditorContext';
 import { WorkspaceSkeleton } from '@/components/skeletons/workspace-skeleton';
-import { useSyncActiveFileSelection } from '@/store/hooks/use-filesystem-store';
+import {
+  useSyncActiveFileSelection,
+  useSyncActiveSpaceSelection,
+} from '@/store/hooks/use-filesystem-store';
 
 function LoadingScreen() {
   return <WorkspaceSkeleton />;
 }
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
-  const { fileId } = useParams({ strict: false });
+  const { fileId, spaceId } = useParams({ strict: false });
   const { layout } = useLayout();
   const { pageEditorRef } = useEditorContext();
   const { state: sidebarState, isMobile } = useSidebar();
+  useSyncActiveSpaceSelection(spaceId ?? null);
   useSyncActiveFileSelection(fileId ?? null);
 
   useGlobalSidebarShortcuts();

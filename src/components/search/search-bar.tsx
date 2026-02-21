@@ -270,6 +270,7 @@ export const SearchBar = React.forwardRef<HTMLDivElement>(function SearchBar(
       className={cn(
         'pointer-events-none fixed right-4 z-40 transition-transform duration-200',
         'top-14',
+        'print-hidden',
         isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-1'
       )}
     >

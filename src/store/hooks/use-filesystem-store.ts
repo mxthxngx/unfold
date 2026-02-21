@@ -320,6 +320,25 @@ export function useSyncActiveFileSelection(fileId: string | null): void {
   }, [dispatch, fileId]);
 }
 
+export function useSyncActiveSpaceSelection(spaceId: string | null): void {
+  const dispatch = useAppDispatch();
+  const spaces = useAppSelector(selectSpaces);
+  const activeSpaceId = useAppSelector(selectActiveSpaceId);
+
+  useEffect(() => {
+    if (!spaceId || activeSpaceId === spaceId) {
+      return;
+    }
+
+    const exists = spaces.some((space) => space.id === spaceId);
+    if (!exists) {
+      return;
+    }
+
+    dispatch(setActiveSpaceId(spaceId));
+  }, [activeSpaceId, dispatch, spaceId, spaces]);
+}
+
 export function useIsNodeSelected(nodeId: string): boolean {
   const activeFileId = useAppSelector(selectActiveFileId);
   return activeFileId === nodeId;

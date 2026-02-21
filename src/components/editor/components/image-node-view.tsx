@@ -1,13 +1,106 @@
 import { NodeViewWrapper } from "@tiptap/react";
 import { NodeViewProps } from "@tiptap/core";
-import { useMemo } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 
-export const ImageNodeView = ({ node }: NodeViewProps) => {
+const MIN_IMAGE_WIDTH_PERCENT = 15;
+const MAX_IMAGE_WIDTH_PERCENT = 100;
+
+function clampWidthPercent(value: number) {
+  return Math.max(MIN_IMAGE_WIDTH_PERCENT, Math.min(MAX_IMAGE_WIDTH_PERCENT, value));
+}
+
+function deriveFileNameFromSrc(src: string, alt?: string) {
+  const normalizedAlt = (alt || "").trim();
+  if (normalizedAlt) {
+    return normalizedAlt.replace(/[\\/:*?"<>|]+/g, "_");
+  }
+
+  try {
+    const parsed = new URL(src, window.location.href);
+    const file = parsed.pathname.split("/").filter(Boolean).pop();
+    if (file) {
+      return file;
+    }
+  } catch {
+    // fall back
+  }
+
+  return "image";
+}
+
+function normalizeWidth(width: unknown) {
+  if (typeof width === "number" && Number.isFinite(width)) {
+    return `${width}px`;
+  }
+
+  if (typeof width !== "string") {
+    return "100%";
+  }
+
+  const trimmed = width.trim();
+  if (!trimmed) {
+    return "100%";
+  }
+
+  return /^\d+(\.\d+)?$/.test(trimmed) ? `${trimmed}px` : trimmed;
+}
+
+export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
   const { src, attachmentId, alt, align, width, height } = node.attrs;
-  
-  // Compute loading and error states based on node attributes
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const draftWidthRef = useRef<string | null>(null);
+  const skipOpenOnClickRef = useRef(false);
+  const [draftWidth, setDraftWidth] = useState<string | null>(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [copyState, setCopyState] = useState<"idle" | "done" | "error">("idle");
+
   const loading = useMemo(() => !src && attachmentId === "uploading", [src, attachmentId]);
   const error = useMemo(() => !src && attachmentId && attachmentId !== "uploading", [src, attachmentId]);
+  const resolvedWidth = draftWidth ?? normalizeWidth(width);
+
+  useEffect(() => {
+    if (!isPreviewOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "escape") {
+        event.preventDefault();
+        setIsPreviewOpen(false);
+        return;
+      }
+
+      if (key === "d") {
+        event.preventDefault();
+        const anchor = document.createElement("a");
+        anchor.href = src;
+        anchor.download = deriveFileNameFromSrc(src, alt);
+        anchor.rel = "noopener noreferrer";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        return;
+      }
+
+      if (key === "o") {
+        event.preventDefault();
+        window.open(src, "_blank", "noopener,noreferrer");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isPreviewOpen, src, alt]);
 
   const getAlignmentClass = () => {
     switch (align) {
@@ -21,16 +114,134 @@ export const ImageNodeView = ({ node }: NodeViewProps) => {
     }
   };
 
+  const stopNodeSelection = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
+  const openPreview = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    if (!src || loading || error || isResizing) {
+      return;
+    }
+    if (skipOpenOnClickRef.current) {
+      skipOpenOnClickRef.current = false;
+      return;
+    }
+
+    stopNodeSelection(event);
+    setCopyState("idle");
+    setIsPreviewOpen(true);
+  }, [src, loading, error, isResizing, stopNodeSelection]);
+
+  const closePreview = useCallback(() => {
+    setIsPreviewOpen(false);
+    setCopyState("idle");
+  }, []);
+
+  const downloadImage = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!src) return;
+
+    const anchor = document.createElement("a");
+    anchor.href = src;
+    anchor.download = deriveFileNameFromSrc(src, alt);
+    anchor.rel = "noopener noreferrer";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  }, [src, alt]);
+
+  const openInNewTab = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!src) return;
+    window.open(src, "_blank", "noopener,noreferrer");
+  }, [src]);
+
+  const copyImageLink = useCallback(async (event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!src) return;
+
+    try {
+      await navigator.clipboard.writeText(src);
+      setCopyState("done");
+    } catch {
+      setCopyState("error");
+    }
+  }, [src]);
+
+  const resetImageWidth = useCallback((event: ReactMouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    updateAttributes({ width: "100%" });
+  }, [updateAttributes]);
+
+  const handleResizeStart = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const editorRoot = wrapper.closest(".ProseMirror") as HTMLElement | null;
+    const editorWidth =
+      editorRoot?.getBoundingClientRect().width ??
+      wrapper.parentElement?.getBoundingClientRect().width ??
+      wrapper.getBoundingClientRect().width;
+
+    if (!editorWidth) return;
+
+    const startX = event.clientX;
+    const startWidth = wrapper.getBoundingClientRect().width;
+    const pointerTarget = event.currentTarget;
+    const pointerId = event.pointerId;
+    pointerTarget.setPointerCapture(pointerId);
+    setIsResizing(true);
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const nextWidthPx = Math.max((MIN_IMAGE_WIDTH_PERCENT / 100) * editorWidth, startWidth + deltaX);
+      const nextWidth = `${clampWidthPercent((nextWidthPx / editorWidth) * 100).toFixed(2)}%`;
+      draftWidthRef.current = nextWidth;
+      setDraftWidth(nextWidth);
+    };
+
+    const finishResize = () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+
+      if (pointerTarget.hasPointerCapture(pointerId)) {
+        pointerTarget.releasePointerCapture(pointerId);
+      }
+
+      const nextWidth = draftWidthRef.current;
+      if (nextWidth) {
+        updateAttributes({ width: nextWidth });
+      }
+
+      skipOpenOnClickRef.current = true;
+      draftWidthRef.current = null;
+      setDraftWidth(null);
+      setIsResizing(false);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+  }, [updateAttributes]);
+
   if (loading) {
     return (
       <NodeViewWrapper className="image-node">
-        <div
-          className={`image-wrapper ${getAlignmentClass()}`}
-          style={{ width: width || "100%" }}
-        >
-          <div className="image-loading">
-            <div className="spinner" />
-            <span>Uploading image...</span>
+        <div className={`image-wrapper ${getAlignmentClass()}`}>
+          <div className="image-frame" style={{ width: resolvedWidth }}>
+            <div className="image-loading">
+              <div className="spinner" />
+              <span>Uploading image...</span>
+            </div>
           </div>
         </div>
       </NodeViewWrapper>
@@ -40,12 +251,11 @@ export const ImageNodeView = ({ node }: NodeViewProps) => {
   if (error) {
     return (
       <NodeViewWrapper className="image-node">
-        <div
-          className={`image-wrapper ${getAlignmentClass()}`}
-          style={{ width: width || "100%" }}
-        >
-          <div className="image-error">
-            <span>Failed to load image</span>
+        <div className={`image-wrapper ${getAlignmentClass()}`}>
+          <div className="image-frame" style={{ width: resolvedWidth }}>
+            <div className="image-error">
+              <span>Failed to load image</span>
+            </div>
           </div>
         </div>
       </NodeViewWrapper>
@@ -53,24 +263,96 @@ export const ImageNodeView = ({ node }: NodeViewProps) => {
   }
 
   return (
-    <NodeViewWrapper className="image-node">
-      <div
-        className={`image-wrapper ${getAlignmentClass()}`}
-        style={{ width: width || "100%" }}
-      >
-        <img
-          src={src}
-          alt={alt || ""}
-          draggable={false}
-          style={{
-            maxHeight: height || "600px",
-            maxWidth: "100%",
-            width: "auto",
-            height: "auto",
-            objectFit: "contain"
-          }}
-        />
+    <NodeViewWrapper className="image-node" data-resize-state={isResizing ? "true" : "false"}>
+      <div className={`image-wrapper ${getAlignmentClass()}`}>
+        <div
+          ref={wrapperRef}
+          className="image-frame"
+          style={{ width: resolvedWidth }}
+          data-resize-wrapper
+          onMouseDown={stopNodeSelection}
+          onClick={openPreview}
+        >
+          <img
+            src={src}
+            alt={alt || ""}
+            draggable={false}
+            onMouseDown={stopNodeSelection}
+            style={{
+              maxHeight: height || "600px",
+              width: "100%",
+              height: "auto",
+              objectFit: "contain",
+            }}
+          />
+          <div className="image-hover-actions">
+            <button
+              type="button"
+              className="image-hover-open"
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={openPreview}
+            >
+              Open preview
+            </button>
+          </div>
+          <button
+            type="button"
+            className="image-resize-handle"
+            data-resize-handle="right"
+            onPointerDown={handleResizeStart}
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+            aria-label="Resize image"
+          />
+        </div>
       </div>
+      {isPreviewOpen && src ? (
+        <div
+          className="image-lightbox"
+          role="dialog"
+          aria-modal="true"
+          onClick={closePreview}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <div
+            className="image-lightbox-panel"
+            onClick={(event) => event.stopPropagation()}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="image-lightbox-header">
+              <div className="image-lightbox-title">{alt || "Image preview"}</div>
+              <div className="image-lightbox-actions">
+                <button type="button" className="image-lightbox-action" onClick={copyImageLink}>
+                  {copyState === "done" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy link"}
+                </button>
+                <button type="button" className="image-lightbox-action" onClick={resetImageWidth}>
+                  Reset size
+                </button>
+                <button type="button" className="image-lightbox-action" onClick={downloadImage}>
+                  Download
+                </button>
+                <button type="button" className="image-lightbox-action" onClick={openInNewTab}>
+                  Open tab
+                </button>
+                <button type="button" className="image-lightbox-close" onClick={closePreview} aria-label="Close preview">
+                  X
+                </button>
+              </div>
+            </div>
+            <img
+              className="image-lightbox-image"
+              src={src}
+              alt={alt || ""}
+              draggable={false}
+            />
+            <div className="image-lightbox-shortcuts">
+              <span><kbd>Esc</kbd> close</span>
+              <span><kbd>D</kbd> download</span>
+              <span><kbd>O</kbd> open in tab</span>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </NodeViewWrapper>
   );
 };

@@ -22,14 +22,21 @@
   align-self: flex-start;
 }
 
-.ProseMirror [data-type="taskItem"] .task-item-content {
+.ProseMirror [data-type="taskItem"] > div {
   flex: 1;
   line-height: 1.5;
 }
 
-.ProseMirror [data-type="taskItem"] .task-item-content p {
+.ProseMirror [data-type="taskItem"] > div p {
   margin: 0;
   padding: 0;
+}
+
+.ProseMirror [data-type="taskItem"][data-checked="true"] > div,
+.ProseMirror [data-type="taskItem"][data-checked="true"] > div p {
+  color: var(--foreground-muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 

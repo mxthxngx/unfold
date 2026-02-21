@@ -11,11 +11,6 @@ import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tool
 import { SettingsModal } from '@/components/toolbar/settings-modal';
 import { useFileSystem } from '@/contexts/FileSystemContext';
 import {
-  PrintScope,
-  exportRichContent,
-  selectPrintableNodes,
-} from '@/utils/print';
-import {
   extractMainContentFromHtml,
   importFromWebsite,
   type ImportExtractionOptions,
@@ -30,6 +25,7 @@ function toErrorMessage(error: unknown): string {
   }
   return 'Import failed. Try another page or HTML source.';
 }
+import { PrintScope, exportToPdf, selectPrintableNodes } from '@/utils/print';
 
 function parseNodeTimestamp(value?: string): Date | null {
   if (!value) {
@@ -76,12 +72,12 @@ export const Toolbar = memo(function Toolbar() {
   const { fileTree, getNode, spaceName, addNode, renameNode, updateNodeContent } = useFileSystem();
 
   const [printScope, setPrintScope] = useState<PrintScope>('current');
-  const [isPrinting, setIsPrinting] = useState(false);
+  // const [isPrinting, setIsPrinting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
-
   const hasActiveFile = Boolean(fileId);
 
   useEffect(() => {
@@ -93,27 +89,32 @@ export const Toolbar = memo(function Toolbar() {
   const printableCount = useMemo(() => {
     const nodes = selectPrintableNodes(printScope, fileId, fileTree, getNode);
     return nodes.length;
-  }, [fileId, fileTree, getNode, printScope]);
+  }, [printScope, fileId, fileTree, getNode]);
 
-  const handlePrint = useCallback(async () => {
+  const handleExport = useCallback(async () => {
     try {
-      setIsPrinting(true);
+      setIsExporting(true);
       const nodes = selectPrintableNodes(printScope, fileId, fileTree, getNode);
       if (!nodes.length) {
         return;
       }
+
       const currentNode = fileId ? getNode(fileId) : null;
       const currentName = currentNode?.name?.trim() || 'new page';
       const scopedTitle = printScope === 'space'
-        ? (spaceName || 'Space')
+        ? (spaceName || 'space')
         : currentName;
-      await exportRichContent(nodes, scopedTitle);
+
+      await exportToPdf(nodes, scopedTitle);
     } catch (error) {
-      console.error('[toolbar:print]', error);
+      console.error('[toolbar:export-pdf]', error);
     } finally {
-      setIsPrinting(false);
+      setIsExporting(false);
     }
-  }, [fileId, fileTree, getNode, printScope, spaceName]);
+  }, [printScope, fileId, fileTree, getNode, spaceName]);
+
+  // Keep handlePrint as alias for keyboard shortcut handler
+  const handlePrint = handleExport;
 
   const createImportedNote = useCallback(
     async (title: string, contentHtml: string) => {
@@ -172,6 +173,18 @@ export const Toolbar = memo(function Toolbar() {
     return () => window.clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const onKeydown = (event: KeyboardEvent) => {
+      const isPrintShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'p';
+      if (!isPrintShortcut) return;
+      event.preventDefault();
+      void handlePrint();
+    };
+
+    window.addEventListener('keydown', onKeydown);
+    return () => window.removeEventListener('keydown', onKeydown);
+  }, [handlePrint]);
+
   const activeNode = fileId ? getNode(fileId) : null;
   const editedDate = parseNodeTimestamp(activeNode?.updatedAt ?? activeNode?.createdAt);
   const relativeText = editedDate ? formatRelativeTime(editedDate, nowMs) : null;
@@ -187,7 +200,8 @@ export const Toolbar = memo(function Toolbar() {
         'flex items-center justify-between',
         'text-xs select-none',
         'pl-24 pr-4',
-        'relative'
+        'relative',
+        'print-hidden',
       )}
       data-tauri-drag-region
     >
@@ -196,7 +210,7 @@ export const Toolbar = memo(function Toolbar() {
         data-tauri-drag-region
       />
       
-      <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10" data-tauri-drag-region>
+      <div className="flex items-center gap-3 flex-1 min-w-0 relative z-10 -translate-y-px" data-tauri-drag-region>
         <Tooltip delayDuration={120}>
           <TooltipTrigger asChild>
             <motion.button 
@@ -223,7 +237,7 @@ export const Toolbar = memo(function Toolbar() {
         </div>
       </div>
 
-      <div className="flex items-center text-sidebar-foreground/50 text-xs relative z-10 font-light" data-tauri-drag-region>
+      <div className="flex items-center text-sidebar-foreground/50 text-xs relative z-10 font-light -translate-y-px" data-tauri-drag-region>
         {relativeText && (
           <span
             className="mr-2 text-sidebar-foreground/60"
@@ -259,13 +273,14 @@ export const Toolbar = memo(function Toolbar() {
           printScope={printScope}
           onScopeChange={setPrintScope}
           printableCount={printableCount}
-          isPrinting={isPrinting}
+          isExporting={isExporting}
           hasActiveFile={hasActiveFile}
           onPrint={handlePrint}
           onImportFromWebsite={handleImportFromWebsite}
           onImportFromHtml={handleImportFromHtml}
           isImporting={isImporting}
           importError={importError}
+          onExport={handleExport}
         />
 
       </div>

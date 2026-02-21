@@ -67,21 +67,25 @@ export function WorkspaceSkeleton() {
       aria-live="polite"
       aria-label="Loading workspace"
     >
-      <div className="flex h-10 items-center border-b border-sidebar-container-border/70 px-4">
-        <Skeleton className="h-6 w-56 rounded-lg" />
-      </div>
-      <div className="flex h-[calc(100svh-2.5rem)] overflow-hidden">
-        <aside className="hidden w-[17rem] shrink-0 border-r border-sidebar-container-border/70 bg-sidebar-container-bg md:block">
-          <SidebarPanelSkeleton />
-        </aside>
-        <main className="flex-1 overflow-hidden">
-          <div className="mx-auto h-full w-full max-w-4xl px-6 pt-5 pb-8">
-            <EditorSkeleton />
-          </div>
-        </main>
+      <div className="flex h-[100svh] flex-col overflow-hidden">
+        <div className="h-10 shrink-0 bg-background" />
+
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <aside className="hidden shrink-0 p-2 md:block">
+            <div className="h-full w-[16rem] overflow-hidden rounded-[1.75rem] border border-sidebar-container-border/70 bg-sidebar">
+              <SidebarPanelSkeleton />
+            </div>
+          </aside>
+
+          <main className="flex-1 overflow-hidden">
+            <div className="mx-auto h-full w-full max-w-5xl px-6 pt-5 pb-8">
+              <EditorSkeleton />
+            </div>
+          </main>
+        </div>
+
       </div>
       <span className="sr-only">Preparing workspace</span>
     </div>
   );
 }
-

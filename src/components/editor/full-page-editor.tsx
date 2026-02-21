@@ -6,9 +6,9 @@ import PageEditor from "./page-editor";
 import { EditorSkeleton } from "./editor-skeleton";
 
 function FullPageEditor() {
-  const { fileId } = useParams({ from: "/files/$fileId" });
+  const { spaceId, fileId } = useParams({ from: "/spaces/$spaceId/files/$fileId" });
   const { getNode, isLoading } = useFileSystem();
-  useFileValidation(fileId);
+  useFileValidation(spaceId, fileId);
 
   if (isLoading) {
     return <EditorSkeleton />;
@@ -30,4 +30,3 @@ function FullPageEditor() {
 }
 
 export default FullPageEditor;
-

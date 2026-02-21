@@ -16,13 +16,14 @@ interface SettingsModalProps {
   printScope: PrintScope;
   onScopeChange: (scope: PrintScope) => void;
   printableCount: number;
-  isPrinting: boolean;
+  isExporting: boolean;
   hasActiveFile: boolean;
   onPrint: () => void;
   onImportFromWebsite: (url: string, options: ImportExtractionOptions) => Promise<void>;
   onImportFromHtml: (html: string, sourceUrl: string | undefined, options: ImportExtractionOptions) => Promise<void>;
   isImporting: boolean;
   importError: string | null;
+  onExport: () => void;
 }
 
 const defaultImportState = {
@@ -41,14 +42,16 @@ export function SettingsModal({
   printScope,
   onScopeChange,
   printableCount,
-  isPrinting,
+  isExporting,
   hasActiveFile,
   onPrint,
   onImportFromWebsite,
   onImportFromHtml,
   isImporting,
   importError,
+  onExport,
 }: SettingsModalProps) {
+
   const { theme, setTheme } = useTheme();
   const websiteUrlInputRef = useRef<HTMLInputElement | null>(null);
   const [activeSection, setActiveSection] = useState<'export' | 'import' | 'appearance'>('export');
@@ -76,9 +79,9 @@ export function SettingsModal({
     subtitle: string;
     disabled?: boolean;
   }> = [
-    { value: 'current', title: 'current file', subtitle: 'export only this file', disabled: !hasActiveFile },
-    { value: 'branch', title: 'current + children', subtitle: 'export this file and nested files', disabled: !hasActiveFile },
-    { value: 'space', title: 'whole space', subtitle: 'export every file in the space', disabled: printableCount === 0 },
+    { value: 'current', title: 'current file', subtitle: 'print only this file', disabled: !hasActiveFile },
+    { value: 'branch', title: 'current + children', subtitle: 'print this file and nested files', disabled: !hasActiveFile },
+    { value: 'space', title: 'whole space', subtitle: 'print every file in the space', disabled: printableCount === 0 },
   ];
 
   const appearanceOptions: Array<{
@@ -208,7 +211,7 @@ export function SettingsModal({
               <div className="space-y-4">
                 <div className="max-w-135 px-3.5">
                   <p className="whitespace-nowrap text-right font-sans text-[0.82rem] font-medium tracking-[0.02em] text-modal-surface-foreground/92">
-                    export scope
+                    print scope
                   </p>
                 </div>
 
@@ -505,10 +508,10 @@ export function SettingsModal({
                 {printableCount ? `${printableCount} file${printableCount === 1 ? '' : 's'} ready` : 'pick what to export'}
               </p>
               <Button
-                onClick={onPrint}
+                onClick={onExport}
                 variant="outline"
                 size="lg"
-                disabled={isPrinting || printableCount === 0 || (!hasActiveFile && printScope !== 'space')}
+                disabled={isExporting || printableCount === 0 || (!hasActiveFile && printScope !== 'space')}
                 className={cn(
                   'cursor-pointer relative overflow-hidden justify-start gap-2 px-3 py-2 text-sm font-semibold',
                   'text-sidebar-foreground bg-sidebar-item-hover-bg/60 border-2 border-sidebar-border/70 hover:bg-sidebar-item-hover-bg/80',
@@ -517,7 +520,7 @@ export function SettingsModal({
                 )}
               >
                 <span className="relative z-10 inline-flex items-center gap-2 font-sans-serif">
-                  {isPrinting ? 'preparing export...' : 'export'}
+                  {isExporting ? 'exporting...' : 'export pdf'}
                 </span>
                 <Ripple
                   duration={1200}

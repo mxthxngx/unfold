@@ -85,6 +85,7 @@ export function Modal({
       {open ? (
         <motion.div
           key="modal-overlay"
+          data-slot="modal-overlay"
           className={cn(
             'fixed inset-0 z-900 flex items-center justify-center px-4 sm:px-6 ',
             containerClassName
@@ -104,6 +105,7 @@ export function Modal({
           />
           <motion.div
             key="modal-backdrop"
+            data-slot="modal-backdrop"
             className={cn(
               'absolute inset-0 bg-sidebar/60',
               backdropClassName
@@ -120,6 +122,7 @@ export function Modal({
 
           <motion.div
             key="modal-content"
+            data-slot="modal-content"
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}

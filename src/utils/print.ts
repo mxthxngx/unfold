@@ -6,6 +6,8 @@ import Color from '@tiptap/extension-color';
 import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table';
 import MarkdownIt from 'markdown-it';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { invoke as tauriInvoke } from '@tauri-apps/api/core';
 import type { Node as FileNode } from '@/types/sidebar';
 import { DocumentExtension } from '@/components/editor/extensions/document';
@@ -13,8 +15,6 @@ import { HeadingExtension } from '@/components/editor/extensions/heading';
 import { TiptapImage } from '@/components/editor/extensions/image';
 import { starterKit } from '@/components/editor/extensions/starterkit';
 import { editorClasses } from '@/components/editor/styles/extension-styles';
-import { renderPdfBytes } from '@/utils/pdf';
-import type { PdfBlock, PdfExportPayload, PdfThemeColors, PdfTypography } from '@/utils/pdf-export-types';
 
 export type PrintScope = 'current' | 'branch' | 'space';
 
@@ -25,6 +25,8 @@ export interface PrintableNode {
   depth?: number;
 }
 
+// --- Helpers ----------------------------------------------------------------
+
 function getPageName(name?: string | null) {
   const value = (name ?? '').trim();
   return value.length > 0 ? value : 'new page';
@@ -34,6 +36,17 @@ function sanitizeFilename(value: string) {
   const normalized = value.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   return normalized.length > 0 ? normalized.slice(0, 120) : 'unfold export';
 }
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// --- Content rendering via headless TipTap ----------------------------------
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true });
 
@@ -90,471 +103,276 @@ function toHtml(content: string | undefined) {
   return renderViaEditor(md.render(content));
 }
 
-function normalizeText(value: string) {
-  return value.replace(/\s+/g, ' ').trim();
-}
+// --- PDF export via html2canvas + jsPDF -------------------------------------
 
-function htmlToBlocks(html: string): PdfBlock[] {
-  if (typeof DOMParser === 'undefined') {
-    const fallback = normalizeText(html);
-    return fallback ? [{ type: 'paragraph', text: fallback }] : [];
-  }
+/** A4 dimensions in mm. */
+const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
 
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const rootChildren = Array.from(doc.body.children);
-  const blocks: PdfBlock[] = [];
+/** Render width in CSS px – approximates A4 at comfortable on-screen size. */
+const RENDER_WIDTH_PX = 816;
 
-  const pushParagraph = (text: string) => {
-    const value = normalizeText(text);
-    if (value) blocks.push({ type: 'paragraph', text: value });
-  };
+/** Padding inside each rendered page (CSS px). */
+const PAGE_PADDING_X_PX = 48;
+const PAGE_PADDING_TOP_PX = 24;
+const PAGE_PADDING_BOTTOM_PX = 48;
 
-  for (const el of rootChildren) {
-    const tag = el.tagName.toLowerCase();
+/** html2canvas capture scale for high-DPI (retina) output. */
+const CAPTURE_SCALE = 2;
 
-    if (/^h[1-6]$/.test(tag)) {
-      const text = normalizeText(el.textContent ?? '');
-      if (!text) continue;
-      blocks.push({ type: 'heading', text, level: Number(tag[1]) as 1 | 2 | 3 | 4 | 5 | 6 });
-      continue;
-    }
-
-    if (tag === 'p') {
-      pushParagraph(el.textContent ?? '');
-      continue;
-    }
-
-    if (tag === 'hr') {
-      blocks.push({ type: 'horizontalRule' });
-      continue;
-    }
-
-    if (tag === 'ul' || tag === 'ol') {
-      // Check if this is a task list (contains checkboxes)
-      const taskItems = Array.from(el.querySelectorAll(':scope > li')).filter(
-        (li) => li.querySelector('input[type="checkbox"]') || li.getAttribute('data-type') === 'taskItem',
-      );
-
-      if (taskItems.length > 0) {
-        const items = taskItems.map((li) => {
-          const checkbox = li.querySelector('input[type="checkbox"]');
-          const checked = checkbox ? (checkbox as HTMLInputElement).checked : false;
-          const text = normalizeText(li.textContent ?? '');
-          return { checked, text };
-        }).filter((item) => item.text.length > 0);
-        if (items.length > 0) {
-          blocks.push({ type: 'taskList', items });
-        }
-      } else {
-        const items = Array.from(el.querySelectorAll(':scope > li'))
-          .map((li) => normalizeText(li.textContent ?? ''))
-          .filter((item) => item.length > 0);
-        if (items.length > 0) {
-          blocks.push({ type: 'list', ordered: tag === 'ol', items });
-        }
-      }
-      continue;
-    }
-
-    if (tag === 'pre') {
-      const text = (el.textContent ?? '').replace(/\r/g, '').trim();
-      if (text) blocks.push({ type: 'code', text });
-      continue;
-    }
-
-    if (tag === 'blockquote') {
-      const text = normalizeText(el.textContent ?? '');
-      if (text) blocks.push({ type: 'quote', text });
-      continue;
-    }
-
-    if (tag === 'table') {
-      const rows = Array.from(el.querySelectorAll('tr')).map((row) =>
-        Array.from(row.querySelectorAll('th,td'))
-          .map((cell) => normalizeText(cell.textContent ?? ''))
-          .filter((cell) => cell.length > 0),
-      ).filter((row) => row.length > 0);
-      if (rows.length > 0) blocks.push({ type: 'table', rows });
-      continue;
-    }
-
-    pushParagraph(el.textContent ?? '');
-  }
-
-  if (blocks.length === 0) {
-    pushParagraph(doc.body.textContent ?? '');
-  }
-
-  return blocks;
-}
+/** Stable ID used to scope the override <style> element to the container. */
+const PDF_CONTAINER_ID = 'pdf-export-container';
 
 function getCssVar(name: string): string {
   if (typeof document === 'undefined') return '';
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
-function parseLengthToPx(raw: string): number | null {
-  if (!raw) return null;
-  const value = raw.trim();
-  if (!value) return null;
-
-  const direct = Number.parseFloat(value);
-  if (Number.isFinite(direct) && value.endsWith('px')) return direct;
-  if (Number.isFinite(direct) && /^[\d.]+$/.test(value)) return direct;
-
-  if (typeof document === 'undefined') {
-    return Number.isFinite(direct) ? direct : null;
-  }
-
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.visibility = 'hidden';
-  probe.style.pointerEvents = 'none';
-  probe.style.width = value;
-  document.body.appendChild(probe);
-  const measured = Number.parseFloat(getComputedStyle(probe).width);
-  probe.remove();
-  return Number.isFinite(measured) ? measured : Number.isFinite(direct) ? direct : null;
-}
-
-function readLengthPx(value: string | null | undefined, fallback: number): number {
-  if (!value) return fallback;
-  return parseLengthToPx(value) ?? fallback;
-}
-
-function readStyleLengthPx(
-  style: CSSStyleDeclaration | null | undefined,
-  property: string,
-  fallback: number,
-): number {
-  if (!style) return fallback;
-  return readLengthPx(style.getPropertyValue(property), fallback);
-}
-
-function readCssVarLengthPx(name: string, fallback: number): number {
-  return readLengthPx(getCssVar(name), fallback);
-}
-
-function readFontWeight(style: CSSStyleDeclaration | null | undefined, fallback: number): number {
-  if (!style) return fallback;
-  const raw = style.getPropertyValue('font-weight').trim();
-  const parsed = Number.parseInt(raw, 10);
-  if (Number.isFinite(parsed) && parsed > 0) return parsed;
-  if (raw === 'bold') return 700;
-  if (raw === 'normal') return 400;
-  return fallback;
-}
-
-function readLineHeightRatio(
-  style: CSSStyleDeclaration | null | undefined,
-  fallbackRatio: number,
-  fallbackFontSizePx: number,
-): number {
-  if (!style) return fallbackRatio;
-  const lineHeight = style.getPropertyValue('line-height').trim();
-  if (!lineHeight || lineHeight === 'normal') return fallbackRatio;
-  if (/^[\d.]+$/.test(lineHeight)) {
-    const ratio = Number.parseFloat(lineHeight);
-    return Number.isFinite(ratio) ? ratio : fallbackRatio;
-  }
-  const px = parseLengthToPx(lineHeight);
-  if (px === null || !Number.isFinite(px) || !fallbackFontSizePx) return fallbackRatio;
-  const ratio = px / fallbackFontSizePx;
-  return Number.isFinite(ratio) && ratio > 0 ? ratio : fallbackRatio;
-}
-
-function queryStyle(selector: string): CSSStyleDeclaration | null {
-  if (typeof document === 'undefined') return null;
-  const element = document.querySelector(selector);
-  if (!(element instanceof HTMLElement)) return null;
-  return getComputedStyle(element);
-}
-
-function toHex(raw: string, bgHex?: string): string {
-  if (!raw) return '';
-
-  if (/^#[0-9a-fA-F]{3,8}$/.test(raw)) return raw;
-
-  const rgbMatch = raw.match(
-    /^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)/,
-  );
-  if (rgbMatch) {
-    let r = Math.round(Number(rgbMatch[1]));
-    let g = Math.round(Number(rgbMatch[2]));
-    let b = Math.round(Number(rgbMatch[3]));
-    const a = rgbMatch[4] !== undefined ? Number(rgbMatch[4]) : 1;
-
-    if (a < 1 && bgHex && /^#[0-9a-fA-F]{6}$/.test(bgHex)) {
-      const br = parseInt(bgHex.slice(1, 3), 16);
-      const bg = parseInt(bgHex.slice(3, 5), 16);
-      const bb = parseInt(bgHex.slice(5, 7), 16);
-      r = Math.round(r * a + br * (1 - a));
-      g = Math.round(g * a + bg * (1 - a));
-      b = Math.round(b * a + bb * (1 - a));
+/**
+ * Inject a scoped <style> into document.head so html2canvas is guaranteed to
+ * pick it up (styles inside a div's innerHTML are not reliably applied during
+ * canvas capture).  Returns the element so the caller can clean it up after.
+ */
+function injectCaptureStyles(): HTMLStyleElement {
+  const S = `#${PDF_CONTAINER_ID}`;
+  const style = document.createElement('style');
+  style.textContent = `
+    /* ---- Code marks -------------------------------------------------------
+       html2canvas mishandles inline-flex + backdrop-filter: the compositing
+       pass paints a solid background rect at the wrong z-order (covering the
+       whole line).  Switch to inline-block so it renders as a simple box.
+       Use baseline alignment so the box sits flush around the word. */
+    ${S} code:not(pre code) {
+      display: inline-block !important;
+      vertical-align: baseline !important;
+      line-height: 1.4 !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
 
-    return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-  }
-
-  try {
-    if (typeof OffscreenCanvas !== 'undefined') {
-      const canvas = new OffscreenCanvas(1, 1);
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        if (bgHex) {
-          ctx.fillStyle = bgHex;
-          ctx.fillRect(0, 0, 1, 1);
-        }
-        ctx.fillStyle = raw;
-        ctx.fillRect(0, 0, 1, 1);
-        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-        return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-      }
+    /* ---- Code blocks ------------------------------------------------------
+       backdrop-blur causes html2canvas to paint a rogue dark rect; remove it
+       so the solid background-color is used directly.
+       Override both top AND bottom margin (my-4 = 1rem each side) to prevent
+       a 2rem gap accumulating between adjacent blocks. */
+    ${S} pre {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      margin: 0.375rem 0 !important;
     }
-  } catch {
-    // Ignore and try DOM canvas fallback below.
-  }
 
-  if (typeof document !== 'undefined') {
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1;
-      canvas.height = 1;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        if (bgHex) {
-          ctx.fillStyle = bgHex;
-          ctx.fillRect(0, 0, 1, 1);
-        }
-        ctx.fillStyle = raw;
-        ctx.fillRect(0, 0, 1, 1);
-        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-        return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-      }
-    } catch {
-      // Ignore parsing failures.
+    /* ---- All top-level ProseMirror blocks ---------------------------------
+       In the live editor [data-id] wrappers zero out inner margins via
+       block-spacing.css, but headless rendering has no drag wrappers, so
+       Tailwind my-* margins accumulate (blockquote, details, hr, etc.).
+       Tighten every direct child to a consistent small margin. */
+    ${S} .ProseMirror > * {
+      margin-top: 0.375rem !important;
+      margin-bottom: 0.375rem !important;
     }
-  }
 
-  return '';
+    /* ---- Tables -----------------------------------------------------------
+       border-collapse:separate + border-radius + border-spacing causes
+       html2canvas to double-paint borders and misplace cell backgrounds.
+       Collapse to a simple grid so cells render predictably.
+       Force full-width to match code blocks (remove space reserved for
+       the add-column button that exists in the live editor). */
+    ${S} table {
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
+      border-radius: 0 !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+    ${S} table td,
+    ${S} table th {
+      border-radius: 0 !important;
+      vertical-align: top !important;
+    }
+    /* Hide editor-only table control buttons so they don't consume space */
+    ${S} .add-row-button,
+    ${S} .add-column-button {
+      display: none !important;
+    }
+    /* Remove padding-bottom reserved for add-row button; tighten own margin */
+    ${S} .table-wrapper {
+      padding-bottom: 0 !important;
+      margin: 0.375rem 0 !important;
+    }
+    /* Make the scroll-container div take full width when add-column is hidden */
+    ${S} .table-wrapper > div > div:first-child {
+      overflow: visible !important;
+      width: 100% !important;
+    }
+
+    /* ---- Global capture fixes --------------------------------------------
+       Kill transitions / animations (prevents mid-frame captures) and strip
+       any remaining backdrop-filter from every element. */
+    ${S} *, ${S} *::before, ${S} *::after {
+      transition: none !important;
+      animation: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+  return style;
 }
 
-function resolveThemeColors(): PdfThemeColors {
-  const dark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+/**
+ * Build the HTML for a single printable node (title + editor content).
+ * Uses the same CSS classes as the real editor so all Tailwind / custom-
+ * property-driven styles are applied when the container lives in the DOM.
+ */
+function buildNodeHtml(node: PrintableNode): string {
+  const title = escapeHtml(getPageName(node.name));
+  const contentHtml = toHtml(node.content);
 
-  const D = {
-    bg:        '#0d0d0c',
-    fg:        '#f7f2f2',
-    bqBorder:  '#3f3f46',
-    bqText:    '#d4d4d8',
-    bqBg:      '#18181b',
-    codeBg:    '#18181b',
-    codeBorder:'#2a2d35',
-    cmBg:      '#18181b',
-    cmBorder:  '#27272a',
-    hr:        '#2b2b2f',
-    hlBg:      '#713f12',
-    hlText:    '#fef08a',
-    link:      '#a1a1aa',
-    tblBorder: '#20201f',
-    tblHdrBg:  '#111112',
-  };
-
-  const L = {
-    bg:        '#ffffff',
-    fg:        '#09090b',
-    bqBorder:  '#d4d4d8',
-    bqText:    '#3f3f46',
-    bqBg:      '#f4f4f5',
-    codeBg:    '#eceef3',
-    codeBorder:'#d4d4d8',
-    cmBg:      '#f4f4f5',
-    cmBorder:  '#d4d4d8',
-    hr:        '#d8d8dc',
-    hlBg:      '#fde68a',
-    hlText:    '#78350f',
-    link:      '#3f3f46',
-    tblBorder: '#ebebeb',
-    tblHdrBg:  '#f8f8f9',
-  };
-
-  const f = dark ? D : L;
-
-  const pageBg = toHex(getCssVar('--background-solid')) || f.bg;
-
-  return {
-    dark,
-    pageBg,
-    foreground:      toHex(getCssVar('--foreground'))                || f.fg,
-    headingColor:    toHex(getCssVar('--foreground'))                || f.fg,
-    blockquoteBorder:toHex(getCssVar('--editor-blockquote-border'), pageBg) || f.bqBorder,
-    blockquoteText:  toHex(getCssVar('--editor-blockquote-text'), pageBg)   || f.bqText,
-    blockquoteBg:    toHex(getCssVar('--editor-blockquote-bg'), pageBg)     || f.bqBg,
-    codeMarkBg:      toHex(getCssVar('--editor-code-mark-bg'), pageBg)      || f.cmBg,
-    codeMarkBorder:  toHex(getCssVar('--editor-code-mark-border'), pageBg)  || f.cmBorder,
-    codeMarkText:    toHex(getCssVar('--foreground'))                || f.fg,
-    codeBlockBg:     toHex(getCssVar('--code-block-bg'), pageBg)            || f.codeBg,
-    codeBlockBorder: toHex(getCssVar('--editor-code-block-border'), pageBg) || f.codeBorder,
-    hrColor:         toHex(getCssVar('--editor-hr'), pageBg)                || f.hr,
-    highlightBg:     toHex(getCssVar('--editor-highlight-bg'), pageBg)      || f.hlBg,
-    highlightText:   toHex(getCssVar('--editor-highlight-text'))    || f.hlText,
-    linkColor:       toHex(getCssVar('--editor-link-text'))         || f.link,
-    tableBorder:     toHex(getCssVar('--table-border'), pageBg)             || f.tblBorder,
-    tableHeaderBg:   toHex(getCssVar('--table-header-bg'), pageBg)          || f.tblHdrBg,
-    tableHeaderFg:   toHex(getCssVar('--foreground'))               || f.fg,
-    tableText:       toHex(getCssVar('--foreground'))               || f.fg,
-  };
+  return `
+    <div class="title-editor" style="margin-bottom:var(--editor-title-margin-bottom, 20px);">
+      <div class="ProseMirror">
+        <h1 class="${editorClasses.documentTitle}">${title}</h1>
+      </div>
+    </div>
+    <div class="page-editor-container">
+      <div class="ProseMirror editor-block-spacing">
+        ${contentHtml}
+      </div>
+    </div>
+  `;
 }
 
-function resolveTypography(): PdfTypography {
-  const rootStyle = typeof document !== 'undefined' ? getComputedStyle(document.documentElement) : null;
-  const bodyStyle = typeof document !== 'undefined' ? getComputedStyle(document.body) : null;
-  const proseStyle = queryStyle('.page-editor-container .ProseMirror');
-  const titleStyle = queryStyle('.title-editor .ProseMirror h1');
-  const paragraphStyle = queryStyle('.page-editor-container .ProseMirror p');
-  const heading1Style = queryStyle('.page-editor-container .ProseMirror h1');
-  const heading2Style = queryStyle('.page-editor-container .ProseMirror h2');
-  const heading3Style = queryStyle('.page-editor-container .ProseMirror h3');
-  const titleContainerStyle = queryStyle('.title-editor');
-  const tableCellStyle = queryStyle('.page-editor-container .ProseMirror table td');
-
-  const baseFontSizePx = readStyleLengthPx(proseStyle, 'font-size', readCssVarLengthPx('--font-size-note', 16));
-  const baseLineHeight = readLineHeightRatio(proseStyle, readLengthPx(getCssVar('--line-height-relaxed'), 1.6), baseFontSizePx);
-
-  const titleFontSizePx = readStyleLengthPx(
-    titleStyle,
-    'font-size',
-    readCssVarLengthPx('--font-size-document-title', 52),
-  );
-  const titleLineHeight = readLineHeightRatio(titleStyle, 1.2, titleFontSizePx);
-  const titleFontWeight = readFontWeight(titleStyle, 700);
-  const titleLetterSpacingPx = readStyleLengthPx(titleStyle, 'letter-spacing', -0.5);
-  const titleMarginTopPx = readStyleLengthPx(titleStyle, 'margin-top', 0);
-  const titleMarginBottomPx = readStyleLengthPx(
-    titleContainerStyle,
-    'margin-bottom',
-    readCssVarLengthPx('--editor-title-margin-bottom', 20),
-  );
-
-  const headingMargin = readCssVarLengthPx('--editor-heading-margin-y', 3);
-  const paragraphMarginBottomPx = readStyleLengthPx(paragraphStyle, 'margin-bottom', baseFontSizePx);
-
-  const headingFontSizeH1 = readStyleLengthPx(
-    heading1Style,
-    'font-size',
-    readCssVarLengthPx('--font-size-heading-1', 36),
-  );
-  const headingFontSizeH2 = readStyleLengthPx(
-    heading2Style,
-    'font-size',
-    readCssVarLengthPx('--font-size-heading-2', 28),
-  );
-  const headingFontSizeH3 = readStyleLengthPx(
-    heading3Style,
-    'font-size',
-    readCssVarLengthPx('--font-size-heading-3', 20),
-  );
-  const headingLineHeight = readLineHeightRatio(
-    heading1Style,
-    readLengthPx(getCssVar('--line-height-tight'), 1.25),
-    headingFontSizeH1,
-  );
-  const headingFontWeight = readFontWeight(heading1Style, 700);
-
-  const fontSans = (
-    proseStyle?.getPropertyValue('font-family') ||
-    bodyStyle?.getPropertyValue('font-family') ||
-    rootStyle?.getPropertyValue('--font-sans') ||
-    'Helvetica'
-  ).trim();
-  const fontMono = (
-    rootStyle?.getPropertyValue('--font-mono') ||
-    'Courier'
-  ).trim();
-
-  return {
-    fontSans,
-    fontMono,
-    baseFontSizePx,
-    baseLineHeight,
-    pagePaddingHorizontalPx: readStyleLengthPx(proseStyle, 'padding-left', 24),
-    pagePaddingVerticalPx: readStyleLengthPx(proseStyle, 'padding-bottom', 24),
-    titleFontSizePx,
-    titleLineHeight,
-    titleFontWeight,
-    titleLetterSpacingPx,
-    titleMarginTopPx,
-    titleMarginBottomPx,
-    headingFontSizePx: {
-      1: headingFontSizeH1,
-      2: headingFontSizeH2,
-      3: headingFontSizeH3,
-      4: Math.max(headingFontSizeH3 * 0.9, baseFontSizePx),
-      5: Math.max(headingFontSizeH3 * 0.8, baseFontSizePx),
-      6: Math.max(headingFontSizeH3 * 0.75, baseFontSizePx),
-    },
-    headingLineHeight,
-    headingFontWeight,
-    headingMarginTopPx: headingMargin,
-    headingMarginBottomPx: headingMargin,
-    paragraphMarginBottomPx,
-    listIndentPx: readCssVarLengthPx('--editor-list-padding-left', 24),
-    listItemGapPx: readCssVarLengthPx('--editor-list-item-gap', 4),
-    taskListIndentPx: readCssVarLengthPx('--editor-task-list-padding-left', 8),
-    taskItemGapPx: readCssVarLengthPx('--editor-task-item-gap', 8),
-    codeFontSizePx: readCssVarLengthPx('--font-size-code', 13),
-    codeLineHeight: 1.45,
-    codeBlockPaddingPx: readCssVarLengthPx('--editor-code-block-padding', 20),
-    codeBlockMarginTopPx: readCssVarLengthPx('--editor-code-block-margin-y', 16),
-    codeBlockMarginBottomPx: readCssVarLengthPx('--editor-code-block-margin-y', 16),
-    blockquotePaddingLeftPx: readCssVarLengthPx('--editor-blockquote-padding-x', 24),
-    blockquotePaddingRightPx: readCssVarLengthPx('--editor-blockquote-padding-right', 16),
-    blockquotePaddingVerticalPx: readCssVarLengthPx('--editor-blockquote-padding-y', 8),
-    blockquoteMarginTopPx: readCssVarLengthPx('--editor-blockquote-margin-y', 16),
-    blockquoteMarginBottomPx: readCssVarLengthPx('--editor-blockquote-margin-y', 16),
-    horizontalRuleMarginPx: readCssVarLengthPx('--editor-hr-margin-y', 24),
-    tableCellPaddingVerticalPx: readStyleLengthPx(tableCellStyle, 'padding-top', 8),
-    tableCellPaddingHorizontalPx: readStyleLengthPx(tableCellStyle, 'padding-left', 12),
-    tableMarginTopPx: readCssVarLengthPx('--editor-table-margin-y', 16),
-    tableMarginBottomPx: readCssVarLengthPx('--editor-table-margin-y', 16),
-  };
-}
-
-function buildPdfPayload(nodes: PrintableNode[], exportTitle: string): PdfExportPayload {
-  const pages = nodes.map((node) => {
-    const title = getPageName(node.name);
-    const contentHtml = toHtml(node.content);
-    const blocks = htmlToBlocks(contentHtml);
-    return { title, blocks };
-  });
-
-  return {
-    title: exportTitle,
-    theme: resolveThemeColors(),
-    typography: resolveTypography(),
-    pages,
-  };
-}
-
-export async function exportRichContent(
+/**
+ * Export one or more nodes to a PDF file.
+ *
+ * Approach:
+ *  1. Create a hidden off-screen container that inherits the app's theme.
+ *  2. For each node render the title + content using the editor's CSS classes.
+ *  3. Capture the rendered content with html2canvas.
+ *  4. Slice the captured canvas into A4-page-height chunks.
+ *  5. Assemble all pages into a jsPDF document.
+ *  6. Save through Tauri's native file-save dialog.
+ */
+export async function exportToPdf(
   nodes: PrintableNode[],
   exportTitle: string,
 ): Promise<void> {
-  if (!nodes.length) {
-    throw new Error('No content to export.');
+  if (!nodes.length) throw new Error('No content to export.');
+
+  const isDark = document.documentElement.classList.contains('dark');
+  const bg =
+    getCssVar('--background-solid') || (isDark ? '#0d0d0c' : '#ffffff');
+  const fg = getCssVar('--foreground') || (isDark ? '#f7f2f2' : '#09090b');
+  const bodyFont =
+    getComputedStyle(document.body).fontFamily || 'system-ui, sans-serif';
+
+  // Off-screen container – inherits the app's theme CSS variables because
+  // it lives inside the document and carries the same root classes.
+  const container = document.createElement('div');
+  container.id = PDF_CONTAINER_ID;
+  container.style.position = 'fixed';
+  container.style.left = '-10000px';
+  container.style.top = '0';
+  container.style.width = `${RENDER_WIDTH_PX}px`;
+  container.style.paddingTop = `${PAGE_PADDING_TOP_PX}px`;
+  container.style.paddingBottom = `${PAGE_PADDING_BOTTOM_PX}px`;
+  container.style.paddingLeft = `${PAGE_PADDING_X_PX}px`;
+  container.style.paddingRight = `${PAGE_PADDING_X_PX}px`;
+  container.style.background = bg;
+  container.style.color = fg;
+  container.style.fontFamily = bodyFont;
+  container.style.boxSizing = 'border-box';
+  container.style.overflow = 'visible';
+  // Copy the root element's class list so dark/light mode + theme tokens work
+  container.className = document.documentElement.className;
+  document.body.appendChild(container);
+
+  // Inject capture-time CSS overrides into <head> — must live in the document
+  // stylesheet so html2canvas picks them up (not just inside the div innerHTML).
+  const captureStyle = injectCaptureStyles();
+
+  const pdfDoc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  let isFirstPage = true;
+
+  // A4-page height expressed in canvas pixels (at the chosen capture scale)
+  const pageHeightCanvasPx = Math.floor(
+    (A4_HEIGHT_MM / A4_WIDTH_MM) * RENDER_WIDTH_PX * CAPTURE_SCALE,
+  );
+
+  try {
+    for (const node of nodes) {
+      container.innerHTML = buildNodeHtml(node);
+
+      // Allow the browser to lay out & paint the new content
+      await new Promise<void>((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => r())),
+      );
+
+      // Wait for web fonts if available
+      if (document.fonts?.ready) {
+        try { await document.fonts.ready; } catch { /* continue */ }
+      }
+
+      const canvas = await html2canvas(container, {
+        scale: CAPTURE_SCALE,
+        useCORS: true,
+        backgroundColor: bg,
+        logging: false,
+        width: RENDER_WIDTH_PX,
+      });
+
+      const totalHeight = canvas.height;
+      const pageCount = Math.max(1, Math.ceil(totalHeight / pageHeightCanvasPx));
+
+      for (let p = 0; p < pageCount; p++) {
+        if (!isFirstPage) pdfDoc.addPage();
+        isFirstPage = false;
+
+        const srcY = p * pageHeightCanvasPx;
+        const srcH = Math.min(pageHeightCanvasPx, totalHeight - srcY);
+
+        // Always produce a full A4-height slice so the background fills
+        // the entire page – no white strip after content ends.
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = pageHeightCanvasPx;
+
+        const ctx = slice.getContext('2d');
+        if (ctx) {
+          // Fill the full page with the theme background first
+          ctx.fillStyle = bg;
+          ctx.fillRect(0, 0, slice.width, slice.height);
+          // Draw the content slice on top (may be shorter than the page)
+          ctx.drawImage(
+            canvas,
+            0, srcY, canvas.width, srcH,
+            0, 0, canvas.width, srcH,
+          );
+        }
+
+        const imgData = slice.toDataURL('image/jpeg', 0.92);
+        pdfDoc.addImage(imgData, 'JPEG', 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
+      }
+    }
+
+    // Convert to byte array and hand off to the Tauri backend for saving
+    const arrayBuffer = pdfDoc.output('arraybuffer');
+    const bytes = new Uint8Array(arrayBuffer);
+    const safeName = sanitizeFilename(exportTitle);
+
+    await tauriInvoke('save_pdf_file', {
+      request: {
+        suggested_name: `${safeName}.pdf`,
+        pdf_bytes: Array.from(bytes),
+      },
+    });
+  } finally {
+    container.remove();
+    captureStyle.remove();
   }
-
-  const safeName = sanitizeFilename(exportTitle);
-  const payload = buildPdfPayload(nodes, exportTitle);
-  const bytes = await renderPdfBytes(payload);
-
-  await tauriInvoke('save_pdf_file', {
-    request: {
-      suggested_name: `${safeName}.pdf`,
-      pdf_bytes: Array.from(bytes),
-    },
-  });
 }
+
+// --- Tree-walking utilities -------------------------------------------------
 
 export function flattenBranch(node: FileNode | null): PrintableNode[] {
   if (!node) return [];

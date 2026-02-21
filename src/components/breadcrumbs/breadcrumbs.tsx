@@ -22,7 +22,7 @@ const MAX_VISIBLE_ITEMS = 3;
 
 export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
   const { fileId } = useParams({ strict: false });
-  const { spaceName, getNodePath } = useFileSystem();
+  const { activeSpaceId, spaceName, getNodePath } = useFileSystem();
   const navigate = useNavigate();
 
   const path = useMemo(() => {
@@ -33,7 +33,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
   if (!fileId || path.length === 0) {
     return (
       <Breadcrumb className="w-full" data-tauri-drag-region>
-        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground  border border-border-elevated ">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground border border-border-elevated">
           <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap">
             <BreadcrumbItem>
               <BreadcrumbPage className="text-foreground/75 font-normal tracking-tight">
@@ -50,7 +50,7 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
 
   return (
     <Breadcrumb className="w-full" data-tauri-drag-region>
-      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground   border border-border-elevated ">
+      <div className="inline-flex items-center gap-2 rounded-xl bg-sidebar-item-hover-bg/80 px-3 py-1 shadow-breadcrumb backdrop-blur-lg text-sidebar-foreground border border-border-elevated">
         <BreadcrumbList className="text-sidebar-foreground flex items-center gap-2 text-[12px] font-normal leading-tight whitespace-nowrap ">
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -70,8 +70,8 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link
-                      to="/files/$fileId"
-                      params={{ fileId: path[0].id }}
+                      to="/spaces/$spaceId/files/$fileId"
+                      params={{ spaceId: activeSpaceId, fileId: path[0].id }}
                     className="text-sidebar-foreground/65 hover:text-foreground/85 transition-colors text-[12px] font-normal"
                     data-tauri-drag-region="false"
                     >
@@ -100,7 +100,13 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="bg-sidebar-container-bg border border-sidebar-container-border/80">
                     {path.slice(1, path.length - 1).map((node) => (
-                      <DropdownMenuItem key={node.id} onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}>
+                      <DropdownMenuItem
+                        key={node.id}
+                        onClick={() => navigate({
+                          to: '/spaces/$spaceId/files/$fileId',
+                          params: { spaceId: activeSpaceId, fileId: node.id },
+                        })}
+                      >
                         {node.name || "new page"}
                       </DropdownMenuItem>
                     ))}
@@ -135,8 +141,8 @@ export const FileBreadcrumbs = memo(function FileBreadcrumbs() {
                       <BreadcrumbItem>
                         <BreadcrumbLink asChild>
                           <Link
-                            to="/files/$fileId"
-                            params={{ fileId: node.id }}
+                            to="/spaces/$spaceId/files/$fileId"
+                            params={{ spaceId: activeSpaceId, fileId: node.id }}
                             className="text-sidebar-foreground/65 hover:text-foreground/90 transition-colors text-[12px] font-normal"
                             data-tauri-drag-region="false"
                           >

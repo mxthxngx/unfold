@@ -121,12 +121,31 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
 
   const handleGlobalAdd = async () => {
     const newId = await addNode(null);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    if (!activeSpaceId) {
+      return;
+    }
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   const handleSwitchSpace = (spaceId: string) => {
     setActiveSpace(spaceId);
     setIsSpaceMenuOpen(false);
+
+    const targetSpace = spaces.find((space) => space.id === spaceId);
+    const firstId = findFirstFileId(targetSpace?.fileTree ?? []);
+
+    if (firstId) {
+      navigate({
+        to: '/spaces/$spaceId/files/$fileId',
+        params: { spaceId, fileId: firstId },
+      });
+      return;
+    }
+
+    navigate({ to: '/spaces/$spaceId', params: { spaceId } });
   };
 
   const handleOpenCreateSpace = () => {
@@ -149,7 +168,8 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
       setCreateSpaceError('Space name is required');
       return;
     }
-    await addSpace(nextName);
+    const newSpaceId = await addSpace(nextName);
+    navigate({ to: '/spaces/$spaceId', params: { spaceId: newSpaceId } });
     setIsCreateSpaceOpen(false);
     setEditingSpaceId(null);
     setDraftName('');
@@ -189,9 +209,12 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
 
     const firstId = findFirstFileId(nextSpace.fileTree);
     if (firstId) {
-      navigate({ to: '/files/$fileId', params: { fileId: firstId } });
+      navigate({
+        to: '/spaces/$spaceId/files/$fileId',
+        params: { spaceId: nextSpace.id, fileId: firstId },
+      });
     } else {
-      navigate({ to: '/' });
+      navigate({ to: '/spaces/$spaceId', params: { spaceId: nextSpace.id } });
     }
   };
 
@@ -214,7 +237,8 @@ const Sidebar = memo(function Sidebar({ side = 'left' }: SidebarProps) {
         'bg-transparent border-0',
         'shadow-none',
         'top-10! bottom-2! h-auto!',
-        'flex flex-col'
+        'flex flex-col',
+        'print-hidden',
       )}
     >
       <SidebarHeader className="px-3 pt-2">
@@ -456,7 +480,16 @@ const PinnedNodeItem = memo(({
   node: SidebarNode;
   addFileShortcut: string;
 }) => {
-  const { addNode, deleteNode, getPreviousVisibleNode, togglePinNode, toggleFolder, getNodePath, getNode } = useFileSystem();
+  const {
+    activeSpaceId,
+    addNode,
+    deleteNode,
+    getPreviousVisibleNode,
+    togglePinNode,
+    toggleFolder,
+    getNodePath,
+    getNode,
+  } = useFileSystem();
   const selectedFileId = useSelectedFileId();
   const isSelected = useIsNodeSelected(node.id);
   const navigate = useNavigate();
@@ -474,9 +507,12 @@ const PinnedNodeItem = memo(({
     if (selectedFileId === node.id) {
       const prevNodeId = getPreviousVisibleNode(node.id);
       if (prevNodeId) {
-        navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
+        navigate({
+          to: '/spaces/$spaceId/files/$fileId',
+          params: { spaceId: activeSpaceId, fileId: prevNodeId },
+        });
       } else {
-        navigate({ to: '/' });
+        navigate({ to: '/spaces/$spaceId', params: { spaceId: activeSpaceId } });
       }
     }
     await deleteNode(node.id);
@@ -485,7 +521,10 @@ const PinnedNodeItem = memo(({
 
   const handleCreateChild = async () => {
     const newId = await addNode(node.id);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   const handleTogglePin = async () => {
@@ -495,7 +534,10 @@ const PinnedNodeItem = memo(({
   const handleAddChild = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const newId = await addNode(node.id);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -524,13 +566,19 @@ const PinnedNodeItem = memo(({
                   ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
               )}
-              onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+              onClick={() => navigate({
+                to: '/spaces/$spaceId/files/$fileId',
+                params: { spaceId: activeSpaceId, fileId: node.id },
+              })}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                  navigate({
+                    to: '/spaces/$spaceId/files/$fileId',
+                    params: { spaceId: activeSpaceId, fileId: node.id },
+                  });
                 }
               }}
             >
@@ -610,7 +658,15 @@ export const SidebarNodes = memo(({
   isFirstChild?: boolean;
   addFileShortcut: string;
 }) => {
-  const { toggleFolder, addNode, deleteNode, getPreviousVisibleNode, togglePinNode, isNodePinned } = useFileSystem();
+  const {
+    activeSpaceId,
+    toggleFolder,
+    addNode,
+    deleteNode,
+    getPreviousVisibleNode,
+    togglePinNode,
+    isNodePinned,
+  } = useFileSystem();
   const selectedFileId = useSelectedFileId();
   const isSelected = useIsNodeSelected(node.id);
   const navigate = useNavigate();
@@ -633,9 +689,12 @@ export const SidebarNodes = memo(({
     if (selectedFileId === node.id) {
       const prevNodeId = getPreviousVisibleNode(node.id);
       if (prevNodeId) {
-        navigate({ to: '/files/$fileId', params: { fileId: prevNodeId } });
+        navigate({
+          to: '/spaces/$spaceId/files/$fileId',
+          params: { spaceId: activeSpaceId, fileId: prevNodeId },
+        });
       } else {
-        navigate({ to: '/' });
+        navigate({ to: '/spaces/$spaceId', params: { spaceId: activeSpaceId } });
       }
     }
     await deleteNode(node.id);
@@ -644,7 +703,10 @@ export const SidebarNodes = memo(({
 
   const handleCreateChild = async () => {
     const newId = await addNode(node.id);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   const handleTogglePin = async () => {
@@ -654,7 +716,10 @@ export const SidebarNodes = memo(({
   const handleAddChild = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const newId = await addNode(node.id);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -698,13 +763,19 @@ export const SidebarNodes = memo(({
                     ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                     : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/80 border-transparent'
                 )}
-                onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+                onClick={() => navigate({
+                  to: '/spaces/$spaceId/files/$fileId',
+                  params: { spaceId: activeSpaceId, fileId: node.id },
+                })}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                    navigate({
+                      to: '/spaces/$spaceId/files/$fileId',
+                      params: { spaceId: activeSpaceId, fileId: node.id },
+                    });
                   }
                 }}
               >
@@ -820,13 +891,19 @@ export const SidebarNodes = memo(({
                   ? 'bg-sidebar-subitem-selected-bg text-foreground/90 font-[450] border-border-elevated'
                   : 'text-sidebar-foreground/90 hover:text-foreground hover:bg-sidebar-item-hover-bg/70 border-transparent'
               )}
-              onClick={() => navigate({ to: '/files/$fileId', params: { fileId: node.id } })}
+              onClick={() => navigate({
+                to: '/spaces/$spaceId/files/$fileId',
+                params: { spaceId: activeSpaceId, fileId: node.id },
+              })}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  navigate({ to: '/files/$fileId', params: { fileId: node.id } });
+                  navigate({
+                    to: '/spaces/$spaceId/files/$fileId',
+                    params: { spaceId: activeSpaceId, fileId: node.id },
+                  });
                 }
               }}
             >

@@ -58,6 +58,24 @@ function TitleEditor({ fileId }: TitleEditorProps) {
       attributes: {
         class: "outline-none bg-transparent border-none px-6 text-foreground title-editor-content",
       },
+      handleTripleClickOn: (view, _pos, node, nodePos) => {
+        if (node.isTextblock) {
+          const from = nodePos + 1;
+          const to = nodePos + node.nodeSize - 1;
+          view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, from, to)));
+          return true;
+        }
+
+        const $nodePos = view.state.doc.resolve(Math.max(0, nodePos));
+        if (!$nodePos.parent.isTextblock) {
+          return false;
+        }
+
+        const from = $nodePos.start();
+        const to = $nodePos.end();
+        view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, from, to)));
+        return true;
+      },
       handleDOMEvents: {
         keydown: (view, event) => {
           if (event.isComposing || event.keyCode === 229) return false;
@@ -85,7 +103,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
                 const selection = TextSelection.near($paragraphPos, 1);
                 tr.setSelection(selection);
                 pageEditor.view.dispatch(tr);
-                pageEditor.commands.focus();
+                pageEditor.commands.focus(undefined, { scrollIntoView: false });
               } else {
                 const { state } = pageEditor;
                 const paragraphStart = 1;
@@ -94,7 +112,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
                 pageEditor.view.dispatch(
                   state.tr.setSelection(selection)
                 );
-                pageEditor.commands.focus();
+                pageEditor.commands.focus(undefined, { scrollIntoView: false });
               }
             }
             return true;
@@ -122,7 +140,7 @@ function TitleEditor({ fileId }: TitleEditorProps) {
   if (!editor) return null;
 
   return (
-    <div className="w-full title-editor mb-5">
+    <div className="w-full title-editor mb-5" data-tauri-drag-region="false">
       <EditorContent editor={editor} />
     </div>
   );

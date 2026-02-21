@@ -40,6 +40,25 @@ interface PageEditorProps {
   fileId: string;
 }
 
+const TAB_INDENT = "    ";
+
+function hasAncestorNode($pos: { depth: number; node: (depth: number) => { type: { name: string } } }, names: string[]) {
+  for (let depth = $pos.depth; depth > 0; depth -= 1) {
+    if (names.includes($pos.node(depth).type.name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isEditableSurface(target: HTMLElement) {
+  return Boolean(
+    target.closest('input, textarea, [contenteditable="true"], [contenteditable=""]') ||
+      target.closest(".title-editor") ||
+      target.closest("[data-bubble-menu='true']")
+  );
+}
+
 function PageEditor({ fileId }: PageEditorProps) {
   const { setPageEditor, focusTitleEditor } = useEditorContext();
   const { getNode, updateNodeContent } = useFileSystem();
@@ -206,6 +225,36 @@ function PageEditor({ fileId }: PageEditorProps) {
               return false;
             }
           }
+
+          if (event.key === "Tab") {
+            const isListContext = hasAncestorNode($head, ["listItem", "taskItem"]);
+            if (isListContext) {
+              return false;
+            }
+
+            event.preventDefault();
+            const { from, to, empty } = view.state.selection;
+
+            if (event.shiftKey) {
+              if (!empty) {
+                return true;
+              }
+
+              const lineStart = $head.start();
+              const textBeforeCursor = view.state.doc.textBetween(lineStart, from, "\n", "\0");
+              const trailingSpaces = textBeforeCursor.match(/ *$/)?.[0]?.length ?? 0;
+              if (!trailingSpaces) {
+                return true;
+              }
+
+              view.dispatch(view.state.tr.delete(from - Math.min(4, trailingSpaces), from));
+              return true;
+            }
+
+            view.dispatch(view.state.tr.insertText(TAB_INDENT, from, to));
+            return true;
+          }
+
           if (event.key === "ArrowUp" && isAtStart) {
             event.preventDefault();
             focusTitleEditor("end");
@@ -215,6 +264,16 @@ function PageEditor({ fileId }: PageEditorProps) {
 
           if (event.key === "Backspace" && isAtStart && hasNoSelection) {
             event.preventDefault();
+            const firstBlock = view.state.doc.firstChild;
+            const canDropLeadingEmptyParagraph =
+              view.state.doc.childCount > 1 &&
+              firstBlock?.type.name === "paragraph" &&
+              firstBlock.textContent.trim().length === 0;
+
+            if (canDropLeadingEmptyParagraph && firstBlock) {
+              view.dispatch(view.state.tr.delete(0, firstBlock.nodeSize));
+            }
+
             focusTitleEditor("end");
             return true;
           }
@@ -237,14 +296,18 @@ function PageEditor({ fileId }: PageEditorProps) {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
+      const target = e.target instanceof HTMLElement ? e.target : e.target instanceof Node ? e.target.parentElement : null;
+      if (!target) return;
+
       if (!target.closest(".drop-highlight")) {
         clearDropHighlight();
       }
 
       if (!editorContainerRef.current?.contains(target)) {
         clearEditorSelection();
-        clearNativeSelection();
+        if (!isEditableSurface(target)) {
+          clearNativeSelection();
+        }
       }
     };
 

@@ -1,17 +1,24 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { useFileSystem } from '../../contexts/FileSystemContext';
 import { useIndexRedirect } from '../../hooks/use-index-redirect';
 import { EmptyState } from './empty-state';
 
 export function IndexPage() {
-  const { fileTree, addNode, isLoading } = useFileSystem();
+  const { spaceId } = useParams({ strict: false });
+  const { fileTree, addNode, activeSpaceId, isLoading } = useFileSystem();
   const navigate = useNavigate();
 
-  useIndexRedirect();
+  useIndexRedirect(spaceId);
 
   const handleCreateFile = async () => {
     const newId = await addNode(null);
-    navigate({ to: '/files/$fileId', params: { fileId: newId } });
+    if (!activeSpaceId) {
+      return;
+    }
+    navigate({
+      to: '/spaces/$spaceId/files/$fileId',
+      params: { spaceId: activeSpaceId, fileId: newId },
+    });
   };
 
   if (isLoading) {

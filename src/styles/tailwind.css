@@ -55,6 +55,10 @@ button:not(:disabled),
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
 }
 
+[data-slot="skeleton"] {
+  background: color-mix(in srgb, var(--sidebar-selected-bg) 86%, black);
+}
+
 :root {
   --background: var(--background-solid);
   --background-solid: #0d0d0c;
@@ -77,16 +81,16 @@ button:not(:disabled),
     color-mix(in srgb, var(--highlight-vivid) 88%, white 12%),
     color-mix(in srgb, var(--highlight-vivid) 68%, white 6%)
   );
-  --selection-gradient-start: color-mix(in srgb, var(--highlight-vivid) 26%, transparent);
-  --selection-gradient-end: color-mix(in srgb, var(--highlight-vivid) 18%, transparent);
-  --selection-solid: color-mix(in srgb, var(--highlight-vivid) 22%, transparent);
+  --selection-gradient-start: color-mix(in srgb, var(--import-toggle-on-start) 38%, transparent);
+  --selection-gradient-end: color-mix(in srgb, var(--import-toggle-on-end) 30%, transparent);
+  --selection-solid: color-mix(in srgb, var(--import-toggle-on-mid) 36%, transparent);
   --secondary: #18181b;
   --secondary-foreground: #8e8d8d;
   --muted: #343434;
   --muted-foreground: #8e8d8d;
   --accent: #343434;
   --accent-foreground: #f7f2f2;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #dc2626;
   --destructive-foreground: #f7f2f2;
   --destructive-border: rgba(239, 68, 68, 0.2);
   --destructive-border-hover: rgba(239, 68, 68, 0.4);
@@ -96,11 +100,11 @@ button:not(:disabled),
   --border: #232323;
   --input: #18181b;
   --ring: #343434;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #ea580c;
+  --chart-2: #0d9488;
+  --chart-3: #2563eb;
+  --chart-4: #ca8a04;
+  --chart-5: #c2410c;
   --color-red-400: #f87171;
   --color-red-500: #ef4444;
   --radius: 0.625rem;
@@ -277,6 +281,7 @@ button:not(:disabled),
   --font-size-sidebar-item: var(--font-size-sm);
   --font-size-sidebar-title: var(--font-size-xl);
   --font-size-note: var(--font-size-md);
+  --font-size-editor-base: calc(var(--font-size-note) + 1px);
   --font-size-note-small: var(--font-size-sm);
   --font-size-document-title: 3.25rem;
   --font-size-heading-1: var(--font-size-3xl);
@@ -423,7 +428,7 @@ button:not(:disabled),
   --muted-foreground: #71717a;
   --accent: #f4f4f5;
   --accent-foreground: #09090b;
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --destructive-border: rgba(239, 68, 68, 0.2);
   --destructive-border-hover: rgba(239, 68, 68, 0.4);
@@ -433,11 +438,11 @@ button:not(:disabled),
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #71717a;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --chart-1: #ea580c;
+  --chart-2: #0d9488;
+  --chart-3: #2563eb;
+  --chart-4: #ca8a04;
+  --chart-5: #c2410c;
   --color-red-400: #f87171;
   --color-red-500: #ef4444;
   --toolbar-foreground-active: #c5c5c5;
@@ -528,7 +533,7 @@ button:not(:disabled),
   --editor-highlight-bg: rgba(245, 158, 11, 0.22);
   --editor-highlight-text: #78350f;
   --editor-hr: rgba(212, 212, 216, 0.9);
-  --editor-code-mark-bg: var(--code-block-bg);
+  --editor-code-mark-bg: #F9FBFE;
   --editor-code-mark-text: var(--foreground);
   --editor-code-mark-border: var(--editor-code-block-border);
   --editor-code-block-text: var(--foreground);
@@ -602,9 +607,9 @@ button:not(:disabled),
   --space-md: 0.75rem;
   --space-lg: 1rem;
   --space-xl: 1.25rem;
-  --code-mark-bg-dark: rgba(239, 242, 246, 0.85);
+  --code-mark-bg-dark: #F9FBFE;
   --code-mark-text-dark: #09090b;
-  --code-block-bg: #edf2f7;
+  --code-block-bg: #F7F9FC;
   --link: #09090b;
   --tooltip: rgba(255, 255, 255, 0.95);
   --tooltip-foreground: #09090b;
@@ -933,12 +938,12 @@ body {
 }
 
 .ProseMirror {
-  font-size: var(--font-size-note) !important;
+  font-size: var(--font-size-editor-base) !important;
   line-height: var(--line-height-relaxed) !important;
 }
 
-.ProseMirror :where(p, li, [data-type="taskItem"] .task-item-content) {
-  font-size: var(--font-size-note);
+.ProseMirror :where(p, li, [data-type="taskItem"] > div) {
+  font-size: var(--font-size-editor-base);
   line-height: var(--line-height-relaxed);
 }
 
@@ -960,6 +965,10 @@ body {
 .ProseMirror :where(code:not(pre code), pre, pre code) {
   font-size: var(--font-size-code) !important;
   line-height: 1.45 !important;
+}
+
+.ProseMirror pre {
+  background-color: var(--code-block-bg) !important;
 }
 
 .ProseMirror table th {
@@ -990,7 +999,7 @@ body {
 /* Blockquote text should match normal paragraph typography by default. */
 .ProseMirror blockquote,
 .ProseMirror blockquote :where(p, li) {
-  font-size: var(--font-size-note) !important;
+  font-size: var(--font-size-editor-base) !important;
   line-height: var(--line-height-relaxed) !important;
   font-style: normal;
 }

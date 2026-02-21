@@ -4,12 +4,13 @@ import { useFileSystem } from '../contexts/FileSystemContext';
 import { findFirstFileId, findNodeById } from '../lib/file-tree';
 import { getLastOpenedFile } from '../utils/last-opened';
 
-export function useIndexRedirect(): void {
+export function useIndexRedirect(routeSpaceId?: string): void {
   const { fileTree, activeSpaceId, isLoading } = useFileSystem();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !activeSpaceId) return;
+    if (routeSpaceId && routeSpaceId !== activeSpaceId) return;
 
     const savedFileId = getLastOpenedFile(activeSpaceId);
     const savedFileExists = savedFileId ? findNodeById(fileTree, savedFileId) : false;
@@ -17,7 +18,10 @@ export function useIndexRedirect(): void {
     const targetFileId = savedFileExists ? savedFileId : firstFileId;
 
     if (targetFileId) {
-      navigate({ to: '/files/$fileId', params: { fileId: targetFileId } });
+      navigate({
+        to: '/spaces/$spaceId/files/$fileId',
+        params: { spaceId: activeSpaceId, fileId: targetFileId },
+      });
     }
-  }, [navigate, activeSpaceId, fileTree, isLoading]);
+  }, [navigate, activeSpaceId, fileTree, isLoading, routeSpaceId]);
 }

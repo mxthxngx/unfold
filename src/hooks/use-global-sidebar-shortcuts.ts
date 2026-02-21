@@ -20,7 +20,7 @@ const parseAccelerator = (accelerator: string) => {
 
 export function  useGlobalSidebarShortcuts() {
   const { fileId } = useParams({ strict: false });
-  const { addNode, togglePinNode } = useFileSystem();
+  const { addNode, togglePinNode, activeSpaceId } = useFileSystem();
   const { pageEditorRef, titleEditorRef } = useEditorContext();
   const navigate = useNavigate();
 
@@ -58,7 +58,12 @@ export function  useGlobalSidebarShortcuts() {
       ) {
         event.preventDefault();
         const newId = await addNode(fileId || null);
-        navigate({ to: '/files/$fileId', params: { fileId: newId } });
+        if (activeSpaceId) {
+          navigate({
+            to: '/spaces/$spaceId/files/$fileId',
+            params: { spaceId: activeSpaceId, fileId: newId },
+          });
+        }
         return;
       }
 
@@ -92,5 +97,5 @@ export function  useGlobalSidebarShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [fileId, addNode, togglePinNode, navigate, pageEditorRef, titleEditorRef]);
+  }, [activeSpaceId, fileId, addNode, togglePinNode, navigate, pageEditorRef, titleEditorRef]);
 }

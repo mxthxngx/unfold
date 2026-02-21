@@ -36,7 +36,7 @@ export const editorClasses = {
     "bg-editor-code-mark-bg inline-flex items-baseline align-baseline rounded-md px-1.5 py-px font-mono text-editor-code-mark-text leading-[1.1] border border-editor-code-mark-border ",
 
   codeBlock:
-    "bg-code-block-bg backdrop-blur-sm text-code text-editor-code-block-text rounded-lg p-5 border border-editor-code-block-border overflow-x-auto my-4",
+    "bg-code-block-bg text-code text-editor-code-block-text rounded-lg p-5 border border-editor-code-block-border overflow-x-auto my-4",
 
   link:
     "text-editor-link-text underline decoration-editor-link-decoration decoration-[0.025em] decoration-solid hover:text-editor-link-hover-text hover:decoration-editor-link-hover-decoration transition-colors",
