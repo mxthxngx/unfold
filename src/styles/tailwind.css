@@ -222,6 +222,7 @@ button:not(:disabled),
   --modal-action-text: #f7f2f2;
   --modal-action-border: #2e3036;
   --modal-primary-foreground: #0f1115;
+  --slash-menu-height: 312px;
   /* Global button theme */
   --button-bg: #18181b;
   --button-border: #1a1a1a;
@@ -583,6 +584,7 @@ button:not(:disabled),
   --modal-action-text: #0f1115;
   --modal-action-border: #d1d2d8;
   --modal-primary-foreground: #0f1115;
+  --slash-menu-height: 280px;
   --sidebar-title: #14161a;
   --sidebar-subitem-selected-bg: rgba(239, 242, 246, 0.8);
   --error-text: rgba(220, 38, 38, 0.9);
@@ -864,6 +866,7 @@ button:not(:disabled),
   --space-md: var(--space-md);
   --space-lg: var(--space-lg);
   --space-xl: var(--space-xl);
+  --height-slash-menu: var(--slash-menu-height);
 }
 
 /* Global typography defaults */

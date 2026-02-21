@@ -1,8 +1,11 @@
-import { BracesIcon, Heading1Icon, Heading2Icon, Heading3Icon, ListIcon, ListOrdered, ListTodo, TableIcon, TextQuote, TypeIcon, MinusIcon, ImageIcon } from "lucide-react";
-import type { CommandProps, SlashMenuGroupedItemsType, SlashMenuItem } from "./types";
-import { uploadImageFromFile } from "../../extensions/image-paste-handler";
-const CommandGroups: SlashMenuGroupedItemsType = {
-  basic: [
+import {
+  CommandProps,
+  SlashMenuGroupedItemsType,
+} from "@/components/editor/components/slash-menu/types";
+import { TypeIcon, ListTodo, Heading1Icon, Heading2Icon, Heading3Icon, ListIcon, ListOrdered, TextQuote, BracesIcon, MinusIcon, TableIcon } from "lucide-react";
+
+const getAvailableCommands = () => {
+  const commands = [
     {
       title: "Text",
       description: "Just start typing with plain text.",
@@ -19,7 +22,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "To-do list",
-      description: "Track tasks with a to-do list.",
+      description: "Track tasks with a to-do list",
       searchTerms: ["todo", "task", "list", "check", "checkbox"],
       icon: ListTodo,
       command: ({ editor, range }: CommandProps) => {
@@ -28,7 +31,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Heading 1",
-      description: "Big section heading.",
+      description: "Big section heading",
       searchTerms: ["title", "big", "large"],
       icon: Heading1Icon,
       command: ({ editor, range }: CommandProps) => {
@@ -42,7 +45,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Heading 2",
-      description: "Medium section heading.",
+      description: "Medium section heading",
       searchTerms: ["subtitle", "medium"],
       icon: Heading2Icon,
       command: ({ editor, range }: CommandProps) => {
@@ -56,7 +59,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Heading 3",
-      description: "Small section heading.",
+      description: "Small section heading",
       searchTerms: ["subtitle", "small"],
       icon: Heading3Icon,
       command: ({ editor, range }: CommandProps) => {
@@ -70,7 +73,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Bullet list",
-      description: "Create a simple bullet list.",
+      description: "Create a simple bullet list",
       searchTerms: ["unordered", "point", "list"],
       icon: ListIcon,
       command: ({ editor, range }: CommandProps) => {
@@ -79,7 +82,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Numbered list",
-      description: "Create a list with numbering.",
+      description: "Create a list with numbering",
       searchTerms: ["numbered", "ordered", "list"],
       icon: ListOrdered,
       command: ({ editor, range }: CommandProps) => {
@@ -88,7 +91,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Quote",
-      description: "Create block quote.",
+      description: "Create block quote",
       searchTerms: ["blockquote", "quotes"],
       icon: TextQuote,
       command: ({ editor, range }: CommandProps) =>
@@ -96,7 +99,7 @@ const CommandGroups: SlashMenuGroupedItemsType = {
     },
     {
       title: "Code",
-      description: "Insert code snippet.",
+      description: "Insert code snippet",
       searchTerms: ["codeblock"],
       icon: BracesIcon,
       command: ({ editor, range }: CommandProps) =>
@@ -111,37 +114,6 @@ const CommandGroups: SlashMenuGroupedItemsType = {
         editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
     },
     {
-      title: "Image",
-      description: "Upload any image from your device.",
-      searchTerms: ["photo", "picture", "media"],
-      icon: ImageIcon,
-      command: ({ editor, range }: CommandProps) => {
-        editor.chain().focus().deleteRange(range).run();
-
-        // Get fileId from editor storage or context
-        const fileId = (editor.storage as unknown as { fileId?: string } | undefined)?.fileId;
-        if (!fileId) {
-          console.warn("No fileId available for image upload");
-          return;
-        }
-
-        // upload image
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-        input.multiple = true;
-        input.onchange = async () => {
-          if (input.files?.length) {
-            for (const file of input.files) {
-              const pos = editor.view.state.selection.from;
-              uploadImageFromFile(file, editor.view, pos, fileId);
-            }
-          }
-        };
-        input.click();
-      },
-    },
-    {
       title: "Table",
       description: "Insert a table.",
       searchTerms: ["table", "rows", "columns"],
@@ -154,7 +126,9 @@ const CommandGroups: SlashMenuGroupedItemsType = {
           .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
           .run(),
     },
-  ],
+  ];
+
+  return commands;
 };
 
 export const getSuggestionItems = ({
@@ -163,12 +137,6 @@ export const getSuggestionItems = ({
   query: string;
 }): SlashMenuGroupedItemsType => {
   const search = query.toLowerCase();
-  
-  // If query is empty, return all items
-  if (!search) {
-    return CommandGroups;
-  }
-  
   const filteredGroups: SlashMenuGroupedItemsType = {};
 
   const fuzzyMatch = (query: string, target: string) => {
@@ -181,19 +149,19 @@ export const getSuggestionItems = ({
     return false;
   };
 
-  for (const [group, items] of Object.entries(CommandGroups) as Array<[string, SlashMenuItem[]]>) {
-    const filteredItems = items.filter((item) => {
-      return (
-        fuzzyMatch(search, item.title) ||
-        item.description.toLowerCase().includes(search) ||
-        (item.searchTerms &&
-          item.searchTerms.some((term: string) => term.includes(search)))
-      );
-    });
+  const availableCommands = getAvailableCommands();
+  
+  const filteredItems = availableCommands.filter((item) => {
+    return (
+      fuzzyMatch(search, item.title) ||
+      item.description.toLowerCase().includes(search) ||
+      (item.searchTerms &&
+        item.searchTerms.some((term: string) => term.includes(search)))
+    );
+  });
 
-    if (filteredItems.length) {
-      filteredGroups[group] = filteredItems;
-    }
+  if (filteredItems.length) {
+    filteredGroups["basic"] = filteredItems;
   }
 
   return filteredGroups;

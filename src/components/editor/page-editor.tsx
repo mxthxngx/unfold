@@ -1,5 +1,5 @@
 import { EditorContent, useEditor } from "@tiptap/react";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import { TrailingNode, Placeholder } from "@tiptap/extensions";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { useEditorContext } from "@/contexts/EditorContext";
@@ -33,6 +33,8 @@ import "./styles/image-node.css";
 import "./styles/search-and-replace.css";
 import "./styles/table.css";
 import "./styles/page-editor.css";
+import SlashCommand from "./extensions/slash-command";
+import { slashMenuPluginKey } from "./extensions/slash-command";
 
 interface PageEditorProps {
   fileId: string;
@@ -83,8 +85,18 @@ function PageEditor({ fileId }: PageEditorProps) {
     return true;
   }, []);
 
-  const editor = useEditor({
-    extensions: [
+  const initialContent = useMemo(() => {
+    const raw = file?.content || "";
+    if (!raw) return "";
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }, [fileId]);
+
+  const editorExtensions = useMemo(
+    () => [
       starterKit,
       HeadingExtension,
       DocumentExtension,
@@ -125,22 +137,30 @@ function PageEditor({ fileId }: PageEditorProps) {
       CustomKeymap.configure({ selectAllKey: settings.keybindings.selectAll }),
       TrailingNode.configure({ node: "paragraph", notAfter: ["paragraph"] }),
       Placeholder.configure({
-        placeholder: () => {
-          return "Start typing...";
-        },
+        placeholder: () => "Start typing...",
         showOnlyWhenEditable: true,
         showOnlyCurrent: true,
       }),
+      SlashCommand,
       TaskList.configure({ HTMLAttributes: { class: editorClasses.taskList } }),
       TaskItem.configure({ nested: true, HTMLAttributes: { class: editorClasses.taskItem } }),
     ],
+    [settings.keybindings.selectAll],
+  );
+
+  const editor = useEditor({
+    extensions: editorExtensions,
     autofocus: false,
-    content: (() => {
-      const raw = file?.content || "";
-      if (!raw) return "";
-      try { return JSON.parse(raw); } catch { return raw; }
-    })(),
+    content: initialContent,
     onUpdate: ({ editor }) => {
+      const slashState = slashMenuPluginKey.getState(editor.state) as
+        | { active?: boolean; query?: string }
+        | undefined;
+
+      if (slashState?.active) {
+        return;
+      }
+
       const jsonContent = JSON.stringify(editor.getJSON());
       if (jsonContent !== lastSavedRef.current) {
         lastSavedRef.current = jsonContent;
@@ -180,12 +200,18 @@ function PageEditor({ fileId }: PageEditorProps) {
             $head.pos === ($head.start($head.depth) + 1);
           const isAtStart = isAtDocumentStart || isAtFirstBlockStart;
           const hasNoSelection = $head.pos === $anchor.pos;
-
+          if (["ArrowUp", "ArrowDown", "Enter"].includes(event.key)) {
+            const slashCommand = document.querySelector("#slash-command");
+            if (slashCommand) {
+              return false;
+            }
+          }
           if (event.key === "ArrowUp" && isAtStart) {
             event.preventDefault();
             focusTitleEditor("end");
             return true;
           }
+
 
           if (event.key === "Backspace" && isAtStart && hasNoSelection) {
             event.preventDefault();
@@ -199,7 +225,7 @@ function PageEditor({ fileId }: PageEditorProps) {
       handlePaste: (view, event) => handlePaste(view, event, fileId),
       handleDrop: (view, event, _slice, moved) => handleDrop(view, event, moved, fileId),
     },
-  });
+  }, [fileId, settings.keybindings.selectAll]);
 
   const clearEditorSelection = useCallback(() => {
     if (!editor) return;
