@@ -32,8 +32,6 @@ function TitleEditor({ fileId }: TitleEditorProps) {
   const { getNode, renameNode } = useFileSystem();
   const file = getNode(fileId);
   const lastSavedRef = useRef<string>(file?.name || "");
-  const currentFileIdRef = useRef<string>(fileId);
-  const isHydratingRef = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -50,7 +48,6 @@ function TitleEditor({ fileId }: TitleEditorProps) {
     immediatelyRender: true,
     shouldRerenderOnTransaction: false,
     onUpdate: ({ editor }) => {
-      if (isHydratingRef.current) return;
       const text = editor.getText().trim();
       if (text !== lastSavedRef.current) {
         lastSavedRef.current = text;
@@ -121,30 +118,6 @@ function TitleEditor({ fileId }: TitleEditorProps) {
     }
     return () => setTitleEditor(null);
   }, [editor, setTitleEditor]);
-
-  useEffect(() => {
-    if (!editor) return;
-
-    const currentFile = getNode(fileId);
-    const name = currentFile?.name || "";
-    const isFileChanged = fileId !== currentFileIdRef.current;
-    const isNameChanged = name !== lastSavedRef.current;
-
-    if (!isFileChanged && !isNameChanged) {
-      return;
-    }
-
-    currentFileIdRef.current = fileId;
-
-    isHydratingRef.current = true;
-    editor.commands.setContent(name);
-    isHydratingRef.current = false;
-    lastSavedRef.current = name;
-
-    if (isFileChanged && !name.trim()) {
-      editor.commands.focus("start");
-    }
-  }, [fileId, editor, getNode]);
 
   if (!editor) return null;
 

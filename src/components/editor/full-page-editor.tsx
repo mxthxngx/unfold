@@ -23,8 +23,8 @@ function FullPageEditor() {
 
   return (
     <div className="relative w-full">
-      <TitleEditor fileId={fileId} />
-      <PageEditor fileId={fileId} />
+      <TitleEditor key={`title-${fileId}`} fileId={fileId} />
+      <PageEditor key={`page-${fileId}`} fileId={fileId} />
     </div>
   );
 }

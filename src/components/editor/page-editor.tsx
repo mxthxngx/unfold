@@ -45,9 +45,6 @@ function PageEditor({ fileId }: PageEditorProps) {
   const file = getNode(fileId);
   
   const lastSavedRef = useRef<string>(file?.content || "");
-  const currentFileIdRef = useRef<string>(fileId);
-  const hydratedFileIdRef = useRef<string | null>(null);
-  const isHydratingRef = useRef(false);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const pendingArrowScrollRef = useRef(false);
 
@@ -138,13 +135,16 @@ function PageEditor({ fileId }: PageEditorProps) {
       TaskItem.configure({ nested: true, HTMLAttributes: { class: editorClasses.taskItem } }),
     ],
     autofocus: false,
-    content: "",
+    content: (() => {
+      const raw = file?.content || "";
+      if (!raw) return "";
+      try { return JSON.parse(raw); } catch { return raw; }
+    })(),
     onUpdate: ({ editor }) => {
-      if (isHydratingRef.current) return;
       const jsonContent = JSON.stringify(editor.getJSON());
       if (jsonContent !== lastSavedRef.current) {
         lastSavedRef.current = jsonContent;
-        updateNodeContent(currentFileIdRef.current, jsonContent);
+        updateNodeContent(fileId, jsonContent);
       }
     },
     onSelectionUpdate: ({ editor }) => {
@@ -196,8 +196,8 @@ function PageEditor({ fileId }: PageEditorProps) {
           return false;
         },
       },
-      handlePaste: (view, event) => handlePaste(view, event, currentFileIdRef.current),
-      handleDrop: (view, event, _slice, moved) => handleDrop(view, event, moved, currentFileIdRef.current),
+      handlePaste: (view, event) => handlePaste(view, event, fileId),
+      handleDrop: (view, event, _slice, moved) => handleDrop(view, event, moved, fileId),
     },
   });
 
@@ -253,36 +253,6 @@ function PageEditor({ fileId }: PageEditorProps) {
     }
     return () => setPageEditor(null);
   }, [editor, setPageEditor]);
-
-  useEffect(() => {
-    if (!editor) return;
-
-    const isFileChanged = fileId !== currentFileIdRef.current;
-    const isFirstHydrationForFile = hydratedFileIdRef.current !== fileId;
-    const currentFile = getNode(fileId);
-    const rawContent = currentFile?.content || "";
-
-    if (!isFileChanged && !isFirstHydrationForFile && rawContent === lastSavedRef.current) {
-      return;
-    }
-
-    currentFileIdRef.current = fileId;
-
-    let content: object | string = "";
-    if (rawContent) {
-      try {
-        content = JSON.parse(rawContent);
-      } catch {
-        content = rawContent;
-      }
-    }
-
-    isHydratingRef.current = true;
-    editor.commands.setContent(content);
-    isHydratingRef.current = false;
-    hydratedFileIdRef.current = fileId;
-    lastSavedRef.current = rawContent;
-  }, [fileId, editor, getNode]);
 
   if (!editor) return null;
 
