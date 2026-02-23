@@ -16,6 +16,12 @@ export interface UploadImageResponse {
     size: number;
 }
 
+export interface SaveImageRequest {
+    suggestedName: string;
+    sourceUrl?: string;
+    attachmentId?: string;
+}
+
 type InvokeMap = {
     get_layout_settings: {
         args: {}; 
@@ -35,6 +41,16 @@ type InvokeMap = {
     };
     delete_image: {
         args: { attachmentId: string };
+        returnType: void;
+    };
+    save_image_file: {
+        args: {
+            request: {
+                suggested_name: string;
+                source_url?: string | null;
+                attachment_id?: string | null;
+            };
+        };
         returnType: void;
     };
     open_external_url: {
@@ -69,3 +85,12 @@ export const getImage = (attachmentId: string) =>
 
 export const deleteImage = (attachmentId: string) => 
     tauriInvoke('delete_image', { attachmentId });
+
+export const saveImageFile = (request: SaveImageRequest) =>
+    tauriInvoke('save_image_file', {
+        request: {
+            suggested_name: request.suggestedName,
+            source_url: request.sourceUrl ?? null,
+            attachment_id: request.attachmentId ?? null,
+        },
+    });

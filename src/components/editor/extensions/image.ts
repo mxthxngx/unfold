@@ -15,7 +15,8 @@ export interface ImageAttributes {
   align?: string;
   attachmentId?: string;
   size?: number;
-  width?: number;
+  width?: number | string;
+  height?: number | string;
 }
 
 declare module "@tiptap/core" {

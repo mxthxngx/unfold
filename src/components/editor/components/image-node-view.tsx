@@ -9,12 +9,26 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { createPortal } from "react-dom";
+import { Download, Link2, Maximize2, RefreshCw, X } from "lucide-react";
+
+import { saveImageFile } from "@/utils/invoke";
 
 const MIN_IMAGE_WIDTH_PERCENT = 15;
 const MAX_IMAGE_WIDTH_PERCENT = 100;
 
 function clampWidthPercent(value: number) {
   return Math.max(MIN_IMAGE_WIDTH_PERCENT, Math.min(MAX_IMAGE_WIDTH_PERCENT, value));
+}
+
+function parseWidthPercent(width: string) {
+  const trimmed = width.trim();
+  if (!trimmed.endsWith("%")) {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(trimmed.slice(0, -1));
+  return Number.isFinite(parsed) ? clampWidthPercent(parsed) : null;
 }
 
 function deriveFileNameFromSrc(src: string, alt?: string) {
@@ -62,10 +76,37 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
   const [isResizing, setIsResizing] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "done" | "error">("idle");
+  const [downloadState, setDownloadState] = useState<"idle" | "done" | "error">("idle");
 
   const loading = useMemo(() => !src && attachmentId === "uploading", [src, attachmentId]);
   const error = useMemo(() => !src && attachmentId && attachmentId !== "uploading", [src, attachmentId]);
   const resolvedWidth = draftWidth ?? normalizeWidth(width);
+  const widthPercent = parseWidthPercent(resolvedWidth);
+  const widthLabel = widthPercent === null ? resolvedWidth : `${Math.round(widthPercent)}%`;
+
+  const closePreview = useCallback(() => {
+    setIsPreviewOpen(false);
+    setCopyState("idle");
+    setDownloadState("idle");
+  }, []);
+
+  const triggerDownload = useCallback(async () => {
+    if (!src) return;
+
+    try {
+      await saveImageFile({
+        suggestedName: deriveFileNameFromSrc(src, alt),
+        sourceUrl: src,
+        attachmentId: typeof attachmentId === "string" && attachmentId !== "uploading"
+          ? attachmentId
+          : undefined,
+      });
+      setDownloadState("done");
+    } catch (downloadError) {
+      console.error("Failed to save image:", downloadError);
+      setDownloadState("error");
+    }
+  }, [src, alt, attachmentId]);
 
   useEffect(() => {
     if (!isPreviewOpen) return;
@@ -76,31 +117,19 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
       const key = event.key.toLowerCase();
       if (key === "escape") {
         event.preventDefault();
-        setIsPreviewOpen(false);
+        closePreview();
         return;
       }
 
       if (key === "d") {
         event.preventDefault();
-        const anchor = document.createElement("a");
-        anchor.href = src;
-        anchor.download = deriveFileNameFromSrc(src, alt);
-        anchor.rel = "noopener noreferrer";
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        return;
-      }
-
-      if (key === "o") {
-        event.preventDefault();
-        window.open(src, "_blank", "noopener,noreferrer");
+        void triggerDownload();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isPreviewOpen, src, alt]);
+  }, [isPreviewOpen, triggerDownload, closePreview]);
 
   const getAlignmentClass = () => {
     switch (align) {
@@ -130,34 +159,15 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
 
     stopNodeSelection(event);
     setCopyState("idle");
+    setDownloadState("idle");
     setIsPreviewOpen(true);
   }, [src, loading, error, isResizing, stopNodeSelection]);
-
-  const closePreview = useCallback(() => {
-    setIsPreviewOpen(false);
-    setCopyState("idle");
-  }, []);
 
   const downloadImage = useCallback((event: ReactMouseEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!src) return;
-
-    const anchor = document.createElement("a");
-    anchor.href = src;
-    anchor.download = deriveFileNameFromSrc(src, alt);
-    anchor.rel = "noopener noreferrer";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-  }, [src, alt]);
-
-  const openInNewTab = useCallback((event: ReactMouseEvent<HTMLElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!src) return;
-    window.open(src, "_blank", "noopener,noreferrer");
-  }, [src]);
+    void triggerDownload();
+  }, [triggerDownload]);
 
   const copyImageLink = useCallback(async (event: ReactMouseEvent<HTMLElement>) => {
     event.preventDefault();
@@ -177,6 +187,57 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
     event.stopPropagation();
     updateAttributes({ width: "100%" });
   }, [updateAttributes]);
+
+  const previewLightbox = isPreviewOpen && src && typeof document !== "undefined"
+    ? createPortal(
+      <div
+        className="image-lightbox"
+        role="dialog"
+        aria-modal="true"
+        onClick={closePreview}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div
+          className="image-lightbox-panel"
+          onClick={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <div className="image-lightbox-header">
+            <div className="image-lightbox-title-wrap">
+              <p className="image-lightbox-eyebrow">image preview</p>
+              <div className="image-lightbox-title">{alt || "untitled image"}</div>
+            </div>
+            <div className="image-lightbox-actions">
+              <button type="button" className="image-lightbox-icon-button" onClick={downloadImage}>
+                <Download size={14} />
+                <span>{downloadState === "done" ? "saved" : downloadState === "error" ? "save failed" : "save as"}</span>
+              </button>
+              <button type="button" className="image-lightbox-close" onClick={closePreview} aria-label="Close preview">
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+
+          <div className="image-lightbox-body image-lightbox-body-simple">
+            <div className="image-lightbox-stage">
+              <img
+                className="image-lightbox-image"
+                src={src}
+                alt={alt || ""}
+                draggable={false}
+              />
+            </div>
+          </div>
+
+          <div className="image-lightbox-shortcuts">
+            <span><kbd>Esc</kbd> close</span>
+            <span><kbd>D</kbd> save image</span>
+          </div>
+        </div>
+      </div>,
+      document.body,
+    )
+    : null;
 
   const handleResizeStart = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -286,14 +347,29 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
             }}
           />
           <div className="image-hover-actions">
-            <button
-              type="button"
-              className="image-hover-open"
-              onMouseDown={(event) => event.stopPropagation()}
-              onClick={openPreview}
-            >
-              Open preview
-            </button>
+            <div className="image-hover-meta">
+              <span className="image-hover-chip">{widthLabel}</span>
+            </div>
+            <div className="image-hover-buttons">
+              <button
+                type="button"
+                className="image-hover-open"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={openPreview}
+              >
+                <Maximize2 size={13} />
+                <span>preview</span>
+              </button>
+              <button
+                type="button"
+                className="image-hover-open"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={resetImageWidth}
+              >
+                <RefreshCw size={13} />
+                <span>reset size</span>
+              </button>
+            </div>
           </div>
           <button
             type="button"
@@ -306,53 +382,7 @@ export const ImageNodeView = ({ node, updateAttributes }: NodeViewProps) => {
           />
         </div>
       </div>
-      {isPreviewOpen && src ? (
-        <div
-          className="image-lightbox"
-          role="dialog"
-          aria-modal="true"
-          onClick={closePreview}
-          onMouseDown={(event) => event.stopPropagation()}
-        >
-          <div
-            className="image-lightbox-panel"
-            onClick={(event) => event.stopPropagation()}
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <div className="image-lightbox-header">
-              <div className="image-lightbox-title">{alt || "Image preview"}</div>
-              <div className="image-lightbox-actions">
-                <button type="button" className="image-lightbox-action" onClick={copyImageLink}>
-                  {copyState === "done" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy link"}
-                </button>
-                <button type="button" className="image-lightbox-action" onClick={resetImageWidth}>
-                  Reset size
-                </button>
-                <button type="button" className="image-lightbox-action" onClick={downloadImage}>
-                  Download
-                </button>
-                <button type="button" className="image-lightbox-action" onClick={openInNewTab}>
-                  Open tab
-                </button>
-                <button type="button" className="image-lightbox-close" onClick={closePreview} aria-label="Close preview">
-                  X
-                </button>
-              </div>
-            </div>
-            <img
-              className="image-lightbox-image"
-              src={src}
-              alt={alt || ""}
-              draggable={false}
-            />
-            <div className="image-lightbox-shortcuts">
-              <span><kbd>Esc</kbd> close</span>
-              <span><kbd>D</kbd> download</span>
-              <span><kbd>O</kbd> open in tab</span>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {previewLightbox}
     </NodeViewWrapper>
   );
 };

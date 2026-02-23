@@ -26,6 +26,13 @@ pub struct SavePdfRequest {
     pdf_bytes: Vec<u8>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SaveImageRequest {
+    suggested_name: String,
+    source_url: Option<String>,
+    attachment_id: Option<String>,
+}
+
 #[command]
 pub async fn upload_image(
     app: AppHandle,
@@ -348,6 +355,67 @@ pub async fn save_pdf_file(app: AppHandle, request: SavePdfRequest) -> Result<()
 
     fs::write(&path, &request.pdf_bytes)
         .map_err(|e| format!("Failed to write PDF file: {}", e))?;
+
+    Ok(())
+}
+
+#[command]
+pub async fn save_image_file(app: AppHandle, request: SaveImageRequest) -> Result<(), String> {
+    let file_path = app
+        .dialog()
+        .file()
+        .add_filter("Image", &["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "tiff"])
+        .set_file_name(&request.suggested_name)
+        .blocking_save_file();
+
+    let Some(chosen) = file_path else {
+        // User canceled save dialog.
+        return Ok(());
+    };
+
+    let path = match chosen {
+        FilePath::Path(path) => path,
+        FilePath::Url(url) => url
+            .to_file_path()
+            .map_err(|_| "Failed to resolve selected file path.".to_string())?,
+    };
+
+    let image_bytes = if let Some(attachment_id) = request
+        .attachment_id
+        .as_ref()
+        .map(|id| id.trim())
+        .filter(|id| !id.is_empty())
+    {
+        let source_path = get_image(app.clone(), attachment_id.to_string()).await?;
+        fs::read(source_path).map_err(|e| format!("Failed to read source image file: {}", e))?
+    } else if let Some(source_url) = request
+        .source_url
+        .as_ref()
+        .map(|url| url.trim())
+        .filter(|url| !url.is_empty())
+    {
+        if !(source_url.starts_with("http://") || source_url.starts_with("https://")) {
+            return Err("Image source cannot be downloaded directly.".into());
+        }
+
+        let response = reqwest::get(source_url)
+            .await
+            .map_err(|e| format!("Failed to fetch image source: {}", e))?;
+
+        if !response.status().is_success() {
+            return Err(format!("Failed to fetch image source: HTTP {}", response.status()));
+        }
+
+        response
+            .bytes()
+            .await
+            .map_err(|e| format!("Failed to read image response bytes: {}", e))?
+            .to_vec()
+    } else {
+        return Err("No image source provided.".into());
+    };
+
+    fs::write(&path, image_bytes).map_err(|e| format!("Failed to write image file: {}", e))?;
 
     Ok(())
 }
