@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion, type Easing } from 'motion/react';
 
 import './boot-splash.css';
 
@@ -6,18 +6,24 @@ type BootSplashProps = {
   exiting: boolean;
 };
 
-const SEQUENCE_DURATION_SECONDS = 2.2;
+const SEQUENCE_DURATION_SECONDS = 2.4;
 export const BOOT_SPLASH_MIN_DURATION_MS = Math.round(SEQUENCE_DURATION_SECONDS * 1000);
+
+const UN_ANIMATE = { opacity: [0, 0, 1, 1, 0], y: [10, 10, 0, 0, 0] };
+const UN_TIMES = [0, 0.04, 0.26, 0.8, 1];
+const UN_EASE: Easing[] = ['linear', 'easeOut', 'linear', 'easeIn'];
+const FOLD_ANIMATE = { opacity: [0, 0, 1, 1, 0], y: [10, 10, 0, 0, 0] };
+const FOLD_TIMES = [0, 0.38, 0.62, 0.8, 1];
+const FOLD_EASE: Easing[] = ['linear', 'easeOut', 'linear', 'easeIn'];
+
+const BASE_LOOP_TRANSITION = {
+  duration: SEQUENCE_DURATION_SECONDS,
+  repeat: Number.POSITIVE_INFINITY,
+  repeatDelay: 0.3,
+} as const;
+
 export function BootSplash({ exiting }: BootSplashProps) {
   const reduceMotion = useReducedMotion();
-
-  // Sequence: un in -> fold in -> both out.
-  const sharedVariant = reduceMotion
-    ? { opacity: 1, y: 0 }
-    : {
-        opacity: [0, 1, 1, 0],
-        y: [0, 0, 0, 0],
-      };
 
   return (
     <div className={`boot-loader ${exiting ? 'is-exiting' : ''}`} aria-hidden="true">
@@ -47,33 +53,24 @@ export function BootSplash({ exiting }: BootSplashProps) {
         <div className="boot-loader__text boot-loader__stack">
           <motion.span
             className="boot-loader__segment"
-            initial={{ opacity: 0, y: 0 }}
-            animate={sharedVariant}
+            initial={{ opacity: 0, y: 10 }}
+            animate={reduceMotion ? { opacity: 1, y: 0 } : UN_ANIMATE}
             transition={
               reduceMotion
                 ? { duration: 0 }
-                : {
-                    duration: SEQUENCE_DURATION_SECONDS,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: 'easeInOut',
-                  }
+                : { ...BASE_LOOP_TRANSITION, times: UN_TIMES, ease: UN_EASE }
             }
           >
             un
           </motion.span>
           <motion.span
             className="boot-loader__segment"
-            initial={{ opacity: 0, y: 0 }}
-            animate={sharedVariant}
+            initial={{ opacity: 0, y: 10 }}
+            animate={reduceMotion ? { opacity: 1, y: 0 } : FOLD_ANIMATE}
             transition={
               reduceMotion
                 ? { duration: 0 }
-                : {
-                    duration: SEQUENCE_DURATION_SECONDS,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: 'easeInOut',
-                    delay: 0.35,
-                  }
+                : { ...BASE_LOOP_TRANSITION, times: FOLD_TIMES, ease: FOLD_EASE }
             }
           >
             fold
