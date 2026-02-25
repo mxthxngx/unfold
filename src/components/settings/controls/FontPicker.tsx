@@ -19,6 +19,12 @@ interface FontPickerProps {
 }
 
 /**
+ * Fonts loaded via Google Fonts in the app stylesheet — always available
+ * regardless of what is installed on the host system.
+ */
+const BUNDLED_WEB_FONTS = ['Bricolage Grotesque', 'DM Sans', 'Google Sans Code'] as const;
+
+/**
  * Keywords used to identify monospace fonts from the system font list.
  * Applied as substring matches against the lowercase font family name.
  */
@@ -71,6 +77,8 @@ const FontPicker: React.FC<FontPickerProps> = ({ label, value, onChange, error, 
         if (isMonospaceFont(font)) base.add(font);
       });
     } else {
+      // Seed with bundled web fonts first so they always appear
+      BUNDLED_WEB_FONTS.forEach((font) => base.add(font));
       systemFonts.forEach((font) => base.add(font));
     }
 
