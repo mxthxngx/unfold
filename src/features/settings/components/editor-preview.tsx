@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 import { PanelCard } from '@/components/atoms/panel-card';
-import { TabSwitcher } from '@/components/ui/tab-switcher';
-import type { CustomizationPropertyKey } from '@/types/customization';
+import { TabSwitcher } from '@/ui/primitives/tab-switcher';
+import type { CustomizationPropertyKey } from '@/core/types/customization';
 
 import { TypographyPreviewDocument } from './typography-preview-document';
 

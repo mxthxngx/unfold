@@ -2,7 +2,7 @@ import type * as React from 'react';
 
 import { PrimaryActionButton } from '@/components/atoms/primary-action-button';
 import { FormField } from '@/components/molecules/form-field';
-import { Modal } from '@/components/ui/modal';
+import { Modal } from '@/ui/primitives/modal';
 
 interface CreateSpaceModalProps {
   open: boolean;

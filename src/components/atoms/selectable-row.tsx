@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { SIDEBAR_TRANSITION_EASE_CLASS } from '@/lib/motion';
+import { SIDEBAR_TRANSITION_EASE_CLASS } from '@/features/sidebar/utils/motion';
 import { cn } from '@/lib/utils';
 
 const mergeRefs = <T,>(...refs: Array<React.Ref<T> | undefined>) => (value: T | null) => {

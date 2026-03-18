@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Slider } from '@/components/ui/slider';
+import { Slider } from '@/ui/primitives/slider';
 
 interface SizeSliderChipProps {
   label: string;

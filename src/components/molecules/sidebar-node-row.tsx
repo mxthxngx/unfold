@@ -7,12 +7,12 @@ import { ExpandChevronIcon } from '@/components/atoms/expand-chevron-icon';
 import { RowActionsReveal } from '@/components/atoms/row-actions-reveal';
 import { SelectableRow } from '@/components/atoms/selectable-row';
 import { IconActionButton } from '@/components/atoms/icon-action-button';
-import { AppTooltipContent, Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AppTooltipContent, Tooltip, TooltipTrigger } from '@/ui/primitives/tooltip';
+import { Skeleton } from '@/ui/primitives/skeleton';
 import {
   SIDEBAR_MINDFUL_OPEN_DURATION,
   SIDEBAR_OPEN_EASE,
-} from '@/lib/motion';
+} from '@/features/sidebar/utils/motion';
 import { cn } from '@/lib/utils';
 
 interface SidebarNodeRowProps {

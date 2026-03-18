@@ -7,19 +7,19 @@ import { DeleteConfirmationModal } from '@/components/common/delete-confirmation
 import { SidebarChildrenCollapse } from '@/components/molecules/sidebar-children-collapse';
 import { SidebarNodeContextMenu } from '@/components/molecules/sidebar-node-context-menu';
 import { SidebarNodeRow } from '@/components/molecules/sidebar-node-row';
-import { SidebarMenuItem, SidebarMenuSubItem } from '@/components/ui/sidebar';
-import { useAppEvent, APP_EVENTS } from '@/lib/app-events';
+import { SidebarMenuItem, SidebarMenuSubItem } from '@/ui/sidebar/sidebar';
+import { useAppEvent, APP_EVENTS } from '@/core/events/app-events';
 import { cn } from '@/lib/utils';
-import { useFileSystemStore, useIsNodeSelected, useSelectedFileId } from '@/store/hooks/use-filesystem-store';
-import { useAppDispatch } from '@/store/hooks';
-import { setPendingFileId } from '@/store/slices/ui-slice';
-import { Node as SidebarNode } from '@/types/sidebar';
-import { consumeRecentlyCreatedNode, markNodeAsRecentlyCreated } from '@/features/sidebar/lib/recently-created-node';
+import { useFileSystemStore, useIsNodeSelected, useSelectedFileId } from '@/core/store/hooks/use-filesystem-store';
+import { useAppDispatch } from '@/core/store/hooks';
+import { setPendingFileId } from '@/core/store/slices/ui-slice';
+import { Node as SidebarNode } from '@/core/types/sidebar';
+import { consumeRecentlyCreatedNode, markNodeAsRecentlyCreated } from '@/features/sidebar/utils/recently-created-node';
 import {
   SIDEBAR_MINDFUL_CHILD_STAGGER,
   SIDEBAR_TREE_CLOSE_SPRING,
   SIDEBAR_TREE_OPEN_SPRING,
-} from '@/lib/motion';
+} from '@/features/sidebar/utils/motion';
 
 function useNodeActions(node: SidebarNode) {
   const { activeSpaceId, addNode, deleteNode, getPreviousVisibleNode, togglePinNode } = useFileSystemStore();

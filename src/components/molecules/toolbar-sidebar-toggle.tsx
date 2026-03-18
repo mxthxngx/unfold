@@ -1,8 +1,8 @@
 import { PanelLeftIcon } from 'lucide-react';
 import { motion } from 'motion/react';
 
-import { Ripple } from '@/components/ui/ripple';
-import { AppTooltipContent, Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
+import { Ripple } from '@/ui/primitives/ripple';
+import { AppTooltipContent, Tooltip, TooltipTrigger } from '@/ui/primitives/tooltip';
 import { cn } from '@/lib/utils';
 
 interface ToolbarSidebarToggleProps {

@@ -1,4 +1,4 @@
-import type { CustomizationPropertyKey } from '@/types/customization';
+import type { CustomizationPropertyKey } from '@/core/types/customization';
 
 interface TypographyPreviewDocumentProps {
   getValue: (key: CustomizationPropertyKey) => string | number | undefined;

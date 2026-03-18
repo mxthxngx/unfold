@@ -1,4 +1,4 @@
-import type { CustomizationPropertyKey } from '@/types/customization';
+import type { CustomizationPropertyKey } from '@/core/types/customization';
 
 export const HEADING_SCALE_MIN = 14;
 export const HEADING_SCALE_MAX = 52;

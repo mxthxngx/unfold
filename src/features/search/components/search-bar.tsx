@@ -2,12 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useEditorState, type Editor } from '@tiptap/react';
 import type { Node } from '@tiptap/pm/model';
 import { TextSelection } from '@tiptap/pm/state';
-import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
+import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/core/config/keyboard-shortcuts';
 import { cn } from '@/lib/utils';
-import { useEditorRegistry as useEditorContext } from '@/store/hooks/use-editor-registry';
+import { useEditorRegistry as useEditorContext } from '@/core/store/hooks/use-editor-registry';
 import { SearchInputRow } from '@/features/search/components/search-input-row';
 import { SearchReplaceRow } from '@/features/search/components/search-replace-row';
-import { useAppEvent, APP_EVENTS, type AppEventPayloads } from '@/lib/app-events';
+import { useAppEvent, APP_EVENTS, type AppEventPayloads } from '@/core/events/app-events';
 
 /** Get the word at the given position in the document (for pre-filling find with word under cursor). */
 function getWordAtPosition(doc: Node, pos: number): string {

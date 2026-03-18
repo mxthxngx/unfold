@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import invoke from '@/utils/invoke';
+import invoke from '@/core/utils/invoke';
 
 const BUNDLED_WEB_FONTS = ['Bricolage Grotesque', 'DM Sans', 'Google Sans Code'] as const;
 

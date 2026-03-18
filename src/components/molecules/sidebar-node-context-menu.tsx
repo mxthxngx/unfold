@@ -7,8 +7,8 @@ import {
   ContextMenuShortcut,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@/components/ui/context-menu';
-import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
+} from '@/ui/primitives/context-menu';
+import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/core/config/keyboard-shortcuts';
 
 interface SidebarNodeContextMenuProps {
   pinLabel: string;

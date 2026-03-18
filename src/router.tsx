@@ -5,18 +5,18 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router';
-import { EditorSkeleton } from '@/components/editor/editor-skeleton';
-import FullPageEditor from '@/components/editor/full-page-editor';
+import { EditorSkeleton } from '@/features/editor/editor-skeleton';
+import FullPageEditor from '@/features/editor/full-page-editor';
 import { IndexPage } from '@/pages/index-page';
-import { WorkspaceSkeleton } from '@/components/skeletons/workspace-skeleton';
-import { findFirstFileId, findNodeById } from '@/lib/file-tree';
-import { resolveInitialSpaceId } from '@/lib/space-selection';
-import EditorLayout from '@/layout/editor-layout';
-import type { AppStore } from '@/store';
-import { appApi, type WorkspaceSnapshot, type WorkspaceSpace } from '@/store/api/app-api';
-import { selectActiveSpaceId, selectPendingFileId } from '@/store/selectors';
-import { setActiveSpaceId } from '@/store/slices/ui-slice';
-import { getLastOpenedFile, setLastOpenedFile } from '@/utils/last-opened';
+import { WorkspaceSkeleton } from '@/pages/workspace-skeleton';
+import { findFirstFileId, findNodeById } from '@/core/utils/file-tree';
+import { resolveInitialSpaceId } from '@/core/utils/space-selection';
+import EditorLayout from '@/components/layouts/global/editor-layout';
+import type { AppStore } from '@/core/store';
+import { appApi, type WorkspaceSnapshot, type WorkspaceSpace } from '@/core/store/api/app-api';
+import { selectActiveSpaceId, selectPendingFileId } from '@/core/store/selectors';
+import { setActiveSpaceId } from '@/core/store/slices/ui-slice';
+import { getLastOpenedFile, setLastOpenedFile } from '@/core/utils/last-opened';
 
 interface RouterContext {
   store: AppStore;

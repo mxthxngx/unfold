@@ -4,7 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/ui/primitives/dropdown-menu';
 import { ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

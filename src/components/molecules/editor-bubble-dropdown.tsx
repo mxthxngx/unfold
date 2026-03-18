@@ -1,14 +1,14 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { CheckIcon, ChevronDown } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/ui/primitives/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, AppTooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@/ui/primitives/dropdown-menu';
+import { Tooltip, AppTooltipContent, TooltipTrigger } from '@/ui/primitives/tooltip';
 
 export interface BubbleDropdownItem {
   name: string;

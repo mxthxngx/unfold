@@ -2,17 +2,17 @@ import { useMemo, useState } from 'react';
 
 import { FooterActionBar } from '@/components/molecules/footer-action-bar';
 import { PanelSection } from '@/components/molecules/panel-section';
-import { customizationDefaultValues } from '@/config/customization-defaults';
-import { useFileSystemStore as useFileSystem } from '@/store/hooks/use-filesystem-store';
-import { setCustomizationProperty } from '@/store/slices/customization-slice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectSpaceName } from '@/store/selectors';
-import { resolveCustomizationProperties } from '@/services/customization-resolver';
+import { customizationDefaultValues } from '@/core/config/customization-defaults';
+import { useFileSystemStore as useFileSystem } from '@/core/store/hooks/use-filesystem-store';
+import { setCustomizationProperty } from '@/core/store/slices/customization-slice';
+import { useAppDispatch, useAppSelector } from '@/core/store/hooks';
+import { selectSpaceName } from '@/core/store/selectors';
+import { resolveCustomizationProperties } from '@/core/services/customization-resolver';
 import type {
   CustomizationPropertyKey,
   CustomizationScope,
-} from '@/types/customization';
-import { TabSwitcher } from '@/components/ui/tab-switcher';
+} from '@/core/types/customization';
+import { TabSwitcher } from '@/ui/primitives/tab-switcher';
 
 import { CustomizationEmptyState } from '@/features/settings/components/customization-empty-state';
 import { EditorPreview } from '@/features/settings/components/editor-preview';

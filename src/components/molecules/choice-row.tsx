@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Ripple } from '@/components/ui/ripple';
+import { Ripple } from '@/ui/primitives/ripple';
 import { cn } from '@/lib/utils';
 
 interface ChoiceRowProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {

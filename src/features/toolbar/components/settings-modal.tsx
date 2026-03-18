@@ -9,12 +9,12 @@ import { FooterActionBar } from '@/components/molecules/footer-action-bar';
 import { FormField } from '@/components/molecules/form-field';
 import { FilterToggleCard } from '@/components/molecules/filter-toggle-card';
 import CustomizabilitySection from '@/features/settings/components/customizability-section';
-import { Modal } from '@/components/ui/modal';
-import { useThemeStore } from '@/store/hooks/use-theme-store';
-import type { ThemePreference } from '@/store/theme';
+import { Modal } from '@/ui/primitives/modal';
+import { useThemeStore } from '@/core/theme/use-theme-store';
+import type { ThemePreference } from '@/core/theme/theme';
 import { cn } from '@/lib/utils';
-import { PrintScope } from '@/utils/print';
-import type { ImportExtractionOptions } from '@/utils/web-import';
+import { PrintScope } from '@/core/utils/print';
+import type { ImportExtractionOptions } from '@/core/utils/web-import';
 
 interface SettingsModalProps {
   open: boolean;

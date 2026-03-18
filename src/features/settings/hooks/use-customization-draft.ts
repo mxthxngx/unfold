@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 
-import { customizationDefaultValues } from '@/config/customization-defaults';
+import { customizationDefaultValues } from '@/core/config/customization-defaults';
 import type {
   CustomizationPropertyKey,
   CustomizationScope,
-} from '@/types/customization';
-import { isValidFontFamily, isValidFontSize } from '@/utils/customization-validation';
+} from '@/core/types/customization';
+import { isValidFontFamily, isValidFontSize } from '@/features/settings/utils/customization-validation';
 
 export type DraftOverrides = Partial<Record<CustomizationPropertyKey, string | number>>;
 

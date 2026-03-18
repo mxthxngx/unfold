@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLayoutStore } from '@/store/hooks/use-layout-store';
-import { LAYOUT_OPTIONS, SidebarPosition } from '@/types/layout';
+import { useLayoutStore } from '@/core/store/hooks/use-layout-store';
+import { LAYOUT_OPTIONS, SidebarPosition } from '@/core/types/layout';
 import { cn } from '@/lib/utils';
 
 const LayoutSettings: React.FC = () => {

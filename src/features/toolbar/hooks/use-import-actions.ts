@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { extractMainContentFromHtml, importFromWebsite, type ImportExtractionOptions } from '@/utils/web-import';
+import { extractMainContentFromHtml, importFromWebsite, type ImportExtractionOptions } from '@/core/utils/web-import';
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message) {

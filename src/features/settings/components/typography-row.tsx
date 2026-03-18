@@ -1,6 +1,6 @@
 import FontPicker from '@/features/settings/controls/font-picker';
-import { customizationDefaultValues } from '@/config/customization-defaults';
-import type { CustomizationPropertyKey, CustomizationScope } from '@/types/customization';
+import { customizationDefaultValues } from '@/core/config/customization-defaults';
+import type { CustomizationPropertyKey, CustomizationScope } from '@/core/types/customization';
 
 import {
   HEADING_FONT_KEYS,

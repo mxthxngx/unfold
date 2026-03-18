@@ -73,10 +73,10 @@ button:not(:disabled),
 
 
 /* ─── Token layers ─── */
-@import "./tokens/unfold-primitives.css";   /* Layer 1: user-configurable */
-@import "./tokens/semantic-dark.css";        /* Layer 2: dark defaults */
-@import "./tokens/semantic-light.css";       /* Layer 2: light overrides */
-@import "./tokens/theme-mapping.css";        /* Layer 3: Tailwind theme */
+@import "../ui/tokens/unfold-primitives.css";   /* Layer 1: user-configurable */
+@import "../ui/tokens/semantic-dark.css";        /* Layer 2: dark defaults */
+@import "../ui/tokens/semantic-light.css";       /* Layer 2: light overrides */
+@import "../ui/tokens/theme-mapping.css";        /* Layer 3: Tailwind theme */
 
 /* Button theme utilities */
 .bg-button { background-color: var(--button-bg); }

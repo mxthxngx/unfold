@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { PrimaryActionButton } from '@/components/atoms/primary-action-button';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/ui/primitives/button';
 import { cn } from '@/lib/utils';
 
 interface FooterActionBarProps {

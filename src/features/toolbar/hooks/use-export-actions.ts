@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { exportToPdf, selectPrintableNodes, type PrintScope } from '@/utils/print';
-import type { Node } from '@/types/sidebar';
+import { exportToPdf, selectPrintableNodes, type PrintScope } from '@/core/utils/print';
+import type { Node } from '@/core/types/sidebar';
 
 interface UseExportActionsParams {
   printScope: PrintScope;

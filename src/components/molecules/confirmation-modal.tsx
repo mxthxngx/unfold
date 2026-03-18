@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
+import { Button } from '@/ui/primitives/button';
+import { Modal } from '@/ui/primitives/modal';
 import { cn } from '@/lib/utils';
 
 interface ConfirmationAction {

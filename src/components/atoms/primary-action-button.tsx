@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Ripple } from '@/components/ui/ripple';
+import { Button } from '@/ui/primitives/button';
+import { Ripple } from '@/ui/primitives/ripple';
 import { cn } from '@/lib/utils';
 
 interface PrimaryActionButtonProps

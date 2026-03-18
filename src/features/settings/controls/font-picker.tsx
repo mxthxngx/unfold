@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/ui/primitives/dropdown-menu';
 import { DropdownFieldShell } from '@/components/molecules/dropdown-field-shell';
 import { useSystemFonts } from '@/features/settings/hooks/use-system-fonts';
 

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useFileSystemStore as useFileSystem } from '@/store/hooks/use-filesystem-store';
-import { useAppDispatch } from '@/store/hooks';
-import { setPendingFileId } from '@/store/slices/ui-slice';
+import { useFileSystemStore as useFileSystem } from '@/core/store/hooks/use-filesystem-store';
+import { useAppDispatch } from '@/core/store/hooks';
+import { setPendingFileId } from '@/core/store/slices/ui-slice';
 import { EmptyState } from './empty-state';
 
 export function IndexPage() {

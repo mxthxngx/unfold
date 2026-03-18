@@ -1,10 +1,10 @@
 import { RouterProvider } from '@tanstack/react-router';
 
-import { GlobalSelectionHighlighter } from '@/components/common/global-selection-highlighter';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { useThemeBootstrap } from '@/store/hooks/use-theme-store';
+import { GlobalSelectionHighlighter } from '@/features/editor/components/global-selection-highlighter';
+import { SidebarProvider } from '@/ui/sidebar/sidebar';
+import { useThemeBootstrap } from '@/core/theme/use-theme-store';
 import { router } from '@/router';
-import { store } from '@/store';
+import { store } from '@/core/store';
 
 function App() {
   useThemeBootstrap();

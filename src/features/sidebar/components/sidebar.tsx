@@ -1,31 +1,31 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { DialogRoot, DialogTrigger, DialogContent } from '@/components/ui/dialog';
+import { DialogRoot, DialogTrigger, DialogContent } from '@/ui/primitives/dialog';
 import { DeleteConfirmationModal } from '@/components/common/delete-confirmation-modal';
 import { cn } from '@/lib/utils';
-import { findFirstFileId } from '@/lib/file-tree';
-import { useFileSystemStore } from '@/store/hooks/use-filesystem-store';
-import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/config/keyboard-shortcuts';
-import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/components/ui/tooltip';
+import { findFirstFileId } from '@/core/utils/file-tree';
+import { useFileSystemStore } from '@/core/store/hooks/use-filesystem-store';
+import { KEYBOARD_SHORTCUTS, getShortcutDisplay } from '@/core/config/keyboard-shortcuts';
+import { Tooltip, TooltipTrigger, AppTooltipContent } from '@/ui/primitives/tooltip';
 import {
   Sidebar as ShadcnSidebar,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-} from '@/components/ui/sidebar';
+} from '@/ui/sidebar/sidebar';
 import { Plus } from 'lucide-react';
-import { SidebarTreeSkeleton } from '@/components/skeletons/workspace-skeleton';
-import { useSelectedFileId } from '@/store/hooks/use-filesystem-store';
-import { useAppDispatch } from '@/store/hooks';
-import { setPendingFileId } from '@/store/slices/ui-slice';
+import { SidebarTreeSkeleton } from '@/pages/workspace-skeleton';
+import { useSelectedFileId } from '@/core/store/hooks/use-filesystem-store';
+import { useAppDispatch } from '@/core/store/hooks';
+import { setPendingFileId } from '@/core/store/slices/ui-slice';
 import { SmallTextLabel } from '@/components/atoms/small-text-label';
 import { IconActionButton } from '@/components/atoms/icon-action-button';
-import { ScrollableContainer } from '@/components/common/scrollable-container';
-import { useAppEvent, APP_EVENTS } from '@/lib/app-events';
+import { ScrollableContainer } from '@/ui/primitives/scrollable-container';
+import { useAppEvent, APP_EVENTS } from '@/core/events/app-events';
 import { SpaceSwitcherMenu } from '@/features/sidebar/components/space-switcher-menu';
 import { CreateSpaceModal } from '@/features/sidebar/components/create-space-modal';
 import { PinnedNodeItem, SidebarNodes } from '@/features/sidebar/components/sidebar-tree-nodes';
-import { markNodeAsRecentlyCreated } from '@/features/sidebar/lib/recently-created-node';
+import { markNodeAsRecentlyCreated } from '@/features/sidebar/utils/recently-created-node';
 
 type SidebarProps = {
   side?: 'left' | 'right';

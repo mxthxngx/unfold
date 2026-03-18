@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { AnimatedIcon } from '@/components/ui/animated-icon';
+import { AnimatedIcon } from '@/ui/primitives/animated-icon';
 import { cn } from '@/lib/utils';
 
 interface IconActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

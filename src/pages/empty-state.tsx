@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/ui/primitives/button';
 
 interface EmptyStateProps {
   onCreateFile: () => void;

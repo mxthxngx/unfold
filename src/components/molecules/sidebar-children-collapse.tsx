@@ -5,8 +5,8 @@ import { motion, useReducedMotion } from 'motion/react';
 import {
   SIDEBAR_TREE_CLOSE_SPRING,
   SIDEBAR_TREE_OPEN_SPRING,
-} from '@/lib/motion';
-import { SidebarMenuSub } from '@/components/ui/sidebar';
+} from '@/features/sidebar/utils/motion';
+import { SidebarMenuSub } from '@/ui/sidebar/sidebar';
 import { cn } from '@/lib/utils';
 
 interface SidebarChildrenCollapseProps {
