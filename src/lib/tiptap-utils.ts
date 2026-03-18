@@ -20,13 +20,6 @@ export const MAC_SYMBOLS: Record<string, string> = {
   capslock: "⇪",
 } as const
 
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs));
-}
-
 /**
  * Determines if the current platform is macOS
  * @returns boolean indicating if the current platform is Mac

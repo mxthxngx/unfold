@@ -29,7 +29,7 @@ export function DropdownFieldShell({
 }: DropdownFieldShellProps) {
   return (
     <div className="space-y-1.5">
-      <span className="pl-2.5 text-[10px] font-medium text-modal-surface-foreground/65">{label}</span>
+      <span className="pl-2.5 text-xs font-medium text-modal-surface-foreground/65">{label}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div
@@ -62,9 +62,9 @@ export function DropdownFieldShell({
         </DropdownMenuContent>
       </DropdownMenu>
       {helperText && !error && (
-        <p className="text-[10px] text-modal-surface-foreground/60">{helperText}</p>
+        <p className="text-xs text-modal-surface-foreground/60">{helperText}</p>
       )}
-      {error && <p className="text-[10px] text-destructive">{error}</p>}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

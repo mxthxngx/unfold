@@ -1,5 +1,5 @@
 import { useParams } from "@tanstack/react-router";
-import { useFileSystem } from "@/contexts/FileSystemContext";
+import { useFileSystemStore as useFileSystem } from "@/store/hooks/use-filesystem-store";
 import TitleEditor from "./title-editor";
 import PageEditor from "./page-editor";
 import { EditorSkeleton } from "./editor-skeleton";

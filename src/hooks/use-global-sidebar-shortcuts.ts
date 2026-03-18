@@ -1,8 +1,8 @@
 
 import { useEffect } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useFileSystem } from '@/contexts/FileSystemContext';
-import { useEditorContext } from '@/contexts/EditorContext';
+import { useFileSystemStore as useFileSystem } from '@/store/hooks/use-filesystem-store';
+import { useEditorRegistry as useEditorContext } from '@/store/hooks/use-editor-registry';
 import { KEYBOARD_SHORTCUTS } from '@/config/keyboard-shortcuts';
 import { dispatchAppEvent, APP_EVENTS } from '@/lib/app-events';
 import { useAppDispatch } from '@/store/hooks';

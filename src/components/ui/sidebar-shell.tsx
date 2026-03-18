@@ -14,7 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { SIDEBAR_GAP_TWEEN, SIDEBAR_SHELL_TWEEN } from "@/components/sidebar/sidebar-motion"
+import { SIDEBAR_GAP_TWEEN, SIDEBAR_SHELL_TWEEN } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 
 import { useSidebar } from "./sidebar-provider"

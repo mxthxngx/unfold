@@ -8,10 +8,9 @@ import { SidebarChildrenCollapse } from '@/components/molecules/sidebar-children
 import { SidebarNodeContextMenu } from '@/components/molecules/sidebar-node-context-menu';
 import { SidebarNodeRow } from '@/components/molecules/sidebar-node-row';
 import { SidebarMenuItem, SidebarMenuSubItem } from '@/components/ui/sidebar';
-import { useFileSystem } from '@/contexts/FileSystemContext';
 import { useAppEvent, APP_EVENTS } from '@/lib/app-events';
-import { cn } from '@/lib/tiptap-utils';
-import { useIsNodeSelected, useSelectedFileId } from '@/store/hooks/use-filesystem-store';
+import { cn } from '@/lib/utils';
+import { useFileSystemStore, useIsNodeSelected, useSelectedFileId } from '@/store/hooks/use-filesystem-store';
 import { useAppDispatch } from '@/store/hooks';
 import { setPendingFileId } from '@/store/slices/ui-slice';
 import { Node as SidebarNode } from '@/types/sidebar';
@@ -20,10 +19,10 @@ import {
   SIDEBAR_MINDFUL_CHILD_STAGGER,
   SIDEBAR_TREE_CLOSE_SPRING,
   SIDEBAR_TREE_OPEN_SPRING,
-} from '@/components/sidebar/sidebar-motion';
+} from '@/lib/motion';
 
 function useNodeActions(node: SidebarNode) {
-  const { activeSpaceId, addNode, deleteNode, getPreviousVisibleNode, togglePinNode } = useFileSystem();
+  const { activeSpaceId, addNode, deleteNode, getPreviousVisibleNode, togglePinNode } = useFileSystemStore();
   const selectedFileId = useSelectedFileId();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -101,7 +100,7 @@ const PinnedNodeItem = memo(({
   node: SidebarNode;
   addFileShortcut: string;
 }) => {
-  const { toggleFolder, getNodePath, getNode } = useFileSystem();
+  const { toggleFolder, getNodePath, getNode } = useFileSystemStore();
   const isSelected = useIsNodeSelected(node.id);
   const dispatch = useAppDispatch();
   const {
@@ -150,7 +149,7 @@ const PinnedNodeItem = memo(({
             addFileShortcut={addFileShortcut}
             isOpen={isOpen}
             showToggle={hasChildren}
-            className="text-[13px] font-[450]"
+            className="text-sm font-[450]"
             selectedClassName="bg-sidebar-subitem-selected-bg border-border-elevated text-foreground/90 font-[450]"
             unselectedClassName="border-transparent text-sidebar-foreground/90 hover:bg-sidebar-item-hover-bg/80 hover:text-foreground"
             onSelect={() => {
@@ -191,7 +190,7 @@ export const SidebarNodes = memo(({
   isFirstChild?: boolean;
   addFileShortcut: string;
 }) => {
-  const { toggleFolder, isNodePinned } = useFileSystem();
+  const { toggleFolder, isNodePinned } = useFileSystemStore();
   const prefersReducedMotion = useReducedMotion();
   const isSelected = useIsNodeSelected(node.id);
   const dispatch = useAppDispatch();

@@ -6,8 +6,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Document from "@tiptap/extension-document";
 import { mergeAttributes } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
-import { useEditorContext } from "@/contexts/EditorContext";
-import { useFileSystem } from "@/contexts/FileSystemContext";
+import { useEditorRegistry as useEditorContext } from "@/store/hooks/use-editor-registry";
+import { useFileSystemStore as useFileSystem } from "@/store/hooks/use-filesystem-store";
 import { editorClasses } from "./styles/extension-styles";
 import "./styles/title-editor.css";
 

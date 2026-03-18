@@ -2,7 +2,7 @@ import React, { forwardRef, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ChevronDown } from 'lucide-react';
 
-import { cn } from '@/lib/tiptap-utils';
+import { cn } from '@/lib/utils';
 
 const mergeRefs = <T,>(...refs: Array<React.RefObject<T | null> | undefined>) => {
   return (value: T | null) => {
@@ -43,7 +43,7 @@ export const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
         )}
         {...props}
       >
-        <span className="truncate text-[13px] font-medium text-sidebar-foreground">{label}</span>
+        <span className="truncate text-sm font-medium text-sidebar-foreground">{label}</span>
         <ChevronDown
           size={14}
           strokeWidth={2}
@@ -109,7 +109,7 @@ export function DialogHeader({ className, children, ...props }: DialogHeaderProp
   return (
     <div
       className={cn(
-        'text-[10px] uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-1 mb-1',
+        'text-2xs uppercase tracking-[0.08em] text-foreground-muted-secondary font-medium px-1 mb-1',
         className
       )}
       {...props}
@@ -132,7 +132,7 @@ export function DialogItem({ active, className, ...props }: DialogItemProps) {
   return (
     <div
       className={cn(
-        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-all duration-150',
+        'group/space flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-all duration-150',
         active
           ? 'bg-hover-bg text-foreground'
           : 'text-foreground/85 hover:bg-hover-bg hover:text-foreground hover:shadow-menu-item',
@@ -166,7 +166,7 @@ export function DialogAddButton({ className, children, ...props }: DialogAddButt
         'text-foreground-muted-tertiary hover:text-foreground-muted-hover',
         'hover:bg-surface-deep hover:border-surface-border-hover',
         'transition-all duration-200 ease-out',
-        'flex items-center gap-2 justify-center text-[13px] font-medium',
+        'flex items-center gap-2 justify-center text-sm font-medium',
         className
       )}
       {...props}

@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { useParams } from '@tanstack/react-router';
 
 import { BreadcrumbItem, BreadcrumbLink, BreadcrumbPage } from '@/components/ui/breadcrumb';
-import { useFileSystem } from '@/contexts/FileSystemContext';
+import { useFileSystemStore as useFileSystem } from '@/store/hooks/use-filesystem-store';
 
 import { BreadcrumbShell } from './breadcrumb-shell';
 import { CollapsedBreadcrumbPath } from './collapsed-breadcrumb-path';

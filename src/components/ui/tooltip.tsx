@@ -97,12 +97,12 @@ function AppTooltipContent({
     >
       <div className="inline-flex items-center gap-2.5  p-.5">
         {label ? (
-          <span className="text-[11px] font-medium text-tooltip-strong-foreground whitespace-nowrap">
+          <span className="text-2xs font-medium text-tooltip-strong-foreground whitespace-nowrap">
             {label}
           </span>
         ) : null}
         {shortcut ? (
-          <span className="text-[11px] font-semibold leading-none text-tooltip-strong-foreground whitespace-nowrap">
+          <span className="text-2xs font-semibold leading-none text-tooltip-strong-foreground whitespace-nowrap">
             {shortcut}
           </span>
         ) : null}

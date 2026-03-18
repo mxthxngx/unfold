@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import {
   SIDEBAR_TREE_CLOSE_SPRING,
   SIDEBAR_TREE_OPEN_SPRING,
-} from '@/components/sidebar/sidebar-motion';
+} from '@/lib/motion';
 import { SidebarMenuSub } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 

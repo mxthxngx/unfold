@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type * as React from 'react';
 
 import { SelectableRow } from '@/components/atoms/selectable-row';
-import { SmallTextLabel } from '@/components/common/labels/small-text-label';
+import { SmallTextLabel } from '@/components/atoms/small-text-label';
 import { InlineRenameInput } from '@/components/molecules/inline-rename-input';
 import { RowIconActions } from '@/components/molecules/row-icon-actions';
 import { cn } from '@/lib/utils';
@@ -121,7 +121,7 @@ export function SpaceSwitcherMenu({
 
       <button
         onClick={onOpenCreateSpace}
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-surface-elevated-border bg-hover-bg-subtle px-3 py-2 text-[13px] font-medium text-foreground-muted-tertiary transition-all duration-200 ease-out hover:border-surface-border-hover hover:bg-surface-elevated hover:text-foreground-muted-hover"
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-surface-elevated-border bg-hover-bg-subtle px-3 py-2 text-sm font-medium text-foreground-muted-tertiary transition-all duration-200 ease-out hover:border-surface-border-hover hover:bg-surface-elevated hover:text-foreground-muted-hover"
       >
         <Plus size={14} strokeWidth={2} />
         <span>add new space</span>

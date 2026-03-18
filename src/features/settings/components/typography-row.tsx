@@ -1,5 +1,5 @@
-import FontPicker from '@/components/settings/controls/font-picker';
-import { customizationDefaultValues } from '@/config/customizationDefaults';
+import FontPicker from '@/features/settings/controls/font-picker';
+import { customizationDefaultValues } from '@/config/customization-defaults';
 import type { CustomizationPropertyKey, CustomizationScope } from '@/types/customization';
 
 import {

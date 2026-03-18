@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { CornerDownLeft, CornerUpLeft, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
-import { cn } from '@/lib/tiptap-utils';
+import { cn } from '@/lib/utils';
 
 type ModalProps = {
   open: boolean;
@@ -60,7 +60,7 @@ export function Modal({
   const defaultKeyboardHints = (
     <div className="flex items-center justify-end gap-3 text-xs text-sidebar-foreground/70 px-5 pb-4 pt-2">
       <span className="inline-flex items-center gap-1">
-        <span className="rounded-md border border-sidebar-border bg-sidebar-accent px-1.5 py-0.5 leading-none text-[11px] font-semibold uppercase">
+        <span className="rounded-md border border-sidebar-border bg-sidebar-accent px-1.5 py-0.5 leading-none text-2xs font-semibold uppercase">
           Esc
         </span>
         <span className="inline-flex items-center gap-1">
@@ -69,7 +69,7 @@ export function Modal({
         </span>
       </span>
       <span className="inline-flex items-center gap-1">
-        <span className="rounded-md border border-sidebar-border bg-sidebar-accent px-1.5 py-0.5 leading-none text-[11px] font-semibold uppercase">
+        <span className="rounded-md border border-sidebar-border bg-sidebar-accent px-1.5 py-0.5 leading-none text-2xs font-semibold uppercase">
           Enter
         </span>
         <span className="inline-flex items-center gap-1">

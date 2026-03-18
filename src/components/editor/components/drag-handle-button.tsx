@@ -1,5 +1,5 @@
-import { MdDragIndicator } from "react-icons/md";
-import { cn } from "@/lib/tiptap-utils";
+import { GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const DragHandleButton = () => {
   return (
@@ -10,7 +10,7 @@ export const DragHandleButton = () => {
       "cursor-grab active:cursor-grabbing",
       "border border-drag-handle-border"
     )}>
-      <MdDragIndicator className="h-4 w-4 text-drag-handle-icon" />
+      <GripVertical className="h-4 w-4 text-drag-handle-icon" />
     </div>
   );
 };

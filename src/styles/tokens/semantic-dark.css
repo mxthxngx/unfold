@@ -1,0 +1,342 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   LAYER 2 — Semantic tokens (dark mode defaults)
+   ─────────────────────────────────────────────────────────────────────────
+   These derive from Layer 1 primitives where relevant, and are hardcoded
+   for values that are not user-configurable (e.g., table cell colors).
+   Users never set these directly.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Foundations — wired to Layer 1 primitives ── */
+  --background: var(--background-solid);
+  --background-solid: var(--unfold-bg);
+  --bright-highlight: rgba(229, 227, 227, 0.9);
+  --foreground: var(--unfold-fg);
+  --caret-color: #ffffff;
+  --foreground-muted: var(--unfold-fg-muted);
+  --card: var(--unfold-bg-raised);
+  --card-foreground: var(--unfold-fg);
+  --popover: var(--unfold-bg-raised);
+  --popover-foreground: var(--unfold-fg);
+  --primary: var(--unfold-fg);
+  --primary-foreground: #09090b;
+  /* ── Accent & highlight — cascade from --unfold-accent ── */
+  --primary-highlight: var(--unfold-accent);
+  --highlight-color: var(--unfold-accent);
+  --highlight-contrast: color-mix(in srgb, var(--unfold-accent) 70%, white 10%);
+  --highlight: color-mix(in srgb, var(--highlight-vivid) 30%, transparent);
+  --highlight-gradient: linear-gradient(
+    110deg,
+    color-mix(in srgb, var(--highlight-vivid) 88%, transparent 12%),
+    color-mix(in srgb, var(--highlight-vivid) 68%, transparent 32%)
+  );
+  --search-selection-bg: color-mix(in srgb, var(--highlight-vivid) 30%, transparent);
+  --search-active-bg: color-mix(in srgb, var(--highlight-vivid) 60%, var(--background-solid) 40%);
+  --search-active-border: var(--selection-ring);
+  --search-active-halo: color-mix(in srgb, var(--search-active-bg) 80%, transparent 70%);
+  --search-active-ring: 0 0 0 1px var(--search-active-border), 0 0 12px 6px var(--search-active-halo);
+  --selection-gradient-start: color-mix(in srgb, var(--search-selection-bg) 95%, transparent);
+  --selection-gradient-end: color-mix(in srgb, var(--search-selection-bg) 65%, transparent);
+  --selection-solid: var(--search-selection-bg);
+  --secondary: #18181b;
+  --secondary-foreground: #8e8d8d;
+  --muted: #343434;
+  --muted-foreground: #8e8d8d;
+  --accent: #343434;
+  --accent-foreground: var(--unfold-fg);
+  --destructive: #dc2626;
+  --destructive-foreground: var(--unfold-fg);
+  --destructive-border: rgba(239, 68, 68, 0.2);
+  --destructive-border-hover: rgba(239, 68, 68, 0.4);
+  --destructive-hover-bg: rgba(239, 68, 68, 0.1);
+  --destructive-button-bg: rgba(239, 68, 68, 0.2);
+  --destructive-button-bg-hover: rgba(239, 68, 68, 0.28);
+  --border: var(--unfold-border);
+  --input: var(--unfold-bg-overlay);
+  --ring: #343434;
+  --chart-1: #ea580c;
+  --chart-2: #0d9488;
+  --chart-3: #2563eb;
+  --chart-4: #ca8a04;
+  --chart-5: #c2410c;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --radius: var(--unfold-radius);
+  --toolbar-foreground-active: #c5c5c5;
+  --sidebar: #0f0f0f;
+  --sidebar-primary: #343434;
+  --sidebar-primary-foreground: #93939A;
+  --sidebar-accent: #18181b;
+  --sidebar-border: #2d2d30;
+  --sidebar-ring: #6b6b6b;
+  --sidebar-tab-accent: rgb(19, 19, 19);
+  --sidebar-container-bg: #0f0f0f;
+  --sidebar-container-border: #2d2d30;
+  --sidebar-foreground: #C6C6C6;
+  --sidebar-foreground-active: var(--unfold-fg);
+  --sidebar-accent-foreground: var(--unfold-fg);
+  --border-elevated: #1f1f21;
+  --border-strong: #232325;
+  --button-outline-bg: #202023;
+  --button-outline-border: #2a2a2d;
+  --button-outline-hover-bg: #252528;
+  --button-outline-hover-border: #303033;
+  --foreground-muted-secondary: #75757a;
+  --foreground-muted-tertiary: #85858a;
+  --foreground-muted-hover: #a5a5aa;
+  --hover-bg-subtle: rgba(255, 255, 255, 0.02);
+  --hover-bg: rgba(255, 255, 255, 0.04);
+  --hover-bg-strong: rgba(255, 255, 255, 0.05);
+  --surface-elevated: #18181a;
+  --surface-elevated-border: #252527;
+  --surface-elevated-focus: #353538;
+  --surface-deep: #1a1a1c;
+  --surface-deeper: #151516;
+  --surface-border-hover: #282829;
+  --scrollbar-thumb: #232328;
+  --menu-item-shadow: inset 0 0 8px rgba(255, 255, 255, 0.02);
+  --menu-item-destructive-shadow: inset 0 0 8px rgba(239, 68, 68, 0.1);
+  --menu-item-destructive-bg: rgba(239, 68, 68, 0.1);
+  --menu-item-destructive-text: rgba(248, 113, 113, 0.9);
+  --menu-item-destructive-text-hover: #fca5a5;
+  --menu-separator: rgba(255, 255, 255, 0.08);
+  --editor-picker-swatch-bg: #1c1c1e;
+  --editor-picker-text-muted: #9ca3af;
+  --shadow-sidebar-elevated: 0 30px 90px rgba(0, 0, 0, 0.45),
+    0 14px 36px rgba(0, 0, 0, 0.35),
+    0 0 48px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.035);
+  --selection-text: rgba(255, 255, 255, 0.95);
+  --highlight-vivid: var(--unfold-accent);
+  --import-toggle-on-start: #2a106a;
+  --import-toggle-on-mid: #331682;
+  --import-toggle-on-end: #3e1e98;
+  --import-toggle-on-ring: transparent;
+  --import-filter-active-bg: color-mix(in srgb, var(--sidebar-item-hover-bg) 36%, transparent);
+  --import-toggle-off-track: color-mix(in srgb, var(--foreground-muted-secondary) 22%, transparent);
+  --import-toggle-off-ring: color-mix(in srgb, var(--foreground-muted-secondary) 30%, transparent);
+  --import-toggle-knob-on: #ffffff;
+  --import-toggle-knob-off: rgba(247, 242, 242, 0.4);
+  --edge-grip-bg: #1c1c1f;
+  --edge-grip-dot: #7c7c7d;
+  --resize-handle-bg: #ffffff;
+  --resize-handle-hover-border: #ffffff;
+  --input-placeholder: #404045;
+  --destructive-solid: #dc2626;
+  --editor-placeholder: rgba(255, 255, 255, 0.5);
+  --editor-placeholder-body: rgba(255, 255, 255, 0.4);
+  --selection-ring: color-mix(in srgb, var(--unfold-accent) 50%, transparent);
+  --image-loading-bg: rgba(0, 0, 0, 0.05);
+  --image-error-bg: rgba(255, 0, 0, 0.05);
+  --image-border: rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 12px 50px rgba(0, 0, 0, 0.35);
+  --shadow-dropdown: 0 10px 40px -25px rgba(0, 0, 0, 0.8);
+  --shadow-breadcrumb: 0 8px 30px -20px rgba(0, 0, 0, 0.75);
+  --shadow-search: 0 18px 60px rgba(0, 0, 0, 0.45);
+  --shadow-tooltip: 0 12px 40px rgba(0, 0, 0, 0.35);
+  --ripple-color: var(--unfold-ripple-item);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --table-selection-overlay: rgba(193, 123, 255, 0.08);
+  --table-selection-overlay-border: rgba(193, 123, 255, 0.2);
+  --table-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --table-scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+  --table-scrollbar-thumb-active: rgba(255, 255, 255, 0.4);
+  --table-button-hover-bg: rgba(255, 255, 255, 0.04);
+  --table-button-hover-border: rgba(255, 255, 255, 0.12);
+  --table-dnd-bg: rgba(193, 123, 255, 0.05);
+  --table-dnd-border: rgba(193, 123, 255, 0.3);
+  --table-dnd-indicator-bg: rgba(193, 123, 255, 0.15);
+  --table-dnd-indicator-border: rgba(193, 123, 255, 0.4);
+  --table-cell-blue: rgba(26, 58, 92, 0.6);
+  --table-cell-green: rgba(26, 77, 58, 0.6);
+  --table-cell-yellow: rgba(124, 80, 20, 0.6);
+  --table-cell-red: rgba(92, 42, 35, 0.6);
+  --table-cell-pink: rgba(77, 42, 77, 0.6);
+  --table-cell-gray: rgba(42, 46, 51, 0.6);
+  --table-cell-purple: rgba(58, 47, 92, 0.6);
+  --edge-grip-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  --edge-drop-line-bg: rgba(255, 255, 255, 0.18);
+  --edge-drop-line-ring: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb-default: rgba(255, 255, 255, 0.06);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.12);
+  --resize-handle-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --resize-handle-hover-shadow: 0 2px 12px rgba(193, 123, 255, 0.6);
+  --sidebar-selected-bg: #1a1a1c;
+  --sidebar-item-hover-bg: #1a1a1c;
+  --sidebar-icon-hover-bg: #121317;
+  --sidebar-selection-indicator: #9d9d9f;
+  --sidebar-title: #e0e0e5;
+  --sidebar-subitem-selected-bg: rgba(26, 26, 28, 0.8);
+  --error-text: rgba(248, 113, 113, 0.9);
+  --icon-hover: rgba(25, 25, 25, 0.585);
+  --unselected-icon: #8e8d8d;
+
+  --modal-surface: #0d0d0f;
+  --customization-section-bg: #101111;
+  --customization-section-header-bg: #18191a;
+  --modal-surface-border: #23242a;
+  --modal-surface-foreground: #f7f2f2;
+  --modal-action-bg: #1b1c20;
+  --modal-action-bg-hover: #22232a;
+  --modal-action-text: #f7f2f2;
+  --modal-action-border: #2e3036;
+  --modal-primary-foreground: #0f1115;
+  --slash-menu-height: 312px;
+  /* Global button theme */
+  --button-bg: #18181b;
+  --button-border: #1a1a1a;
+  --button-hover: #1f1f1f;
+  --button-text: #f7f2f2;
+  --button-ghost-bg: rgba(255, 255, 255, 0.03);
+  --button-ring: #2a2a2a;
+  /* Button error variant tokens - semantic links to red palette */
+  --button-error-text: var(--color-red-400);
+  --button-error-hover-text: var(--button-error-text);
+  --button-error-bg: color-mix(in srgb, var(--color-red-500) 15%, transparent);
+  --button-error-border: color-mix(in srgb, var(--color-red-500) 20%, transparent);
+  --button-error-hover-bg: color-mix(in srgb, var(--color-red-500) 20%, transparent);
+  --button-error-hover-border: color-mix(in srgb, var(--color-red-500) 28%, transparent);
+  --button-error-ring: color-mix(in srgb, var(--color-red-500) 30%, transparent);
+  --button-active-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.25rem;
+  --code-mark-bg-dark: rgba(24, 24, 27, 0.5);
+  --code-mark-text-dark: #f7f2f2;
+  --code-block-bg: rgba(24, 24, 27, 0.5);
+  --link: #f7f2f2;
+  --tooltip: rgba(39, 39, 42, 0.95);
+  --tooltip-foreground: #e4e4e7;
+  --tooltip-border: rgba(63, 63, 70, 0.5);
+  --tooltip-strong: rgba(24, 24, 27, 0.9);
+  --tooltip-strong-foreground: #f4f4f5;
+  --tooltip-strong-border: rgba(39, 39, 42, 0.7);
+  /* ── Typography — wired to Layer 1 font primitives ── */
+  --font-sans: var(--unfold-font-sans), sans-serif;
+  --font-mono: var(--unfold-font-mono), monospace;
+  --font-sans-serif: var(--unfold-font-display), sans-serif;
+  /* Typography scale calibrated to modern product UIs (Notion/Linear patterns) */
+  --font-size-2xs: 0.6875rem; /* 11px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-code: var(--unfold-size-code); /* 13px */
+  --font-size-sm: 0.825rem; /* 13px */
+  --font-size-md: 0.9375rem; /* 15px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.75rem; /* 28px */
+  --font-size-3xl: 2.25rem; /* 36px */
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.6;
+  --line-height-loose: 1.7;
+  /* Semantic typography tokens */
+  --font-size-sidebar-caption: var(--font-size-xs);
+  --font-size-sidebar-item: var(--font-size-sm);
+  --font-size-sidebar-title: var(--font-size-xl);
+  /* ── Editor type scale — wired to Layer 1 size primitives ── */
+  --font-size-note: var(--unfold-size-editor);
+  --font-size-editor-base: calc(var(--unfold-size-editor) + 1px);
+  --font-size-note-small: var(--font-size-sm);
+  --font-size-document-title: var(--unfold-size-title);
+  --font-size-heading-1: var(--unfold-size-h1);
+  --font-size-heading-2: var(--unfold-size-h2);
+  --font-size-heading-3: var(--unfold-size-h3);
+  --font-size-button: var(--font-size-sm);
+  --font-size-button-small: var(--font-size-xs);
+  --font-size-button-action: var(--font-size-sm);
+  --font-size-table-head: var(--font-size-sm);
+  --font-size-table-body: var(--font-size-sm);
+  --font-size-table-button: var(--font-size-sm);
+  --editor-title-margin-top: 0.5em;
+  --editor-title-margin-bottom: 0.5em;
+  --editor-heading-margin-y: 3px;
+  --editor-hr-margin-y: 1.5rem;
+  --editor-code-mark-radius: 6px;
+  --editor-code-mark-padding-x: 0.375rem;
+  --editor-code-mark-padding-y: 1px;
+  --editor-code-block-padding: 1.25rem;
+  --editor-code-block-margin-y: 1rem;
+  --editor-blockquote-padding-x: 1.5rem;
+  --editor-blockquote-padding-right: 1rem;
+  --editor-blockquote-padding-y: 0.5rem;
+  --editor-blockquote-margin-y: 1rem;
+  --editor-details-margin-bottom: 1rem;
+  --editor-details-summary-padding-x: 1.25rem;
+  --editor-details-summary-padding-y: 0.75rem;
+  --editor-details-content-padding-x: 1.25rem;
+  --editor-details-content-padding-y: 1rem;
+  --editor-list-padding-left: 1.5rem;
+  --editor-list-item-gap: 0.25rem;
+  --editor-task-list-padding-left: 0.5rem;
+  --editor-task-list-gap: 0.5rem;
+  --editor-task-item-gap: 0.5rem;
+  --editor-table-margin-y: 1rem;
+  --editor-title-bg: rgba(14, 14, 17, 0.01);
+  --editor-blockquote-border: #3f3f46;
+  --editor-blockquote-text: #d4d4d8;
+  --editor-blockquote-bg: rgba(24, 24, 27, 0.5);
+  --editor-details-border: rgba(63, 63, 70, 0.6);
+  --editor-details-bg: rgba(24, 24, 27, 0.2);
+  --editor-details-summary-bg: rgba(39, 39, 42, 0.5);
+  --editor-details-summary-hover-bg: #27272a;
+  --editor-details-summary-text: #f4f4f5;
+  --editor-details-text: #d4d4d8;
+  --editor-highlight-bg: rgba(113, 63, 18, 0.3);
+  --editor-highlight-text: #fef08a;
+  --editor-hr: rgba(63, 63, 70, 0.6);
+  --editor-code-mark-bg: rgba(24, 24, 27, 0.5);
+  --editor-code-mark-text: var(--foreground);
+  --editor-code-mark-border: rgba(39, 39, 42, 0.7);
+  --editor-code-block-text: var(--foreground);
+  --editor-code-block-border: #2a2d35;
+  --editor-link-text: #c4c4ce;
+  --editor-link-decoration: #71717a;
+  --editor-link-hover-text: #a1a1aa;
+  --editor-link-hover-decoration: #52525b;
+  --editor-dropcursor: #c17bff;
+  --drag-handle-bg: #18181b;
+  --drag-handle-hover-bg: #27272a;
+  --drag-handle-border: rgba(39, 39, 42, 0.6);
+  --drag-handle-icon: #71717a;
+  --editor-label-text: #a1a1aa;
+  --editor-swatch-border: rgba(63, 63, 70, 0.5);
+  --editor-swatch-border-hover: #52525b;
+  --editor-swatch-active-border: rgba(255, 255, 255, 0.4);
+  --editor-swatch-active-ring: rgba(255, 255, 255, 0.2);
+  --color-editor-text-gray: #A8A29E;
+  --color-editor-text-brown: #78716C;
+  --color-editor-text-orange: #F97316;
+  --color-editor-text-yellow: #EAB308;
+  --color-editor-text-green: #22C55E;
+  --color-editor-text-blue: #3B82F6;
+  --color-editor-text-purple: #A855F7;
+  --color-editor-text-pink: #EC4899;
+  --color-editor-text-red: #EF4444;
+  --color-editor-highlight-gray: #374151;
+  --color-editor-highlight-brown: #451a03;
+  --color-editor-highlight-orange: #7c2d12;
+  --color-editor-highlight-yellow: #713f12;
+  --color-editor-highlight-green: #14532d;
+  --color-editor-highlight-blue: #1e3a5f;
+  --color-editor-highlight-purple: #3b0764;
+  --color-editor-highlight-pink: #500724;
+  --color-editor-highlight-red: #7f1d1d;
+
+  /* Table theme - minimalist design matching UI components */
+  --table-surface: transparent;
+  --table-surface-muted: rgba(15, 14, 17, 0.3);
+  --table-border: rgba(255, 255, 255, 0.08);
+  --table-header-bg: rgba(24, 24, 27, 0.4);
+  --table-header-foreground: var(--foreground);
+  --table-text: var(--foreground);
+  --table-text-muted: var(--foreground-muted);
+  --table-row-alt: transparent;
+  --table-row-bg: transparent;
+  --table-row-hover: rgba(255, 255, 255, 0.03);
+  --table-ring: var(--ring);
+  --editor-bubble-menu-surface: rgb(18, 18, 21);
+  --editor-bubble-menu-surface-border: rgba(63, 63, 70, 0.5);
+}

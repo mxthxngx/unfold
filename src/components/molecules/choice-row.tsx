@@ -56,7 +56,7 @@ export function ChoiceRow({
           {selected ? <span className="size-2 rounded-full bg-modal-surface-foreground/68" /> : null}
         </span>
       ) : null}
-      <Ripple duration={1200} color="color-mix(in srgb, var(--sidebar-item-hover-bg) 85%, transparent)" />
+      <Ripple duration={1200} color="var(--unfold-ripple-item-strong)" />
       {showDivider ? (
         <span className="pointer-events-none absolute right-3 bottom-0 left-3 h-px bg-modal-surface-border/45" />
       ) : null}

@@ -23,7 +23,7 @@ export function FormField({
     <div className={cn('flex flex-col gap-1.5', className)}>
       <label
         className={cn(
-          'block font-sans text-[0.82rem] font-medium tracking-[0.02em] text-modal-surface-foreground/92',
+          'block font-sans text-sm font-medium tracking-[0.02em] text-modal-surface-foreground/92',
           labelClassName,
         )}
       >

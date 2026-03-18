@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { customizationDefaultValues } from '@/config/customizationDefaults';
+import { customizationDefaultValues } from '@/config/customization-defaults';
 import type {
   CustomizationPropertyKey,
   CustomizationScope,

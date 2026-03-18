@@ -13,8 +13,8 @@ export function SizeSliderChip({ label, value, onChange, min, max }: SizeSliderC
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between pl-2.5">
-        <span className="text-[10px] font-medium text-modal-surface-foreground/65">{label}</span>
-        <span className="text-[10px] tabular-nums font-medium text-modal-surface-foreground/80">{value}px</span>
+        <span className="text-2xs font-medium text-modal-surface-foreground/65">{label}</span>
+        <span className="text-2xs tabular-nums font-medium text-modal-surface-foreground/80">{value}px</span>
       </div>
       <div
         className={cn(
@@ -22,7 +22,7 @@ export function SizeSliderChip({ label, value, onChange, min, max }: SizeSliderC
           'bg-sidebar-container-bg/90 px-2.5',
         )}
       >
-        <span className="shrink-0 text-[9px] tabular-nums text-modal-surface-foreground/55">{min}</span>
+        <span className="shrink-0 text-2xs tabular-nums text-modal-surface-foreground/55">{min}</span>
         <Slider
           min={min}
           max={max}
@@ -31,7 +31,7 @@ export function SizeSliderChip({ label, value, onChange, min, max }: SizeSliderC
           onValueChange={([next]) => onChange(next)}
           className="flex-1"
         />
-        <span className="shrink-0 text-[9px] tabular-nums text-modal-surface-foreground/55">{max}</span>
+        <span className="shrink-0 text-2xs tabular-nums text-modal-surface-foreground/55">{max}</span>
       </div>
     </div>
   );

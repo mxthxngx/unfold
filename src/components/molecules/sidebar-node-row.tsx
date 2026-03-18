@@ -6,13 +6,13 @@ import { motion, useReducedMotion } from 'motion/react';
 import { ExpandChevronIcon } from '@/components/atoms/expand-chevron-icon';
 import { RowActionsReveal } from '@/components/atoms/row-actions-reveal';
 import { SelectableRow } from '@/components/atoms/selectable-row';
-import { SidebarActionButton } from '@/components/common/sidebar/sidebar-action-button';
+import { IconActionButton } from '@/components/atoms/icon-action-button';
 import { AppTooltipContent, Tooltip, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   SIDEBAR_MINDFUL_OPEN_DURATION,
   SIDEBAR_OPEN_EASE,
-} from '@/components/sidebar/sidebar-motion';
+} from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 interface SidebarNodeRowProps {
@@ -101,29 +101,29 @@ export const SidebarNodeRow = React.forwardRef<HTMLElement, SidebarNodeRowProps 
         <RowActionsReveal group={rowType}>
           <Tooltip delayDuration={120}>
             <TooltipTrigger asChild>
-              <SidebarActionButton
+              <IconActionButton
                 onClick={(event) => {
                   event.stopPropagation();
                   onAddChild(event);
                 }}
-                ariaLabel="Add child note"
+                aria-label="Add child note"
               >
                 <Plus size={14} strokeWidth={3} />
-              </SidebarActionButton>
+              </IconActionButton>
             </TooltipTrigger>
             <AppTooltipContent label="Add a new file" shortcut={addFileShortcut} />
           </Tooltip>
 
           {showToggle ? (
-            <SidebarActionButton
+            <IconActionButton
               onClick={(event) => {
                 event.stopPropagation();
                 onToggleNode(event);
               }}
-              ariaLabel={isOpen ? 'Collapse note' : 'Expand note'}
+              aria-label={isOpen ? 'Collapse note' : 'Expand note'}
             >
               <ExpandChevronIcon isOpen={isOpen} />
-            </SidebarActionButton>
+            </IconActionButton>
           ) : null}
         </RowActionsReveal>
       </SelectableRow>

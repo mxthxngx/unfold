@@ -27,7 +27,7 @@ export const InlineRenameInput = React.forwardRef<HTMLInputElement, InlineRename
         }}
         className={
           className ??
-          'w-full rounded-md border border-surface-elevated-border bg-surface-elevated px-2 py-1 text-[13px] text-foreground outline-none transition-all duration-200 focus:border-surface-elevated-focus'
+          'w-full rounded-md border border-surface-elevated-border bg-surface-elevated px-2 py-1 text-sm text-foreground outline-none transition-all duration-200 focus:border-surface-elevated-focus'
         }
       />
     );

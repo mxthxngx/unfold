@@ -15,7 +15,7 @@ export function PrimaryActionButton({
   children,
   className,
   rippleDuration = 1200,
-  rippleColor = 'color-mix(in srgb, var(--sidebar-item-hover-bg) 82%, transparent)',
+  rippleColor = 'var(--unfold-ripple-item)',
   ...props
 }: PrimaryActionButtonProps) {
   return (

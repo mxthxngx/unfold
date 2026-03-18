@@ -6,13 +6,13 @@ import customizationReducer, {
   resetCustomizationSettings,
   setCustomizationProperty,
   setCustomizationSettings,
-} from '@/store/customizationSlice';
+} from '@/store/slices/customization-slice';
 import uiReducer, {
   ACTIVE_SPACE_STORAGE_KEY,
   setActiveSpaceId,
   setThemePreference,
 } from '@/store/slices/ui-slice';
-import { saveCustomizationState } from '@/services/customizationStorage';
+import { saveCustomizationState } from '@/services/customization-storage';
 import { THEME_STORAGE_KEY } from '@/store/theme';
 
 const persistenceMiddleware: Middleware = (storeAPI) => (next) => (action) => {

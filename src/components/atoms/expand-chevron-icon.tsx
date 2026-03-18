@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 
-import { SIDEBAR_TRANSITION_EASE_CLASS } from '@/components/sidebar/sidebar-motion';
+import { SIDEBAR_TRANSITION_EASE_CLASS } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 
 interface ExpandChevronIconProps {

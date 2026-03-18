@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/tiptap-utils';
+import { cn } from '@/lib/utils';
 
 import type { BreadcrumbNode } from './breadcrumb-types';
 

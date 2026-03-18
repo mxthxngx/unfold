@@ -1,13 +1,13 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
-import Sidebar from "../components/sidebar/sidebar";
-import { Toolbar } from "../components/toolbar/toolbar";
+import Sidebar from "@/features/sidebar/components/sidebar";
+import { Toolbar } from "@/features/toolbar/components/toolbar";
 import { dispatchAppEvent, APP_EVENTS } from '@/lib/app-events';
-import { useLayout } from '@/contexts/LayoutContext';
+import { useLayoutStore } from '@/store/hooks/use-layout-store';
 import { useParams } from '@tanstack/react-router';
 import { SidebarInset, useSidebar } from '@/components/ui/sidebar';
 import { useGlobalSidebarShortcuts } from '@/hooks/use-global-sidebar-shortcuts';
-import { SearchBar } from '@/components/search/search-bar';
-import { useEditorContext } from '@/contexts/EditorContext';
+import { SearchBar } from '@/features/search/components/search-bar';
+import { useEditorRegistry } from '@/store/hooks/use-editor-registry';
 import { WorkspaceSkeleton } from '@/components/skeletons/workspace-skeleton';
 import {
   useSyncActiveFileSelection,
@@ -15,28 +15,48 @@ import {
 } from '@/store/hooks/use-filesystem-store';
 import { useAppSelector } from '@/store/hooks';
 import { selectActiveSpaceId } from '@/store/selectors';
-import { resolveCustomizationProperties } from '@/services/customizationResolver';
+import { resolveCustomizationProperties } from '@/services/customization-resolver';
 import type { CustomizationPropertyKey } from '@/types/customization';
 
 const APP_SCOPE_ID = 'app-default';
 
-const FONT_FAMILY_MAP: Array<[CustomizationPropertyKey, string]> = [
-  ['editor.fontFamily', '--custom-editor-font'],
-  ['title.fontFamily', '--custom-title-font'],
-  ['body.fontFamily', '--font-sans'],
-  ['code.fontFamily', '--custom-code-font'],
-  ['h1.fontFamily', '--custom-h1-font'],
-  ['h2.fontFamily', '--custom-h2-font'],
-  ['h3.fontFamily', '--custom-h3-font'],
-];
+/* ─────────────────────────────────────────────────────────────────────────
+   USER_PRIMITIVE_MAP — the single source of truth for customization injection.
+   ─────────────────────────────────────────────────────────────────────────
+   Each entry: [CustomizationPropertyKey, '--unfold-* CSS variable']
 
-const FONT_SIZE_MAP: Array<[CustomizationPropertyKey, string[]]> = [
-  ['editor.fontSize', ['--font-size-editor-base', '--font-size-note']],
-  ['title.fontSize', ['--font-size-document-title']],
-  ['code.fontSize', ['--font-size-code']],
-  ['h1.fontSize', ['--font-size-heading-1']],
-  ['h2.fontSize', ['--font-size-heading-2']],
-  ['h3.fontSize', ['--font-size-heading-3']],
+   One user preference → one Layer 1 primitive → all Layer 2 derivatives
+   cascade automatically via var() references in semantic-dark / semantic-light.
+
+   To add a new user-configurable property:
+     1. Add the key to CustomizationPropertyKey       (types/customization.ts)
+     2. Add a default in customization-defaults.ts      (config/)
+     3. Add one line here.
+   That's it — every component consuming the downstream semantic tokens responds.
+   ───────────────────────────────────────────────────────────────────────── */
+const USER_PRIMITIVE_MAP: Array<[CustomizationPropertyKey, string]> = [
+  /* Typography families */
+  ['body.fontFamily',    '--unfold-font-sans'],
+  ['editor.fontFamily',  '--unfold-font-sans'],
+  ['title.fontFamily',   '--unfold-font-display'],
+  ['code.fontFamily',    '--unfold-font-mono'],
+  ['h1.fontFamily',      '--unfold-font-display'],
+  ['h2.fontFamily',      '--unfold-font-display'],
+  ['h3.fontFamily',      '--unfold-font-display'],
+
+  /* Editor type scale */
+  ['editor.fontSize',    '--unfold-size-editor'],
+  ['title.fontSize',     '--unfold-size-title'],
+  ['code.fontSize',      '--unfold-size-code'],
+  ['h1.fontSize',        '--unfold-size-h1'],
+  ['h2.fontSize',        '--unfold-size-h2'],
+  ['h3.fontSize',        '--unfold-size-h3'],
+
+  /* Future color properties — just add a line here when the UI panel exists:
+   * ['accent.color',    '--unfold-accent'],
+   * ['bg.base',         '--unfold-bg'],
+   * ['ui.radius',       '--unfold-radius'],
+   */
 ];
 
 function LoadingScreen() {
@@ -45,8 +65,8 @@ function LoadingScreen() {
 
 function EditorLayoutContent({children}: {children?: React.ReactNode}) {
   const { fileId, spaceId } = useParams({ strict: false });
-  const { layout } = useLayout();
-  const { pageEditorRef } = useEditorContext();
+  const { layout } = useLayoutStore();
+  const { pageEditorRef } = useEditorRegistry();
   const { state: sidebarState, isMobile } = useSidebar();
   const customizationState = useAppSelector((state) => state.customization);
   const activeSpaceId = useAppSelector(selectActiveSpaceId);
@@ -66,20 +86,10 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
   const customizationStyles = useMemo(() => {
     const styles: Record<string, string> = {};
 
-    for (const [prop, cssVar] of FONT_FAMILY_MAP) {
-      const value = resolvedCustomization[prop]?.value;
-      if (typeof value === 'string') {
-        styles[cssVar] = value;
-      }
-    }
-
-    for (const [prop, cssVars] of FONT_SIZE_MAP) {
-      const value = resolvedCustomization[prop]?.value;
-      if (typeof value === 'number') {
-        for (const cssVar of cssVars) {
-          styles[cssVar] = `${value}px`;
-        }
-      }
+    for (const [key, cssVar] of USER_PRIMITIVE_MAP) {
+      const value = resolvedCustomization[key]?.value;
+      if (value === undefined) continue;
+      styles[cssVar] = typeof value === 'number' ? `${value}px` : String(value);
     }
 
     return styles;
@@ -149,7 +159,7 @@ function EditorLayoutContent({children}: {children?: React.ReactNode}) {
 }
 
 function EditorLayout({children}: {children?: React.ReactNode}) {
-  const { isLoading: isLayoutLoading } = useLayout();
+  const { isLoading: isLayoutLoading } = useLayoutStore();
 
   if (isLayoutLoading) {
     return <LoadingScreen />;

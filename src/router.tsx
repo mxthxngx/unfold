@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { EditorSkeleton } from '@/components/editor/editor-skeleton';
 import FullPageEditor from '@/components/editor/full-page-editor';
-import { IndexPage } from '@/components/index/index-page';
+import { IndexPage } from '@/pages/index-page';
 import { WorkspaceSkeleton } from '@/components/skeletons/workspace-skeleton';
 import { findFirstFileId, findNodeById } from '@/lib/file-tree';
 import { resolveInitialSpaceId } from '@/lib/space-selection';
@@ -41,7 +41,12 @@ async function ensureWorkspaceSelection(store: AppStore): Promise<{
   workspace: WorkspaceSnapshot;
   resolvedActiveSpaceId: string;
 }> {
-  const workspace = await ensureWorkspaceSubscription(store).unwrap();
+  const subscription = ensureWorkspaceSubscription(store);
+  await subscription.unwrap();
+
+  const cachedWorkspace = appApi.endpoints.getWorkspace.select()(store.getState()).data;
+  const workspace = cachedWorkspace ?? (await subscription.unwrap());
+
   const currentActiveSpaceId = selectActiveSpaceId(store.getState());
   const resolvedActiveSpaceId = resolveInitialSpaceId(workspace.spaces, currentActiveSpaceId);
 
