@@ -1,38 +1,25 @@
-import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react";
-import path from 'path';
-import { defineConfig } from "vite";
+/// <reference types="vite/client" />
 
-// https://vite.dev/config/
-export default defineConfig(async () => ({
-  plugins: [react(), tailwindcss()],
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import viteTsconfigPaths from 'vite-tsconfig-paths';
 
-  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
-  //
-  // 1. prevent Vite from obscuring rust errors
-  clearScreen: false,
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  // 2. tauri expects a fixed port, fail if that port is not available
+export default defineConfig({
+  base: './',
+  plugins: [react(), viteTsconfigPaths()],
   server: {
-    port: 1420,
-    strictPort: true,
-    watch: {
-      // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
-    },
+    port: 3000,
   },
-  // 4. multi-page: emit splashscreen.html alongside the main app so Tauri
-  //    can load it in the native splash window during production builds.
+  preview: {
+    port: 3000,
+  },
+  optimizeDeps: { exclude: ['fsevents'] },
   build: {
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-        splashscreen: path.resolve(__dirname, 'splashscreen.html'),
+      external: ['fs/promises'],
+      output: {
+        experimentalMinChunkSize: 3500,
       },
     },
   },
-}));
+});
