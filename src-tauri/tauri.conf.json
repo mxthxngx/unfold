@@ -10,7 +10,9 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg"],
+    "targets": [
+      "dmg"
+    ],
     "icon": [
       "icons/icon.icns",
       "icons/icon.ico",
@@ -18,65 +20,69 @@
     ]
   },
   "app": {
-  "enableGTKAppId": false,
-  "macOSPrivateApi": true,
-  "security": {
-    "assetProtocol": {
-      "enable": true,
-      "scope": ["$APPLOCALDATA/**"]
-    },
-    "capabilities": [{
-      "identifier": "draggable-window",
-      "windows": [
-        "*"
+    "enableGTKAppId": false,
+    "macOSPrivateApi": true,
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APPLOCALDATA/**"
+        ]
+      },
+      "capabilities": [
+        {
+          "identifier": "draggable-window",
+          "windows": [
+            "*"
+          ],
+          "permissions": [
+            "sql:default",
+            "sql:allow-load",
+            "sql:allow-execute",
+            "sql:allow-select",
+            "store:default",
+            "core:event:allow-listen",
+            "core:event:default",
+            "core:webview:allow-print",
+            "core:window:allow-start-dragging",
+            "core:window:allow-internal-toggle-maximize",
+            "core:menu:default",
+            "core:menu:allow-new",
+            "core:menu:allow-append",
+            "core:menu:allow-prepend",
+            "core:menu:allow-insert",
+            "core:menu:allow-remove",
+            "core:menu:allow-remove-at",
+            "core:menu:allow-items",
+            "core:menu:allow-get",
+            "core:menu:allow-popup",
+            "core:menu:allow-create-default",
+            "core:menu:allow-set-as-app-menu",
+            "core:menu:allow-set-as-window-menu",
+            "core:menu:allow-text",
+            "core:menu:allow-set-text",
+            "core:menu:allow-is-enabled",
+            "core:menu:allow-set-enabled",
+            "core:menu:allow-set-accelerator",
+            "core:menu:allow-set-as-windows-menu-for-nsapp",
+            "core:menu:allow-set-as-help-menu-for-nsapp",
+            "core:menu:allow-is-checked",
+            "core:menu:allow-set-checked",
+            "core:menu:allow-set-icon",
+            "core:path:default",
+            "fs:default",
+            "fs:allow-app-write-recursive",
+            "fs:allow-app-read-recursive",
+            "fs:scope-applocaldata-recursive"
+          ]
+        }
       ],
-      "permissions": [
-        "sql:default",
-        "sql:allow-load",
-        "sql:allow-execute",
-        "sql:allow-select",
-        "store:default",
-        "core:event:allow-listen",
-        "core:event:default",
-        "core:webview:allow-print",
-        "core:window:allow-start-dragging",
-        "core:window:allow-internal-toggle-maximize",
-        "core:menu:default",
-        "core:menu:allow-new",
-        "core:menu:allow-append",
-        "core:menu:allow-prepend",
-        "core:menu:allow-insert",
-        "core:menu:allow-remove",
-        "core:menu:allow-remove-at",
-        "core:menu:allow-items",
-        "core:menu:allow-get",
-        "core:menu:allow-popup",
-        "core:menu:allow-create-default",
-        "core:menu:allow-set-as-app-menu",
-        "core:menu:allow-set-as-window-menu",
-        "core:menu:allow-text",
-        "core:menu:allow-set-text",
-        "core:menu:allow-is-enabled",
-        "core:menu:allow-set-enabled",
-        "core:menu:allow-set-accelerator",
-        "core:menu:allow-set-as-windows-menu-for-nsapp",
-        "core:menu:allow-set-as-help-menu-for-nsapp",
-        "core:menu:allow-is-checked",
-        "core:menu:allow-set-checked",
-        "core:menu:allow-set-icon",
-        "core:path:default",
-        "fs:default",
-        "fs:allow-app-write-recursive",
-        "fs:allow-app-read-recursive",
-        "fs:scope-applocaldata-recursive"
-      ]
-    }],
-    "dangerousDisableAssetCspModification": false,
-    "freezePrototype": false,
-    "pattern": {
-      "use": "brownfield"
-    }
-  },
+      "dangerousDisableAssetCspModification": false,
+      "freezePrototype": false,
+      "pattern": {
+        "use": "brownfield"
+      }
+    },
     "windows": [
       {
         "maximizable": true,
@@ -90,29 +96,15 @@
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "title": "Unfold",
-        "trafficLightPosition":{
+        "trafficLightPosition": {
           "x": 20,
           "y": 23
         },
         "shadow": false,
         "backgroundColor": "#0D0D0C",
         "visible": false
-      },
-      {
-        "label": "splashscreen",
-        "url": "splashscreen.html",
-        "title": "Unfold",
-        "maximizable": false,
-        "minimizable": false,
-        "resizable": false,
-        "decorations": false,
-        "dragDropEnabled": false,
-        "shadow": false,
-        "backgroundColor": "#0D0D0C",
-        "maximized": true,
-        "focus": true
       }
     ],
-  "withGlobalTauri": false
+    "withGlobalTauri": false
   }
 }

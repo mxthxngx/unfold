@@ -1,47 +1,17 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark light" />
-    <title>Unfold</title>
-    <script>
-      (() => {
-        const key = "unfold-theme-preference";
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const stored = localStorage.getItem(key);
-        const theme = stored === "light" || stored === "dark" || stored === "system" ? stored : "dark";
-        const resolved = theme === "system" ? (prefersDark ? "dark" : "light") : theme;
-        const root = document.documentElement;
-        const isLight = resolved === "light";
-        root.classList.toggle("light", isLight);
-        root.classList.toggle("dark", !isLight);
-        root.style.colorScheme = isLight ? "light" : "dark";
-      })();
-    </script>
-    <style>
-      html,
-      body,
-      #root {
-        min-height: 100%;
-        background: #0d0d0c;
-      }
 
-      html.light,
-      html.light body,
-      html.light #root {
-        background: #ffffff;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Unfold</title>
+</head>
 
-      body {
-        margin: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx">
-    </script>
-  </body>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx">
+  </script>
+</body>
+
 </html>

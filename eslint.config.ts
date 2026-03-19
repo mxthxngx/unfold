@@ -1,5 +1,4 @@
 import eslintJs from '@eslint/js';
-import eslintReact from '@eslint-react/eslint-plugin';
 import { defineConfig } from 'eslint/config';
 import importPlugin from 'eslint-plugin-import';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
@@ -20,11 +19,7 @@ export default defineConfig({
   // 1. ESLint JS's recommended rules
   // 2. TypeScript ESLint recommended rules
   // 3. ESLint React's recommended-typescript rules
-  extends: [
-    eslintJs.configs.recommended,
-    tseslint.configs.recommended,
-    eslintReact.configs['recommended-typescript'],
-  ],
+  extends: [eslintJs.configs.recommended, tseslint.configs.recommended],
 
   // Configure language/parsing options
   languageOptions: {
@@ -39,7 +34,6 @@ export default defineConfig({
 
   // Custom rule overrides (modify rule levels or disable rules)
   rules: {
-    '@eslint-react/no-missing-key': 'warn',
     'import/no-restricted-paths': [
       'error',
       {

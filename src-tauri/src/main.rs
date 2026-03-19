@@ -18,8 +18,6 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let start = std::time::Instant::now();
-
             let migrations = migrations::get_migrations();
             let app_data_dir = app
                 .path()
@@ -43,28 +41,14 @@ fn main() {
             app.handle().plugin(plugin)?;
 
             // Grab both windows before moving them into the background thread.
-            let splash_window = app
-                .get_webview_window("splashscreen")
-                .expect("no splashscreen window");
             let main_window = app
                 .get_webview_window("main")
                 .expect("no main window");
             std::thread::spawn(move || {
-                const MIN_SPLASH_MS: u128 = 2700;
-                let elapsed_ms = start.elapsed().as_millis();
-                if elapsed_ms < MIN_SPLASH_MS {
-                    std::thread::sleep(std::time::Duration::from_millis(
-                        (MIN_SPLASH_MS - elapsed_ms) as u64,
-                    ));
-                }
-                splash_window
-                    .eval("document.body.classList.add('is-exiting')")
-                    .unwrap();
                 std::thread::sleep(std::time::Duration::from_millis(550));
                 main_window.maximize().unwrap();
                 main_window.show().unwrap();
                 main_window.set_focus().unwrap();
-                splash_window.close().unwrap();
             });
 
             Ok(())
