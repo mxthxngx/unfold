@@ -1,51 +1,52 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
 
-import { nodeQueryKeys } from '../api/query-keys';
+import {
+  getSpaceNodesSnapshot,
+  invalidateSpaceNodesQuery,
+} from '../api/node-query-client';
 import { useCreateNodeMutation } from '../api/use-nodes';
 import { useSidebarStore } from '../stores/sidebar-store';
-import { pushSidebarTreeUndo } from '../stores/sidebar-tree-undo-store';
 
-import { nodesDelete } from '@/api/nodes';
-import type { FlatNodeDto } from '@/api/nodes';
+import { nodesDelete, nodesApplySpaceSnapshot } from '@/api/nodes';
+import { getUndoManager } from '@/core/undo/undo-manager';
 
+/**
+ * Returns `addChild(parentId)` — creates a child node, registers undo (snapshot / delete redo), expands parent.
+ */
 export function useSidebarAddChild(spaceId: string) {
   const qc = useQueryClient();
   const createMut = useCreateNodeMutation();
   const toggleExpand = useSidebarStore((s) => s.toggleExpand);
 
-  return useCallback(
-    async (parentId: string) => {
-      const before = qc.getQueryData<FlatNodeDto[]>(
-        nodeQueryKeys.space(spaceId),
-      );
-      try {
-        await createMut.mutateAsync({
-          spaceId,
-          parentId,
-          name: 'new page',
-        });
-        if (before) {
-          pushSidebarTreeUndo(async () => {
-            const created = qc.getQueryData<FlatNodeDto[]>(
-              nodeQueryKeys.space(spaceId),
-            );
+  return async function addChild(parentId: string) {
+    const before = getSpaceNodesSnapshot(qc, spaceId);
+    try {
+      await createMut.mutateAsync({
+        spaceId,
+        parentId,
+        name: 'new page',
+      });
+      if (before) {
+        void getUndoManager().add({
+          undo: async () => {
+            await nodesApplySpaceSnapshot({ spaceId, nodes: before });
+            await invalidateSpaceNodesQuery(qc, spaceId);
+          },
+          redo: async () => {
+            const created = getSpaceNodesSnapshot(qc, spaceId);
             const newest = created?.find(
               (n) => !before.some((b) => b.id === n.id),
             );
             if (newest) {
               await nodesDelete({ spaceId, nodeIds: [newest.id] });
-              await qc.invalidateQueries({
-                queryKey: nodeQueryKeys.space(spaceId),
-              });
+              await invalidateSpaceNodesQuery(qc, spaceId);
             }
-          });
-        }
-        toggleExpand(parentId, true);
-      } catch (e) {
-        console.error(e);
+          },
+        });
       }
-    },
-    [createMut, qc, spaceId, toggleExpand],
-  );
+      toggleExpand(parentId, true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 }

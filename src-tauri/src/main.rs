@@ -5,6 +5,7 @@ mod config;
 mod db;
 mod models;
 mod utils;
+mod helpers;
 
 fn main() {
     tauri::Builder::default()
@@ -71,8 +72,10 @@ fn main() {
             commands::nodes_create,
             commands::nodes_update,
             commands::nodes_move,
+            commands::nodes_move_unpinned,
             commands::nodes_delete,
             commands::nodes_set_pinned,
+            commands::nodes_apply_space_snapshot,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

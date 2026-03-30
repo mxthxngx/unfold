@@ -1,7 +1,12 @@
-import { useDndContext, useDraggable, useDroppable } from '@dnd-kit/core';
+import { useDndContext, useDroppable } from '@dnd-kit/core';
 
 import { useSidebarStore } from '../stores/sidebar-store';
-import { DND_DROP_PINNED, dragSourceId } from '../utils/dnd';
+import {
+  DND_DROP_PINNED,
+  dropTargetPinnedRowId,
+  isPinnedDropOverId,
+  parseDragSourceId,
+} from '../utils/dnd';
 
 import type { FlatNodeDto } from '@/api/nodes';
 import {
@@ -15,39 +20,35 @@ import { cn } from '@/utils/tailwind';
 
 type PinnedSectionProps = {
   nodes: FlatNodeDto[];
+  allNodes: FlatNodeDto[];
 };
 
-function PinnedRow({ node }: { node: FlatNodeDto }) {
+function PinnedRow({
+  node,
+  visibleOrder,
+  allNodes,
+}: {
+  node: FlatNodeDto;
+  visibleOrder: readonly string[];
+  allNodes: FlatNodeDto[];
+}) {
   const isSelected = useSidebarStore((s) => s.selectedIds.has(node.id));
   const selectNode = useSidebarStore((s) => s.selectNode);
-  const { active } = useDndContext();
-
-  const dragId = dragSourceId(node.id);
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: dragId,
+  const { setNodeRef } = useDroppable({
+    id: dropTargetPinnedRowId(node.id),
   });
-
-  const style = {
-    opacity: isDragging ? 0 : undefined,
-  };
-
-  const rowCursor = active ? 'cursor-default' : 'cursor-pointer';
 
   return (
     <SidebarMenuItem className="min-w-0">
-      <div
-        ref={setNodeRef}
-        style={style}
-        className={rowCursor}
-        {...listeners}
-        {...attributes}
-      >
+      <div ref={setNodeRef} className="cursor-pointer">
         <SidebarMenuButton
           isActive={isSelected}
           variant="default"
           size="sm"
           className="cursor-pointer"
-          onClick={(e) => selectNode(e, node.id)}
+          onClick={(e) =>
+            selectNode(e, node.id, { visibleOrder, allNodes })
+          }
         >
           <span className="truncate text-xs">{node.name}</span>
         </SidebarMenuButton>
@@ -56,11 +57,14 @@ function PinnedRow({ node }: { node: FlatNodeDto }) {
   );
 }
 
-export function PinnedSection({ nodes }: PinnedSectionProps) {
+export function PinnedSection({ nodes, allNodes }: PinnedSectionProps) {
   const { setNodeRef, isOver } = useDroppable({ id: DND_DROP_PINNED });
-  const { active } = useDndContext();
-
-  const zoneCursor = active ? 'cursor-default' : 'cursor-pointer';
+  const { active, over } = useDndContext();
+  const overId = over?.id != null ? String(over.id) : null;
+  const draggingFromNotes = parseDragSourceId(active?.id) != null;
+  const showPinnedDropFrame =
+    draggingFromNotes && (isOver || isPinnedDropOverId(overId));
+  const pinnedVisibleOrder = nodes.map((n) => n.id);
 
   return (
     <>
@@ -70,23 +74,30 @@ export function PinnedSection({ nodes }: PinnedSectionProps) {
           ref={setNodeRef}
           className={cn(
             'rounded-lg border border-dashed border-transparent transition-colors',
-            isOver &&
+            showPinnedDropFrame &&
               'border-sidebar-border bg-sidebar-accent/30 dark:border-sidebar-foreground/22',
-            zoneCursor,
+            'cursor-pointer',
           )}
         >
-          <SidebarMenu className={cn('flex flex-col gap-1 px-0', zoneCursor)}>
+          <SidebarMenu className="flex flex-col gap-1 px-0 cursor-pointer">
             {nodes.length === 0 ? (
               <p
                 className={cn(
                   'text-muted-foreground text-tiny px-2.5 py-1',
-                  zoneCursor,
+                  'cursor-pointer',
                 )}
               >
                 drop notes here to pin
               </p>
             ) : (
-              nodes.map((node) => <PinnedRow key={node.id} node={node} />)
+              nodes.map((node) => (
+                <PinnedRow
+                  key={node.id}
+                  node={node}
+                  visibleOrder={pinnedVisibleOrder}
+                  allNodes={allNodes}
+                />
+              ))
             )}
           </SidebarMenu>
         </div>

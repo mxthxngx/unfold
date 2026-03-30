@@ -10,9 +10,9 @@ import {
   dropTargetEmptyPlaceholderId,
   dropTargetNodeId,
 } from '../utils/dnd';
-import type {
-  FlatVisibleRow,
+import {
   FlatVisibleRowKind,
+  type FlatVisibleRow,
 } from '../utils/flatten-visible-tree';
 
 import { Button } from '@/components/ui/button';
@@ -29,10 +29,13 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/tailwind';
 
+import type { FlatNodeDto } from '@/api/nodes';
+
 type NotesTreeVirtualProps = {
   parentRef: React.RefObject<HTMLDivElement | null>;
   flatRows: FlatVisibleRow[];
   onAddChild: (parentId: string) => Promise<void>;
+  allNodes: FlatNodeDto[];
 };
 
 function EmptyPlaceholderRow({
@@ -87,11 +90,15 @@ function NodeVirtualRow({
   isFirstChild,
   isLastChild,
   onAddChild,
+  visibleOrder,
+  allNodes,
 }: {
   row: Extract<FlatVisibleRow, { kind: FlatVisibleRowKind.node }>;
   isFirstChild: boolean;
   isLastChild: boolean;
   onAddChild: (parentId: string) => Promise<void>;
+  visibleOrder: readonly string[];
+  allNodes: FlatNodeDto[];
 }) {
   const isExpanded = useSidebarStore((s) => s.expandedIds.has(row.id));
   const isSelected = useSidebarStore((s) => s.selectedIds.has(row.id));
@@ -111,13 +118,10 @@ function NodeVirtualRow({
     id: dropTargetNodeId(row.id),
   });
 
-  const setRef = React.useCallback(
-    (node: HTMLElement | null) => {
-      setDragRef(node);
-      setDropRef(node);
-    },
-    [setDragRef, setDropRef],
-  );
+  function setRef(node: HTMLElement | null) {
+    setDragRef(node);
+    setDropRef(node);
+  }
 
   return (
     <SidebarMenuItem className="min-w-0">
@@ -158,9 +162,11 @@ function NodeVirtualRow({
               'group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground',
             isOver && 'ring-sidebar-border ring-1',
           )}
-          onClick={(e) => selectNode(e, row.id)}
+          onClick={(e) =>
+            selectNode(e, row.id, { visibleOrder, allNodes })
+          }
         >
-          <span className="truncate text-xs">{row.title}</span>
+          <span className="truncate text-xs">{row.name}</span>
         </SidebarMenuButton>
 
         <div className="pointer-events-none absolute inset-y-0 right-1 flex items-center gap-0.5 opacity-0 transition-opacity group-hover/menu-item:pointer-events-auto group-hover/menu-item:opacity-100">
@@ -180,7 +186,7 @@ function NodeVirtualRow({
                 <Plus size={11} strokeWidth={3} />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top">Add child</TooltipContent>
+            <TooltipContent side="top">add child</TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -208,7 +214,7 @@ function NodeVirtualRow({
               </Button>
             </TooltipTrigger>
             <TooltipContent side="top">
-              {isExpanded ? 'Collapse' : 'Expand'}
+              {isExpanded ? 'collapse' : 'expand'}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -222,11 +228,15 @@ function VirtualRow({
   isFirstChild,
   isLastChild,
   onAddChild,
+  visibleOrder,
+  allNodes,
 }: {
   row: FlatVisibleRow;
   isFirstChild: boolean;
   isLastChild: boolean;
   onAddChild: (parentId: string) => Promise<void>;
+  visibleOrder: readonly string[];
+  allNodes: FlatNodeDto[];
 }) {
   if (row.kind === 'empty') {
     return (
@@ -245,6 +255,8 @@ function VirtualRow({
       isFirstChild={isFirstChild}
       isLastChild={isLastChild}
       onAddChild={onAddChild}
+      visibleOrder={visibleOrder}
+      allNodes={allNodes}
     />
   );
 }
@@ -253,7 +265,19 @@ export function NotesTreeVirtual({
   parentRef,
   flatRows,
   onAddChild,
+  allNodes,
 }: NotesTreeVirtualProps) {
+  const visibleOrder = React.useMemo(
+    () =>
+      flatRows
+        .filter(
+          (r): r is Extract<FlatVisibleRow, { kind: FlatVisibleRowKind.node }> =>
+            r.kind === FlatVisibleRowKind.node,
+        )
+        .map((r) => r.id),
+    [flatRows],
+  );
+
   const virtualizer = useVirtualizer({
     count: flatRows.length,
     getScrollElement: () => parentRef.current,
@@ -268,13 +292,10 @@ export function NotesTreeVirtual({
     });
   const { active } = useDndContext();
 
-  const setScrollAndDropRef = React.useCallback(
-    (node: HTMLDivElement | null) => {
-      setNotesRootDropRef(node);
-      parentRef.current = node;
-    },
-    [setNotesRootDropRef, parentRef],
-  );
+  function setScrollAndDropRef(node: HTMLDivElement | null) {
+    setNotesRootDropRef(node);
+    parentRef.current = node;
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
@@ -327,6 +348,8 @@ export function NotesTreeVirtual({
                     isFirstChild={isFirstChild}
                     isLastChild={isLastChild}
                     onAddChild={onAddChild}
+                    visibleOrder={visibleOrder}
+                    allNodes={allNodes}
                   />
                 </div>
               );

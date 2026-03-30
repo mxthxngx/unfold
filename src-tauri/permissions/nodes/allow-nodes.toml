@@ -6,6 +6,8 @@ commands.allow = [
   "nodes_create",
   "nodes_update",
   "nodes_move",
+  "nodes_move_unpinned",
   "nodes_delete",
   "nodes_set_pinned",
+  "nodes_apply_space_snapshot",
 ]

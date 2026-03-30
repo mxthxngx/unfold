@@ -8,7 +8,11 @@ import viteTsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   clearScreen: false,
   base: './',
-  plugins: [react(), tailwindcss(), viteTsconfigPaths()],
+  plugins: [react({
+    babel:{
+      plugins: ['babel-plugin-react-compiler'],
+    }
+  }), tailwindcss(), viteTsconfigPaths()],
   server: {
     port: 1420,
     strictPort: true,

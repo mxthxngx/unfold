@@ -6,11 +6,23 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppLevelLayout } from '@/config/app-level';
-import { SpaceSidebar } from '@/features/sidebar/components/space-sidebar';
+import { SpaceSidebar2 as SpaceSidebar } from '@/features/sidebar/components/space-sidebar2';
+import { useSidebarStore } from '@/features/sidebar/stores/sidebar-store';
 import { useFullscreen } from '@/hooks/use-fullscreen';
+
+function ActiveFileIdPanel() {
+  const activeId = useSidebarStore((s) => s.activeNodeId);
+  return (
+    <div className="text-muted-foreground border-border mb-3 shrink-0 border-b pb-2 font-mono text-xs">
+      {activeId ?? '—'}
+    </div>
+  );
+}
 
 export function SpaceLayout({ children }: { children: React.ReactNode }) {
   const fullScreen = useFullscreen();
+ 
+
   const trafficLightHeight = `${AppLevelLayout.trafficLights.heightRem}rem`;
   const trafficLightWidth = `${AppLevelLayout.trafficLights.widthRem}rem`;
 
@@ -34,7 +46,10 @@ export function SpaceLayout({ children }: { children: React.ReactNode }) {
         </div>
         <SpaceSidebar />
         <SidebarInset className="min-h-0 flex-1 overflow-y-auto">
-          <div className="flex min-h-0 flex-1 flex-col p-4">{children}</div>
+          <div className="flex min-h-0 flex-1 flex-col p-4">
+            <ActiveFileIdPanel />
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </div>

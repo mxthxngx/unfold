@@ -9,7 +9,13 @@ pub struct FlatNode {
     pub name: String,
     pub sort_order: i64,
     pub is_pinned: bool,
-    pub is_open: bool,
+}
+
+/// All nodes in a space (flat rows, same shape as the DB).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpaceNotesResponse {
+    pub nodes: Vec<FlatNode>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -26,7 +32,6 @@ pub struct UpdateNodeRequest {
     pub space_id: String,
     pub id: String,
     pub name: Option<String>,
-    pub is_open: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -52,4 +57,22 @@ pub struct SetPinnedRequest {
     pub space_id: String,
     pub node_ids: Vec<String>,
     pub is_pinned: bool,
+}
+
+/// Unpin then move in one SQLite transaction (DnD to tree).
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MoveNodesUnpinnedRequest {
+    pub space_id: String,
+    pub node_ids: Vec<String>,
+    pub new_parent_id: Option<String>,
+    pub insert_before_id: Option<String>,
+}
+
+/// Replace node rows for a space to match a previous `nodes_list` snapshot (undo/redo).
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ApplySpaceSnapshotRequest {
+    pub space_id: String,
+    pub nodes: Vec<FlatNode>,
 }

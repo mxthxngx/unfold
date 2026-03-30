@@ -3,11 +3,14 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import * as React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
+import { enableMapSet } from 'immer';
 
 import { MainErrorFallback } from '@/components/errors/main';
 import { Spinner } from '@/components/ui/spinner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { queryConfig } from '@/lib/react-query';
+
+enableMapSet();
 
 type AppProviderProps = {
   children: React.ReactNode;
