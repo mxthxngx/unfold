@@ -2,13 +2,13 @@ import type { QueryClient } from '@tanstack/react-query';
 
 import { nodeQueryKeys } from './query-keys';
 
-import type { FlatNodeDto, SpaceNotesDto } from '@/api/nodes';
+import type { FlatNode, SpaceNotesDto } from '@/api/nodes';
 
 /** Returns a shallow copy of cached flat nodes for undo snapshots, or `undefined` if missing. */
 export function getSpaceNodesSnapshot(
   qc: QueryClient,
   spaceId: string,
-): FlatNodeDto[] | undefined {
+): FlatNode[] | undefined {
   const data = qc.getQueryData<SpaceNotesDto>(nodeQueryKeys.space(spaceId));
   if (!data?.nodes) return undefined;
   return data.nodes.map((n) => ({ ...n }));

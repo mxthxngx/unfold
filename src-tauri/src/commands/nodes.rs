@@ -262,7 +262,6 @@ async fn move_nodes_inner(
     space_id: &str,
     node_ids: &[String],
     new_parent_id: Option<String>,
-    insert_before_id: Option<String>,
 ) -> Result<(), String> {
     if node_ids.is_empty() {
         return Ok(());
@@ -294,14 +293,7 @@ async fn move_nodes_inner(
 
     siblings.retain(|id| !moved.contains(id));
 
-    let insert_idx = if let Some(ref before) = insert_before_id {
-        siblings
-            .iter()
-            .position(|x| x == before)
-            .ok_or_else(|| "insert_before_id not found among siblings".to_string())?
-    } else {
-        siblings.len()
-    };
+    let insert_idx = siblings.len();
 
     let mut new_order: Vec<String> = Vec::new();
     new_order.extend(siblings.iter().take(insert_idx).cloned());
@@ -359,7 +351,6 @@ pub async fn nodes_move(app: AppHandle, request: MoveNodesRequest) -> Result<(),
         &request.space_id,
         &request.node_ids,
         request.new_parent_id.clone(),
-        request.insert_before_id.clone(),
     )
     .await?;
     tx.commit().await.map_err(|e| e.to_string())?;
@@ -411,7 +402,6 @@ pub async fn nodes_move_unpinned(
         &request.space_id,
         &request.node_ids,
         request.new_parent_id.clone(),
-        request.insert_before_id.clone(),
     )
     .await?;
     tx.commit().await.map_err(|e| e.to_string())?;

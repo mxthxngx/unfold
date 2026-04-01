@@ -1,5 +1,12 @@
+import { useDraggable, useDroppable } from '@dnd-kit/react';
+import { ChevronRight, Plus } from 'lucide-react';
 import { useMemo } from 'react';
-import { FlatNodeDto } from '@/api/nodes';
+
+import { useCreateNodeMutation } from '../api/use-nodes';
+import { useSidebarStore } from '../stores/sidebar-store';
+
+import { FlatNode } from '@/api/nodes';
+import { Button } from '@/components/ui/button';
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -7,57 +14,78 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { useSidebarStore } from '../stores/sidebar-store';
-import { cn } from '@/utils/tailwind';
-import { ChevronRight, Plus } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/utils/tailwind';
 
 /**
- * TODOS"
+ * TODOS
  * make indentation on either of the element correct
+ * make every parent call its children and not rely on the main component to do it, minimises re-render
+ * {{ paddingLeft: depth * 12 }} this should be driven by that css variable
  */
 
 interface NotesSectionProps {
-  notes: FlatNodeDto[];
+  notes: FlatNode[];
 }
 
 interface NotesGroupProps {
-  note: FlatNodeDto;
-  byParent: Map<string | null, FlatNodeDto[]>;
+  note: FlatNode;
+  byParent: Map<string | null, FlatNode[]>;
   depth: number;
 }
 
+export const DROPPABLE_NOTES_SECTION_ID = 'notes-section';
+
 const NotesGroup = ({ note, byParent, depth }: NotesGroupProps) => {
   const children = byParent.get(note.id) ?? [];
+  const spaceId = note.spaceId;
+
   const isExpanded = useSidebarStore((s) => s.expandedIds.has(note.id));
-  const activeNodeId = useSidebarStore((s) => s.activeNodeId);
-  const isActive = activeNodeId === note.id;
-  const setActiveNodeId = useSidebarStore((s) => s.setActiveNodeId);
   const toggleExpand = useSidebarStore((s) => s.toggleExpand);
 
-  console.log('isExpanded', isExpanded, 'note.id', note.id);
+  const isActive = useSidebarStore((s) => s.activeNodeId === note.id);
+  const setActiveNodeId = useSidebarStore((s) => s.setActiveNodeId);
+
+  // create childs notes
+  const createChildMutation = useCreateNodeMutation();
+
+  const { ref, handleRef, isDragging } = useDraggable({
+    id: note.id,
+    type: 'item',
+  });
+
+  const { ref: droppableRef } = useDroppable({
+    id: note.id,
+  });
+
   return (
     <SidebarMenuItem className="w-full">
       <div
         className="flex w-full items-center"
         style={{ paddingLeft: depth * 12 }}
+        ref={(el) => {
+          ref(el);
+          droppableRef(el);
+        }}
+        data-sidebar-dnd-dragging={isDragging}
       >
-        <SidebarMenuButton
-          variant="outline"
-          className={cn(
-            'w-full',
-            isActive && 'bg-sidebar-accent',
-            'hover:bg-sidebar-accent/50',
-          )}
-          onClick={() => setActiveNodeId(note.id)}
-        >
-          <span className="min-w-0 truncate text-xs">{note.name}</span>
-        </SidebarMenuButton>
+        <div className="min-w-0 flex-1" ref={handleRef}>
+          <SidebarMenuButton
+            variant="outline"
+            className={cn(
+              'w-full',
+              isActive && 'bg-sidebar-accent',
+              'hover:bg-sidebar-accent/50',
+            )}
+            onClick={() => setActiveNodeId(note.id)}
+          >
+            <span className="min-w-0 truncate text-xs">{note.name}</span>
+          </SidebarMenuButton>
+        </div>
 
         <span className="ml-auto flex items-center gap-1">
           <Tooltip>
@@ -70,6 +98,14 @@ const NotesGroup = ({ note, byParent, depth }: NotesGroupProps) => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  createChildMutation.mutate({
+                    spaceId,
+                    parentId: note.id,
+                    name: 'new page',
+                  });
+                  if (!isExpanded) {
+                    toggleExpand(note.id, true);
+                  }
                 }}
               >
                 <Plus size={11} strokeWidth={3} />
@@ -104,24 +140,26 @@ const NotesGroup = ({ note, byParent, depth }: NotesGroupProps) => {
         </span>
       </div>
 
-      {children.length > 0 && isExpanded ? (
-        <SidebarMenu className="w-full">
-          {children.map((child) => (
-            <NotesGroup
-              key={child.id}
-              note={child}
-              byParent={byParent}
-              depth={depth + 1}
-            />
-          ))}
-        </SidebarMenu>
-      ) : (
-        <SidebarMenu className="w-full">
-          <SidebarMenuItem className="w-full">
-            <NoSubNotes depth={depth + 1} />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      )}
+      {isExpanded ? (
+        children.length > 0 ? (
+          <SidebarMenu className="w-full">
+            {children.map((child) => (
+              <NotesGroup
+                key={child.id}
+                note={child}
+                byParent={byParent}
+                depth={depth + 1}
+              />
+            ))}
+          </SidebarMenu>
+        ) : (
+          <SidebarMenu className="w-full">
+            <SidebarMenuItem className="w-full">
+              <NoSubNotes depth={depth + 1} />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )
+      ) : null}
     </SidebarMenuItem>
   );
 };
@@ -138,7 +176,7 @@ const NoSubNotes = ({ depth }: { depth: number }) => {
 };
 export const NotesSection2 = ({ notes }: NotesSectionProps) => {
   const byParent = useMemo(() => {
-    const map = new Map<string | null, FlatNodeDto[]>();
+    const map = new Map<string | null, FlatNode[]>();
 
     for (const note of notes) {
       const key = note.parentId ?? null;
@@ -155,20 +193,35 @@ export const NotesSection2 = ({ notes }: NotesSectionProps) => {
 
   const rootNodes = byParent.get(null) ?? [];
 
+  // dnd
+  const { isDropTarget, ref } = useDroppable({
+    id: DROPPABLE_NOTES_SECTION_ID,
+  });
+
   return (
-    <SidebarGroup>
-      <SidebarGroupContent>
-        <SidebarMenu className="w-full">
-          {rootNodes.map((note) => (
-            <NotesGroup
-              key={note.id}
-              note={note}
-              byParent={byParent}
-              depth={0}
-            />
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <div
+      ref={ref}
+      className={cn(
+        isDropTarget
+          ? 'border-sidebar-border border border-dashed'
+          : 'border border-transparent',
+        'rounded-2xl',
+      )}
+    >
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu className="w-full">
+            {rootNodes.map((note) => (
+              <NotesGroup
+                key={note.id}
+                note={note}
+                byParent={byParent}
+                depth={0}
+              />
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </div>
   );
 };

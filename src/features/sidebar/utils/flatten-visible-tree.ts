@@ -1,8 +1,6 @@
-import {
-  childrenByParent,
-} from './nodes-from-flat';
+import { childrenByParent } from './nodes-from-flat';
 
-import type { FlatNodeDto } from '@/api/nodes';
+import type { FlatNode } from '@/api/nodes';
 
 export enum FlatVisibleRowKind {
   node = 'node',
@@ -30,7 +28,7 @@ export type FlatVisibleRow =
  * Pinned items stay in the tree (they also appear in the pinned strip).
  */
 export function flattenVisibleOutline(
-  allNodes: FlatNodeDto[],
+  allNodes: FlatNode[],
   expandedIds: ReadonlySet<string>,
 ): FlatVisibleRow[] {
   const byParent = childrenByParent(allNodes);

@@ -1,7 +1,7 @@
-import type { FlatNodeDto } from '@/api/nodes';
+import type { FlatNode } from '@/api/nodes';
 
 /** Sort siblings like the server: `sort_order`, then `name`. */
-export function sortNodesByOrder(a: FlatNodeDto, b: FlatNodeDto): number {
+export function sortNodesByOrder(a: FlatNode, b: FlatNode): number {
   return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
 }
 
@@ -10,10 +10,10 @@ export function sortNodesByOrder(a: FlatNodeDto, b: FlatNodeDto): number {
  * Sorts each sibling list for stable outline order.
  */
 export function childrenByParent(
-  nodes: FlatNodeDto[],
-): Map<string | null, FlatNodeDto[]> {
+  nodes: FlatNode[],
+): Map<string | null, FlatNode[]> {
   const ids = new Set(nodes.map((n) => n.id));
-  const map = new Map<string | null, FlatNodeDto[]>();
+  const map = new Map<string | null, FlatNode[]>();
   for (const n of nodes) {
     let p: string | null = n.parentId;
     if (p !== null && !ids.has(p)) p = null;
@@ -28,13 +28,13 @@ export function childrenByParent(
 }
 
 /** Pinned strip: `isPinned` rows, ordered by pin `sort_order` / name. */
-export function getPinnedNodesForStrip(nodes: FlatNodeDto[]): FlatNodeDto[] {
+export function getPinnedNodesForStrip(nodes: FlatNode[]): FlatNode[] {
   return [...nodes].filter((n) => n.isPinned).sort(sortNodesByOrder);
 }
 
 /** Parent ids from `nodeId` up to the root — expand these so the tree reveals the node (no selection). */
 export function ancestorIdsForNode(
-  allNodes: FlatNodeDto[],
+  allNodes: FlatNode[],
   nodeId: string,
 ): string[] {
   const byId = new Map(allNodes.map((n) => [n.id, n]));
@@ -51,7 +51,7 @@ export function ancestorIdsForNode(
 
 /** `rootId` first, then descendants (DFS). Used when building move/pin payloads. */
 export function collectDescendantIds(
-  allNodes: FlatNodeDto[],
+  allNodes: FlatNode[],
   rootId: string,
 ): string[] {
   const byParent = childrenByParent(allNodes);
@@ -73,7 +73,7 @@ export function collectDescendantIds(
  * descendant not already included (so a folder drag moves its whole subtree).
  */
 export function expandIdsWithDescendantsForDrag(
-  allNodes: FlatNodeDto[],
+  allNodes: FlatNode[],
   baseOrderedIds: string[],
 ): string[] {
   const seen = new Set<string>();

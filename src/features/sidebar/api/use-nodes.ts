@@ -1,5 +1,7 @@
 import {
+  useMutation,
   useQueryClient,
+  useSuspenseQuery,
   type MutationFunctionContext,
   type UseMutationOptions,
 } from '@tanstack/react-query';
@@ -11,7 +13,7 @@ import { nodeQueryKeys } from './query-keys';
 import type {
   CreateNodePayload,
   DeleteNodesPayload,
-  FlatNodeDto,
+  FlatNode,
   MoveNodesPayload,
   SetPinnedPayload,
   SpaceNotesDto,
@@ -29,10 +31,6 @@ import {
   nodesMoveUnpinned,
   nodesApplySpaceSnapshot,
 } from '@/api/nodes';
-import {
-  useAppMutation,
-  useSuspenseAppQuery,
-} from '@/lib/react-query';
 
 export const emptySpaceNotes: SpaceNotesDto = { nodes: [] };
 
@@ -43,96 +41,98 @@ function nodesQueryOptions(spaceId: string) {
       if (!isTauri()) {
         return emptySpaceNotes;
       }
-      const res = await nodesList(spaceId);
-      console.log('res', res);
-      return res;
+      return nodesList(spaceId);
     },
   };
 }
-
-function withSpaceQueryInvalidation<
-  TData,
-  TVariables extends { spaceId: string },
-  TContext = unknown,
->(
-  qc: ReturnType<typeof useQueryClient>,
-  mutationFn: (variables: TVariables) => Promise<TData>,
-  options?: UseMutationOptions<TData, Error, TVariables, TContext>,
-) {
-  const { onSuccess, ...restOptions } = options ?? {};
-
-  return {
-    mutationFn,
-    ...restOptions,
-    async onSuccess(
-      data: TData,
-      variables: TVariables,
-      onMutateResult: TContext | undefined,
-      context: MutationFunctionContext,
-    ) {
-      await invalidateSpaceNodesQuery(qc, variables.spaceId);
-      return onSuccess?.(data, variables, onMutateResult as TContext, context);
-    },
-  };
-}
-
 
 /** For use under `React.Suspense` — suspends until nodes are available; `data` is always defined when rendered. */
 export function useNodesSuspenseQuery(spaceId: string) {
-  return useSuspenseAppQuery(nodesQueryOptions(spaceId));
+  return useSuspenseQuery(nodesQueryOptions(spaceId));
 }
 
 export function useCreateNodeMutation(
-  options?: UseMutationOptions<FlatNodeDto, Error, CreateNodePayload>,
+  options?: UseMutationOptions<FlatNode, Error, CreateNodePayload>,
 ) {
   const qc = useQueryClient();
-  return useAppMutation(withSpaceQueryInvalidation(qc, nodesCreate, options));
+  const { onSuccess, ...restOptions } = options ?? {};
+
+  return useMutation({
+    mutationFn: nodesCreate,
+    ...restOptions,
+    async onSuccess(
+      data,
+      variables,
+      onMutateResult,
+      context: MutationFunctionContext,
+    ) {
+      await invalidateSpaceNodesQuery(qc, variables.spaceId);
+      return onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
 }
 
 export function useUpdateNodeMutation(
-  options?: UseMutationOptions<FlatNodeDto, Error, UpdateNodePayload>,
+  options?: UseMutationOptions<FlatNode, Error, UpdateNodePayload>,
 ) {
-  const qc = useQueryClient();
-  return useAppMutation(withSpaceQueryInvalidation(qc, nodesUpdate, options));
+  return useMutation({ mutationFn: nodesUpdate, ...options });
 }
 
 export function useMoveNodesMutation(
   options?: UseMutationOptions<void, Error, MoveNodesPayload>,
 ) {
   const qc = useQueryClient();
-  return useAppMutation(withSpaceQueryInvalidation(qc, nodesMove, options));
+  const { onSuccess, ...restOptions } = options ?? {};
+
+  return useMutation({
+    mutationFn: nodesMove,
+    ...restOptions,
+    async onSuccess(
+      data,
+      variables,
+      onMutateResult,
+      context: MutationFunctionContext,
+    ) {
+      await invalidateSpaceNodesQuery(qc, variables.spaceId);
+      return onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
 }
 
 export function useMoveNodesUnpinnedMutation(
   options?: UseMutationOptions<void, Error, MoveNodesUnpinnedPayload>,
 ) {
-  const qc = useQueryClient();
-  return useAppMutation(
-    withSpaceQueryInvalidation(qc, nodesMoveUnpinned, options),
-  );
+  return useMutation({ mutationFn: nodesMoveUnpinned, ...options });
 }
 
 export function useApplySpaceSnapshotMutation(
   options?: UseMutationOptions<void, Error, ApplySpaceSnapshotPayload>,
 ) {
-  const qc = useQueryClient();
-  return useAppMutation(
-    withSpaceQueryInvalidation(qc, nodesApplySpaceSnapshot, options),
-  );
+  return useMutation({ mutationFn: nodesApplySpaceSnapshot, ...options });
 }
 
 export function useDeleteNodesMutation(
   options?: UseMutationOptions<void, Error, DeleteNodesPayload>,
 ) {
-  const qc = useQueryClient();
-  return useAppMutation(withSpaceQueryInvalidation(qc, nodesDelete, options));
+  return useMutation({ mutationFn: nodesDelete, ...options });
 }
 
 export function useSetPinnedMutation(
   options?: UseMutationOptions<void, Error, SetPinnedPayload>,
 ) {
   const qc = useQueryClient();
-  return useAppMutation(
-    withSpaceQueryInvalidation(qc, nodesSetPinned, options),
-  );
+  const { onSuccess, ...restOptions } = options ?? {};
+  return useMutation({
+    mutationFn: nodesSetPinned,
+    ...restOptions,
+    async onSuccess(
+      data,
+      variables,
+      onMutateResult,
+      context: MutationFunctionContext,
+    ) {
+      await invalidateSpaceNodesQuery(qc, variables.spaceId);
+      return onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
 }

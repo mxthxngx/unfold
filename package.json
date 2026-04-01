@@ -17,7 +17,9 @@
   },
   "lint-staged": {
     "*.+(ts|tsx)": [
-      "pnpm exec prettier --write"
+      "pnpm exec prettier --write",
+      "pnpm exec eslint --fix",
+      "sh -c 'pnpm typecheck'"
     ]
   },
   "pnpm": {
@@ -28,7 +30,6 @@
     }
   },
   "dependencies": {
-    "@dnd-kit/helpers": "^0.3.2",
     "@dnd-kit/react": "^0.3.2",
     "@dnd-kit/utilities": "^3.2.2",
     "@fontsource-variable/bricolage-grotesque": "^5.2.10",
@@ -47,10 +48,10 @@
     "@tauri-apps/plugin-fs": "~2",
     "@tauri-apps/plugin-sql": "~2",
     "@tauri-apps/plugin-store": "^2.4.1",
+    "babel-plugin-react-compiler": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "husky": "^9.1.7",
-    "immer": "^10.1.1",
     "lint-staged": "^16.4.0",
     "lucide-react": "^0.577.0",
     "radix-ui": "^1.4.3",
@@ -75,7 +76,6 @@
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "@vitejs/plugin-react": "^5.1.4",
-    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.1",

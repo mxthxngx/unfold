@@ -40,8 +40,6 @@ pub struct MoveNodesRequest {
     pub space_id: String,
     pub node_ids: Vec<String>,
     pub new_parent_id: Option<String>,
-    /// If set, insert moved block before this sibling (must share `new_parent_id`).
-    pub insert_before_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

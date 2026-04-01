@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 /** One node row (same shape as DB and `nodes_list` payload). */
-export type FlatNodeDto = {
+export type FlatNode = {
   id: string;
   spaceId: string;
   parentId: string | null;
@@ -11,11 +11,11 @@ export type FlatNodeDto = {
 };
 
 /** Alias for the same flat row — use for sidebar UI and API interchangeably. */
-export type TreeNode = FlatNodeDto;
+export type TreeNode = FlatNode;
 
 /** Space: all node rows in stable list order (matches SQL: parent, sort, name). */
 export type SpaceNotesDto = {
-  nodes: FlatNodeDto[];
+  nodes: FlatNode[];
 };
 
 export type CreateNodePayload = {
@@ -34,7 +34,6 @@ export type MoveNodesPayload = {
   spaceId: string;
   nodeIds: string[];
   newParentId: string | null;
-  insertBeforeId: string | null;
 };
 
 export type DeleteNodesPayload = {
@@ -57,7 +56,7 @@ export type MoveNodesUnpinnedPayload = {
 
 export type ApplySpaceSnapshotPayload = {
   spaceId: string;
-  nodes: FlatNodeDto[];
+  nodes: FlatNode[];
 };
 
 export async function nodesList(spaceId: string): Promise<SpaceNotesDto> {
@@ -66,14 +65,14 @@ export async function nodesList(spaceId: string): Promise<SpaceNotesDto> {
 
 export async function nodesCreate(
   payload: CreateNodePayload,
-): Promise<FlatNodeDto> {
-  return invoke<FlatNodeDto>('nodes_create', { request: payload });
+): Promise<FlatNode> {
+  return invoke<FlatNode>('nodes_create', { request: payload });
 }
 
 export async function nodesUpdate(
   payload: UpdateNodePayload,
-): Promise<FlatNodeDto> {
-  return invoke<FlatNodeDto>('nodes_update', { request: payload });
+): Promise<FlatNode> {
+  return invoke<FlatNode>('nodes_update', { request: payload });
 }
 
 export async function nodesMove(payload: MoveNodesPayload): Promise<void> {
