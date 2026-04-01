@@ -7,9 +7,6 @@ import {
 } from '@tanstack/react-query';
 import { isTauri } from '@tauri-apps/api/core';
 
-import { invalidateSpaceNodesQuery } from './node-query-client';
-import { nodeQueryKeys } from './query-keys';
-
 import type {
   CreateNodePayload,
   DeleteNodesPayload,
@@ -30,6 +27,8 @@ import {
   nodesUpdate,
   nodesMoveUnpinned,
   nodesApplySpaceSnapshot,
+  nodeQueryKeys,
+  invalidateSpaceNodesQuery,
 } from '@/api/nodes';
 
 export const emptySpaceNotes: SpaceNotesDto = { nodes: [] };

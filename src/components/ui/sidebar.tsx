@@ -397,7 +397,7 @@ function SidebarGroupLabel({
     <Comp
       data-slot="sidebar-group-label"
       data-sidebar="group-label"
-      className="ring-sidebar-ring text-muted-foreground-heavy text-tiny flex h-3.5 shrink-0 items-center rounded-md px-3 font-serif font-medium tracking-wide outline-hidden transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0"
+      className="ring-sidebar-ring text-muted-foreground-heavy text-tiny flex h-3.5 shrink-0 items-center rounded-md px-3.5 font-serif font-medium tracking-wide outline-hidden transition-[margin,opacity] duration-200 ease-linear group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0"
       {...props}
     />
   );
@@ -460,14 +460,14 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  'select-none peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl p-2 text-left text-sm ring-sidebar-ring text-select outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent bg-sidebar data-active:font-medium data-active:text-sidebar-accent-foreground text-sidebar-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate font-medium',
+  'select-none cursor-pointer peer/menu-button group/menu-button flex w-full items-center gap-2 overflow-hidden rounded-xl p-2 text-left text-sm ring-sidebar-ring text-select outline-hidden transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-foreground data-active:bg-sidebar-accent bg-sidebar data-active:font-medium data-active:text-sidebar-accent-foreground text-sidebar-foreground [&_svg]:size-4 [&_svg]:shrink-0 [&>span:last-child]:truncate font-medium',
   {
     variants: {
       variant: {
         default:
           'border border-transparent px-2.5 py-1 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:border-sidebar-border',
         outline:
-          'px-2.5 py-1.5 border border-transparent data-active:border-sidebar-border data-active:bg-sidebar-accent text-sidebar-accent-foreground transition-colors',
+          'px-2.5 py-1 border border-transparent data-active:border-sidebar-border data-active:bg-sidebar-accent transition-colors',
       },
       size: {
         default: 'h-8 text-sm',
@@ -622,7 +622,7 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<'ul'>) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        'border-sidebar-border ml-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l-2 pl-1.5 group-data-[collapsible=icon]:hidden',
+        'before:bg-sidebar-tree-line relative ml-1.5 flex min-w-0 flex-col gap-0.5 pl-2 group-data-[collapsible=icon]:hidden before:absolute before:top-0.5 before:bottom-0 before:left-0.5 before:w-0.5 before:rounded-full',
         className,
       )}
       {...props}

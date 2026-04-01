@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { invoke } from '@tauri-apps/api/core';
 
 /** One node row (same shape as DB and `nodes_list` payload). */
@@ -10,10 +11,7 @@ export type FlatNode = {
   isPinned: boolean;
 };
 
-/** Alias for the same flat row — use for sidebar UI and API interchangeably. */
-export type TreeNode = FlatNode;
-
-/** Space: all node rows in stable list order (matches SQL: parent, sort, name). */
+/** Space: all node rows in stable list order. */
 export type SpaceNotesDto = {
   nodes: FlatNode[];
 };
@@ -98,3 +96,15 @@ export async function nodesApplySpaceSnapshot(
 ): Promise<void> {
   return invoke<void>('nodes_apply_space_snapshot', { request: payload });
 }
+
+/** Marks the space nodes query stale so React Query refetches. */
+export function invalidateSpaceNodesQuery(qc: QueryClient, spaceId: string) {
+  return qc.invalidateQueries({
+    queryKey: nodeQueryKeys.space(spaceId),
+  });
+}
+
+export const nodeQueryKeys = {
+  all: ['nodes'] as const,
+  space: (spaceId: string) => [...nodeQueryKeys.all, spaceId] as const,
+};

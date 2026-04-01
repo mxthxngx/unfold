@@ -1,14 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { enableMapSet } from 'immer';
 import * as React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { HelmetProvider } from 'react-helmet-async';
-import { enableMapSet } from 'immer';
 
 import { MainErrorFallback } from '@/components/errors/main';
 import { Spinner } from '@/components/ui/spinner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { queryConfig } from '@/lib/react-query';
 
 enableMapSet();
 
@@ -20,7 +19,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   const [queryClient] = React.useState(
     () =>
       new QueryClient({
-        defaultOptions: queryConfig,
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 5, // 5 minutes
+          },
+        },
       }),
   );
 

@@ -6,7 +6,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppLevelLayout } from '@/config/app-level';
-import { SpaceSidebar2 as SpaceSidebar } from '@/features/sidebar/components/space-sidebar2';
+import { SpaceSidebar } from '@/features/sidebar/components/space-sidebar';
 import { useSidebarStore } from '@/features/sidebar/stores/sidebar-store';
 import { useFullscreen } from '@/hooks/use-fullscreen';
 
@@ -21,7 +21,6 @@ function ActiveFileIdPanel() {
 
 export function SpaceLayout({ children }: { children: React.ReactNode }) {
   const fullScreen = useFullscreen();
- 
 
   const trafficLightHeight = `${AppLevelLayout.trafficLights.heightRem}rem`;
   const trafficLightWidth = `${AppLevelLayout.trafficLights.widthRem}rem`;
