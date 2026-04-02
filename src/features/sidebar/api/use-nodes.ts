@@ -113,7 +113,21 @@ export function useApplySpaceSnapshotMutation(
 export function useDeleteNodesMutation(
   options?: UseMutationOptions<void, Error, DeleteNodesPayload>,
 ) {
-  return useMutation({ mutationFn: nodesDelete, ...options });
+  const qc = useQueryClient();
+  const { onSuccess, ...restOptions } = options ?? {};
+  return useMutation({
+    mutationFn: nodesDelete,
+    ...restOptions,
+    async onSuccess(
+      data,
+      variables,
+      onMutateResult,
+      context: MutationFunctionContext,
+    ) {
+      await invalidateSpaceNodesQuery(qc, variables.spaceId);
+      return onSuccess?.(data, variables, onMutateResult, context);
+    },
+  });
 }
 
 export function useSetPinnedMutation(

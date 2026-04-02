@@ -1,14 +1,24 @@
 import { useDroppable } from '@dnd-kit/react';
 
+import { useSetPinnedMutation } from '../api/use-nodes';
 import { useSidebarStore } from '../stores/sidebar-store';
 
 import { FlatNode } from '@/api/nodes';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 import {
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { SidebarContextMenuShortcuts } from '@/config/sidebar';
+import { DROPPABLE_PINNED_SECTION_ID } from '@/features/sidebar/utils/dnd';
 import { cn } from '@/utils/tailwind';
 
 interface PinnedSectionProps {
@@ -16,42 +26,72 @@ interface PinnedSectionProps {
   expandParentNodes: (nodeId: string) => void;
 }
 
-export const DROPPABLE_PINNED_SECTION_ID = 'pinned-section';
-export const PinnedSection2 = ({
+export const PinnedSection = ({
   pinnedNodes,
   expandParentNodes,
 }: PinnedSectionProps) => {
+  // mutations
+  const setPin = useSetPinnedMutation();
+
+  // dnd root target
   const { isDropTarget, ref } = useDroppable({
     id: DROPPABLE_PINNED_SECTION_ID,
   });
+
+  // active selection
   const currentlyActiveNodeId = useSidebarStore((s) => s.activeNodeId);
   const setActiveNodeId = useSidebarStore((s) => s.setActiveNodeId);
+
   return (
     <SidebarGroupContent>
       <div
         ref={ref}
         className={cn(
           isDropTarget
-            ? 'border-sidebar-border border border-dashed'
+            ? 'border-sidebar-border bg-sidebar-accent/10 border border-dashed'
             : 'border border-transparent',
-          'rounded-2xl p-1',
+          'overflow-hidden rounded-2xl p-1',
         )}
       >
         <SidebarMenu className="w-full gap-1">
           {pinnedNodes.map((node) => (
             <SidebarMenuItem key={node.id}>
-              <SidebarMenuButton
-                variant="outline"
-                size="sm"
-                isActive={currentlyActiveNodeId === node.id}
-                className="w-full"
-                onClick={() => {
-                  setActiveNodeId(node.id);
-                  expandParentNodes(node.id);
-                }}
-              >
-                <span className="min-w-0 truncate text-xs">{node.name}</span>
-              </SidebarMenuButton>
+              <ContextMenu>
+                <ContextMenuTrigger asChild>
+                  <SidebarMenuButton
+                    variant="outline"
+                    size="sm"
+                    isActive={currentlyActiveNodeId === node.id}
+                    className="w-full"
+                    onClick={() => {
+                      setActiveNodeId(node.id);
+                      expandParentNodes(node.id);
+                    }}
+                  >
+                    <span className="min-w-0 truncate text-xs">
+                      {node.name}
+                    </span>
+                  </SidebarMenuButton>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      setPin.mutate({
+                        spaceId: node.spaceId,
+                        nodeIds: [node.id],
+                        isPinned: false,
+                      });
+                    }}
+                  >
+                    unpin
+                    <ContextMenuShortcut>
+                      {SidebarContextMenuShortcuts.pinned.unpin}
+                    </ContextMenuShortcut>
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

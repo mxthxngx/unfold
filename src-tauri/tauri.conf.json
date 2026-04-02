@@ -10,8 +10,14 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg"],
-    "icon": ["icons/icon.icns", "icons/icon.ico", "icons/icon.png"]
+    "targets": [
+      "dmg"
+    ],
+    "icon": [
+      "icons/icon.icns",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ]
   },
   "app": {
     "enableGTKAppId": false,
@@ -19,12 +25,16 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["$APPLOCALDATA/**"]
+        "scope": [
+          "$APPLOCALDATA/**"
+        ]
       },
       "capabilities": [
         {
           "identifier": "draggable-window",
-          "windows": ["*"],
+          "windows": [
+            "*"
+          ],
           "permissions": [
             "core:default",
             "allow-nodes",
@@ -92,7 +102,11 @@
         "title": "Unfold",
         "shadow": false,
         "backgroundColor": "#0D0D0C",
-        "visible": false
+        "visible": false,
+        "trafficLightPosition": {
+          "x": 15,
+          "y": 20
+        }
       }
     ],
     "withGlobalTauri": false

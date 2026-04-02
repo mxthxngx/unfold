@@ -4,9 +4,14 @@ import {
   DragDropProvider,
   KeyboardSensor,
   PointerSensor,
-  useDragOperation,
 } from '@dnd-kit/react';
-import { Suspense, useEffect, useRef } from 'react';
+import {
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+} from 'react';
 
 import {
   useMoveNodesMutation,
@@ -15,11 +20,11 @@ import {
 } from '../api/use-nodes';
 import { useSidebarStore } from '../stores/sidebar-store';
 
-import { DROPPABLE_NOTES_SECTION_ID, NotesSection } from './notes-section';
-import { DROPPABLE_PINNED_SECTION_ID, PinnedSection2 } from './pinned-section';
+import { NotesSection } from './notes-section';
+import { PinnedSection } from './pinned-section';
+import { SidebarDragOverlay } from './sidebar-drag-overlay';
 import { SpaceSidebarSkeleton } from './space-sidebar-skeleton';
 
-import { FlatNode } from '@/api/nodes';
 import { useSpaceStore } from '@/components/store/space.store';
 import {
   Sidebar,
@@ -28,6 +33,12 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { DEFAULT_SPACE_ID } from '@/config/spaces';
+import {
+  DROPPABLE_NOTES_SECTION_ID,
+  isPinnedDropTargetId,
+  toOperationId,
+} from '@/features/sidebar/utils/dnd';
+import { expandNodeAncestors } from '@/features/sidebar/utils/node-tree';
 
 /**
  * TODOS
@@ -35,89 +46,59 @@ import { DEFAULT_SPACE_ID } from '@/config/spaces';
  * 2. drag and drop doesnt alway work, fiiles that were just dropped isnt working
  * 3. allow only 5 levels of nesting, and show a warning when user tries to exceed that, this is because the current design of the sidebar with the current indentation style will break if we allow more levels, we can revisit the design later to accomodate more levels
  * 4. touchpad haptics on drag and drop would be a nice to have
+ * 5. Scrollbar has gutter, so layout shift is happening. It should be like the Slack Scrollbar.
+ * 6. Delete button should show modal to confirm deletion, and it should also show the number of sub notes that will be deleted. This is because deleting a note with many sub notes by mistake can be a bad experience.
  */
 
 const spaceId = DEFAULT_SPACE_ID;
 
 type onDragOver = NonNullable<
-  React.ComponentProps<typeof DragDropProvider>['onDragOver']
+  ComponentProps<typeof DragDropProvider>['onDragOver']
+>;
+type OnDragStart = NonNullable<
+  ComponentProps<typeof DragDropProvider>['onDragStart']
 >;
 type OnDragEnd = NonNullable<
-  React.ComponentProps<typeof DragDropProvider>['onDragEnd']
+  ComponentProps<typeof DragDropProvider>['onDragEnd']
 >;
 
 const sidebarSensors = [
   PointerSensor.configure({
     activationConstraints: [
-      //  this is required to prevent dragging when user just wants to click and open the note, without this, every click will be treated as drag and drop
+      // Prevent every click from starting a drag operation.
       new PointerActivationConstraints.Distance({ value: 6 }),
     ],
   }),
   KeyboardSensor,
 ];
 
-const isPinned = (id: string) => {
-  if (id.startsWith(DROPPABLE_PINNED_SECTION_ID)) {
-    return true;
-  }
-  return false;
-};
-
-const getOperationId = (value: unknown): string | null => {
-  if (typeof value === 'string' && value.length > 0) {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return String(value);
-  }
-
-  return null;
-};
-
-export const byParent = (nodes: FlatNode[]) => {
-  const map = new Map<string | null, FlatNode[]>();
-
-  for (const node of nodes) {
-    const key = node.parentId ?? null;
-
-    if (!map.has(key)) {
-      map.set(key, []);
-    }
-
-    map.get(key)!.push(node);
-  }
-
-  return map;
-};
-export const SpaceSidebar = () => {
+const SpaceSidebarContent = () => {
+  // query data
   const nodes = useNodesSuspenseQuery(spaceId).data.nodes ?? [];
+  const [activeDragNodeId, setActiveDragNodeId] = useState<string | null>(null);
+
+  // hover-expand timers
   const hoverExpandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
   const hoverExpandTargetIdRef = useRef<string | null>(null);
 
-  const setCurrentSpaceID = useSpaceStore((s) => s.setCurrentSpaceID);
-
+  // derived data
   const pinnedNodes = nodes.filter((node) => node.isPinned);
 
+  // store actions
   const toggleExpand = useSidebarStore((s) => s.toggleExpand);
+
+  // tree navigation helpers
   const expandParentNodes = (startNodeId: string) => {
-    let current = nodes.find((n) => n.id === startNodeId);
-    const visited = new Set<string>();
-
-    while (current?.parentId) {
-      if (visited.has(current.parentId)) break;
-      visited.add(current.parentId);
-
-      const parent = nodes.find((n) => n.id === current?.parentId);
-      if (!parent) break;
-
-      toggleExpand(parent.id, true);
-      current = parent;
-    }
+    expandNodeAncestors({
+      nodes,
+      startNodeId,
+      onExpand: toggleExpand,
+    });
   };
 
+  // mutations
   const moveNodes = useMoveNodesMutation();
   const setPin = useSetPinnedMutation();
 
@@ -129,9 +110,13 @@ export const SpaceSidebar = () => {
     hoverExpandTargetIdRef.current = null;
   };
 
+  const onDragStart: OnDragStart = (event) => {
+    setActiveDragNodeId(toOperationId(event.operation?.source?.id));
+  };
+
   const onDragOver: onDragOver = (event) => {
-    const targetParentId = getOperationId(event.operation?.target?.id);
-    const sourceItemId = getOperationId(event.operation?.source?.id);
+    const targetParentId = toOperationId(event.operation?.target?.id);
+    const sourceItemId = toOperationId(event.operation?.source?.id);
 
     if (!sourceItemId || !targetParentId) {
       clearHoverExpand();
@@ -141,8 +126,8 @@ export const SpaceSidebar = () => {
     if (
       sourceItemId === targetParentId ||
       targetParentId === DROPPABLE_NOTES_SECTION_ID ||
-      isPinned(targetParentId) ||
-      isPinned(sourceItemId)
+      isPinnedDropTargetId(targetParentId) ||
+      isPinnedDropTargetId(sourceItemId)
     ) {
       clearHoverExpand();
       return;
@@ -163,10 +148,11 @@ export const SpaceSidebar = () => {
   };
 
   const onDragEnd: OnDragEnd = (event) => {
+    setActiveDragNodeId(null);
     clearHoverExpand();
 
-    const targetParentId = getOperationId(event.operation?.target?.id);
-    const sourceItemId = getOperationId(event.operation?.source?.id);
+    const targetParentId = toOperationId(event.operation?.target?.id);
+    const sourceItemId = toOperationId(event.operation?.source?.id);
 
     if (!sourceItemId) return;
     if (!targetParentId) return;
@@ -174,12 +160,12 @@ export const SpaceSidebar = () => {
 
     if (
       targetParentId !== DROPPABLE_NOTES_SECTION_ID &&
-      !isPinned(targetParentId)
+      !isPinnedDropTargetId(targetParentId)
     ) {
       toggleExpand(targetParentId, true);
     }
 
-    if (isPinned(targetParentId)) {
+    if (isPinnedDropTargetId(targetParentId)) {
       if (pinnedNodes.some((n) => n.id === sourceItemId)) {
         // already pinned, do nothing
         return;
@@ -197,75 +183,62 @@ export const SpaceSidebar = () => {
   };
 
   useEffect(() => {
-    setCurrentSpaceID(spaceId);
-  }, [setCurrentSpaceID, spaceId]);
-
-  useEffect(() => {
     return () => {
       clearHoverExpand();
     };
   }, []);
 
   return (
+    <SidebarContent className="h-full min-h-0 gap-1 overflow-y-auto">
+      <DragDropProvider
+        sensors={sidebarSensors}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onDragOver={onDragOver}
+      >
+        <SidebarGroup>
+          <SidebarGroupLabel>pinned</SidebarGroupLabel>
+          <PinnedSection
+            pinnedNodes={pinnedNodes}
+            expandParentNodes={expandParentNodes}
+          />
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>notes</SidebarGroupLabel>
+          <NotesSection nodes={nodes} expandParentNodes={expandParentNodes} />
+        </SidebarGroup>
+        <DragOverlay>
+          <SidebarDragOverlay
+            nodes={nodes}
+            activeDragNodeId={activeDragNodeId}
+          />
+        </DragOverlay>
+      </DragDropProvider>
+    </SidebarContent>
+  );
+};
+
+export const SpaceSidebar = () => {
+  const setCurrentSpaceID = useSpaceStore((s) => s.setCurrentSpaceID);
+
+  useEffect(() => {
+    setCurrentSpaceID(spaceId);
+  }, [setCurrentSpaceID, spaceId]);
+
+  return (
     <Sidebar
       variant="floating"
       collapsible="offcanvas"
-      className="w-55 justify-center align-middle"
+      className="shadow-sidebar-shadow border-sidebar-border bg-sidebar w-50 justify-center rounded-4xl border align-middle select-none"
       style={{
         top: 'var(--spacing-space-sidebar-top)',
-        paddingLeft: 'var(--spacing-space-sidebar-inline)',
         height: `calc(98vh - var(--spacing-space-sidebar-top))`,
       }}
     >
       <div className="h-3" />
       <Suspense fallback={<SpaceSidebarSkeleton />}>
-        <SidebarContent className="min-h-0 gap-1 overflow-y-auto">
-          <DragDropProvider
-            sensors={sidebarSensors}
-            onDragEnd={onDragEnd}
-            onDragOver={onDragOver}
-          >
-            <SidebarGroup>
-              <SidebarGroupLabel>pinned</SidebarGroupLabel>
-              <PinnedSection2
-                pinnedNodes={pinnedNodes}
-                expandParentNodes={expandParentNodes}
-              />
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>notes</SidebarGroupLabel>
-              <NotesSection
-                nodes={nodes}
-                expandParentNodes={expandParentNodes}
-              />
-            </SidebarGroup>
-            <DragOverlay dropAnimation={null}>
-              <SidebarDragOverlay nodes={nodes} />
-            </DragOverlay>
-          </DragDropProvider>
-        </SidebarContent>
+        <SpaceSidebarContent />
       </Suspense>
     </Sidebar>
-  );
-};
-
-const SidebarDragOverlay = ({ nodes }: { nodes: FlatNode[] }) => {
-  const { source } = useDragOperation();
-  const sourceId = getOperationId(source?.id);
-
-  if (!sourceId) {
-    return null;
-  }
-
-  const sourceNode = nodes.find((node) => node.id === sourceId);
-
-  return (
-    <div className="pointer-events-none w-40 max-w-60">
-      <div className="text-sidebar-accent-foreground border-sidebar-border bg-sidebar-accent flex h-7 items-center gap-2 rounded-xl border px-2.5 py-1 shadow-[0_8px_18px_rgba(0,0,0,0.32)]">
-        <span className="truncate text-sm font-medium">
-          {sourceNode?.name ?? 'moving note'}
-        </span>
-      </div>
-    </div>
   );
 };

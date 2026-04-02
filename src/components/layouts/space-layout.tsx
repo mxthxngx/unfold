@@ -39,7 +39,7 @@ export function SpaceLayout({ children }: { children: React.ReactNode }) {
           {
             <span className="flex-1" style={{ height: trafficLightHeight }}>
               {' '}
-              <SidebarTrigger className="-ml-1" />
+              <SidebarTrigger className="mt-1 -ml-1" />
             </span>
           }
         </div>

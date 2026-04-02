@@ -73,10 +73,11 @@ pub async fn delete_nodes_batch(
         placeholders
     );
 
-    let mut query = sqlx::query(&query_str).bind(space_id);
+    let mut query = sqlx::query(&query_str);
     for id in node_ids {
         query = query.bind(id);
     }
+    query = query.bind(space_id);
 
     query
         .execute(&mut **tx)
