@@ -37,7 +37,7 @@ export const SpaceSidebar = ({ side }: SpaceSidebarProps) => {
       className="shadow-sidebar-shadow border-sidebar-border bg-sidebar justify-center rounded-4xl border align-middle select-none"
       style={{
         top: 'var(--spacing-space-sidebar-top)',
-        height: `calc(98vh - var(--spacing-space-sidebar-top))`,
+        height: `calc(96vh - var(--spacing-space-sidebar-top))`,
       }}
     >
       <div className="flex h-full flex-col">

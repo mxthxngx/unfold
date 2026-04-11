@@ -29,59 +29,6 @@
           "$APPLOCALDATA/**"
         ]
       },
-      "capabilities": [
-        {
-          "identifier": "draggable-window",
-          "windows": [
-            "*"
-          ],
-          "permissions": [
-            "core:default",
-            "allow-nodes",
-            "allow-config",
-            "sql:default",
-            "sql:allow-load",
-            "sql:allow-execute",
-            "sql:allow-select",
-            "store:default",
-            "core:event:allow-listen",
-            "core:event:default",
-            "core:webview:allow-print",
-            "core:window:allow-start-dragging",
-            "core:window:allow-internal-toggle-maximize",
-            "core:menu:default",
-            "core:menu:allow-new",
-            "core:menu:allow-append",
-            "core:menu:allow-prepend",
-            "core:menu:allow-insert",
-            "core:menu:allow-remove",
-            "core:menu:allow-remove-at",
-            "core:menu:allow-items",
-            "core:menu:allow-get",
-            "core:menu:allow-popup",
-            "core:menu:allow-create-default",
-            "core:menu:allow-set-as-app-menu",
-            "core:menu:allow-set-as-window-menu",
-            "core:menu:allow-text",
-            "core:menu:allow-set-text",
-            "core:menu:allow-is-enabled",
-            "core:menu:allow-set-enabled",
-            "core:menu:allow-set-accelerator",
-            "core:menu:allow-set-as-windows-menu-for-nsapp",
-            "core:menu:allow-set-as-help-menu-for-nsapp",
-            "core:menu:allow-is-checked",
-            "core:menu:allow-set-checked",
-            "core:menu:allow-set-icon",
-            "core:path:default",
-            "core:window:allow-is-fullscreen",
-            "core:window:default",
-            "fs:default",
-            "fs:allow-app-write-recursive",
-            "fs:allow-app-read-recursive",
-            "fs:scope-applocaldata-recursive"
-          ]
-        }
-      ],
       "dangerousDisableAssetCspModification": false,
       "freezePrototype": false,
       "pattern": {
@@ -97,17 +44,13 @@
         "decorations": true,
         "label": "main",
         "maximized": true,
-        "dragDropEnabled": false,
+        "dragDropEnabled": true,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "title": "Unfold",
         "shadow": false,
         "backgroundColor": "#0D0D0C",
-        "visible": false,
-        "trafficLightPosition": {
-          "x": 15,
-          "y": 20
-        }
+        "visible": false
       }
     ],
     "withGlobalTauri": false
